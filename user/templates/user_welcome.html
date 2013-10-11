@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %} webtrack: welcome {% endblock %}
+
+
+{% block content %}
+
+	<div class="alert alert-info">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		Hey there, <strong>{{full_name}}</strong>!
+	</div>
+	<div class="alert alert-warning">
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+		This app is in what could be considered alpha stage. Don't store anything important 
+		on it as it will not be up reliably and the database may be cleared periodically 
+		as more development goes on. Right now it supports logging tasks completed on projects 
+		and adding/removing project collaborators. There's more to come and the UI is not final.
+	</div>
+
+	<ul>
+		<li><a href="/user/logout">Log out</a></li>
+		<li><a href="/projects/">My Projects</a></li>
+	</ul>
+
+
+
+{% endblock %}

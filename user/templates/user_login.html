@@ -1,0 +1,22 @@
+{% extends "login_register_base.html" %}
+
+{% block title %} webtrack: Login {% endblock %}
+
+{% block content %}
+
+	{% if form.errors %}
+		<p class="error">Sorry, that's not a valid username/password</p>
+	{% endif %}
+
+	<form action="/user/auth/" method="post">{% csrf_token %} <!--hidden formfield with string in it, checked when visitiing url to be valid-->
+		<input type="text" name="username" id="username" placeholder="Username" style="font-family:'Dosis'; font-weight:300; font-size: 1.2em; padding: 1%;" />
+		<br />
+		<input type="password" name="password" id="password" placeholder="Password" style="font-family: 'Dosis'; font-weight: 300; font-size: 1.2em; padding: 1%;" />
+
+		<br />
+		<input class="btn btn-success btn-large" type="submit" value="Login" style="font-family:'Dosis'; font-weight:300; font-size: 1.4em; border-radius: 2px;" />
+
+		<a href="/user/register/" class="btn btn-info btn-large" style="font-family:'Dosis'; font-weight:300; font-size: 1.4em; border-radius: 2px;display: inline;">Register</a>
+	</form>
+
+{% endblock %}

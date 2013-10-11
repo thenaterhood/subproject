@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: line stats {% endblock %}
+
+{% block content %}
+
+<h3>Line Histogram</h3>
+
+	{% if num_projects == 0 %}
+		<p class="error">You are not a member of any projects.</p>
+	{% endif %}
+
+	<p><a href="/projects/">Project List</a> &nbsp;&nbsp;<a href="/projects/create/">Create a Project</a></p>
+		<pre>
+
+
+	{% for i in histogram %}
+
+			{{i}}
+
+	{% endfor %}
+	</pre>
+
+
+{% endblock %}

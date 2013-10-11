@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: Register {% endblock %}
+
+{% block content %}
+
+	<h3>Edit Worklog</h3>
+	<form id="registerForm" action="/projects/work/edit/{{worklog.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+		{% for field in form %}
+
+			<div>{{field}}</div>
+
+		{% endfor %}
+
+		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
+		<a class="btn btn-danger btn-large" href="/projects/work/view/{{worklog.id}}/">Cancel</a>
+
+	</form> <!--Close the form tag-->
+
+{% endblock %}

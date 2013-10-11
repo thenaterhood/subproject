@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: {{project.name}} {% endblock %}
+
+{% block content %}
+	<h3>Viewing {{project.name}}</h3>
+		<p><a href="/projects/">Back to Projects</a></p>
+	<br />
+	<h4>Project Details {%if canEdit %} <a href="/projects/edit/{{project.id}}/">Edit</a> {%else%} <em>(Managed by {{project.manager}})</em>{%endif%}</h4>
+	<div class="well">
+
+			<ul>
+				<li>Status: {{project.status}}</li>
+				<li>Phase: {{project.phase}}</li>
+				<li>Lines: {{project.lines}}</li>
+				<li>Description: {{project.description}}</li>
+			</ul>
+	</div>
+	<h4>Project Members</h4>
+	<div class="well">
+	<ul>
+		{% for u in members %}
+		<li>{{u}} {%if canEdit %} <a href="/projects/removemember/{{project.id}}/{{u.id}}/">(Remove)</a> {%endif%}</li>
+		{% endfor %}
+	</ul>
+
+	<form id="addProjectMember" action="/projects/addmember/{{project.id}}/" method="POST">{% csrf_token %}
+
+		{% for field in add_member_form %}
+
+			<div>{{field}}</div>
+
+		{% endfor %}
+
+	</form>
+	</div>
+
+	<h4>Most Recent Worklogs {%if isMember %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
+	<div class="well">
+	<ul>
+		{% for w in worklogs %}
+		<li>{{w.owner}}: <a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></li>
+		{% endfor %}
+	</ul>
+</div>
+
+
+
+{% endblock %}
