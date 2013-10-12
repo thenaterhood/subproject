@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     url(r'^accounts/login/$', 'user.views.login_user'),
 
     # URLs for the project application
+    url(r'^projects/welcome/$', 'project.views.project_welcome'),
     url(r'^projects/$', 'project.views.list_projects'),
     url(r'^projects/create/$', 'project.views.create_project'),
     url(r'^projects/view/(?P<proj_id>\d+)/$', 'project.views.view_project'),

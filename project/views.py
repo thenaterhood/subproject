@@ -5,10 +5,26 @@ from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import F
 
 from project.models import *
 from project.forms import *
 import project.thenaterhood.histogram as histogram
+
+@login_required
+def project_welcome(request):
+
+	try:
+		UserStatistic.objects.get(user=request.user)
+	except:
+		
+		userStat = UserStatistic()
+		userStat.user = request.user
+
+		userStat.save()
+
+	return HttpResponseRedirect('/projects/')
+
 
 @login_required
 def list_projects(request):
@@ -27,6 +43,7 @@ def create_project(request):
 
 	if request.method == "POST":
 		newProj = Project()
+		newStat = ProjectStatistic()
 		form = CreateProjectForm(request.POST)
 		if form.is_valid():
 			newProj.name = form.cleaned_data['name']
@@ -38,6 +55,9 @@ def create_project(request):
 
 			newProj.save()
 			newProj.members.add( request.user )
+			newStat.project = newProj
+
+			newStat.save()
 
 			newProj.save()
 
@@ -154,6 +174,14 @@ def add_worklog( request, proj_id ):
 			workLog.owner = request.user
 			workLog.project = project
 
+			# Update the ProjectStatistic assoc with the project
+			ProjectStatistic.objects.filter(project=project).update(worklogs=F("worklogs") + 1)
+			ProjectStatistic.objects.filter(project=project).update(loggedTime=F("loggedTime") + (workLog.minutes + (workLog.hours * 60) ) )
+
+			UserStatistic.objects.filter(user=request.user).update(worklogs=F("worklogs") + 1 )
+			UserStatistic.objects.filter(user=request.user).update(loggedTime=F("loggedTime") + (workLog.minutes + (workLog.hours * 60) ) )
+
+
 			workLog.save()
 
 			return HttpResponseRedirect('/projects/view/'+str(proj_id)+"/")
@@ -187,15 +215,30 @@ def view_worklog( request, log_id ):
 @login_required
 def edit_worklog( request, log_id ):
 	worklog = Worklog.objects.get(id=log_id)
+	projStat = ProjectStatistic.objects.get( project=worklog.project )
+
 	if ( request.method == "POST" and worklog.owner == request.user ):
 		form = UpdateWorklogForm( request.POST )
 		if form.is_valid():
+
+			oldTime = worklog.minutes + (worklog.hours * 60)
+
 			worklog.summary = form.cleaned_data['summary']
 			worklog.description = form.cleaned_data['description']
 			worklog.hours = form.cleaned_data['hours']
 			worklog.minutes = form.cleaned_data['minutes']
 
+			newTime = worklog.minutes + (worklog.hours * 60)
+
+			logTimeChange = newTime - oldTime
+
 			worklog.save()
+
+			# Update the ProjectStatistic for the new time
+			UserStatistic.objects.filter(user=worklog.user).update(loggedTime=F("loggedTime") + logTimeChange )
+			ProjectStatistic.objects.filter(project=worklog.project).update(loggedTime=F("loggedTime") + logTimeChange)
+
+
 
 			return HttpResponseRedirect( '/projects/work/view/' + str(worklog.id) +"/" )
 
