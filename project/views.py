@@ -11,23 +11,45 @@ from project.models import *
 from project.forms import *
 import project.thenaterhood.histogram as histogram
 
-@login_required
-def project_welcome(request):
+def ensure_userstat_exists( user ):
 
 	try:
-		UserStatistic.objects.get(user=request.user)
+		UserStatistic.objects.get(user=user)
 	except:
 		
 		userStat = UserStatistic()
-		userStat.user = request.user
+		userStat.user = user
 
 		userStat.save()
 
-	return HttpResponseRedirect('/projects/')
+
+@login_required
+def project_welcome(request):
+
+	ensure_userstat_exists( request.user )
+
+	# Assemble a collection of statistics to render to the template
+	args = {}
+	userStats = UserStatistic.objects.get( user=request.user )
+	args['total_projects'] = len( Project.objects.filter(members=request.user) )
+	args['managed_projects'] = len( Project.objects.filter(manager=request.user) )
+	args['total_worklogs'] = userStats.worklogs
+	args['total_time'] = str( userStats.loggedTime / 60 )
+	args['start_date'] = userStats.startDate
+	args['end_date'] = userStats.endDate
+	args['tasks'] = Worklog.objects.filter(owner=request.user).reverse()[:5]
+
+	args['avg_task_time'] = 0
+	if ( userStats.worklogs > 0 ):
+		args['avg_task_time'] = str( (userStats.loggedTime/60) / userStats.worklogs )
+
+	return render_to_response('project_welcome.html', args)
 
 
 @login_required
 def list_projects(request):
+	ensure_userstat_exists( request.user )
+
 	projects = Project.objects.filter(members=request.user)
 	managedProjects = Project.objects.filter(manager=request.user)
 

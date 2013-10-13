@@ -4,6 +4,8 @@
 
 {% block content %}
 
+	<div>
+
 	<h3>Edit Worklog</h3>
 	<form id="registerForm" action="/projects/work/edit/{{worklog.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
@@ -17,5 +19,7 @@
 		<a class="btn btn-danger btn-large" href="/projects/work/view/{{worklog.id}}/">Cancel</a>
 
 	</form> <!--Close the form tag-->
+
+</div>
 
 {% endblock %}

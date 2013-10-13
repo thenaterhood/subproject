@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: projects {% endblock %}
+
+{% block content %}
+
+	{% if num_projects == 0 %}
+		<p class="error">You are not a member of any projects.</p>
+	{% endif %}
+
+	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Stats</a></p>
+
+	<h3>Project Statistics</h3>
+	<div class="well">
+		<p>You are involved with <strong>{{total_projects}} project(s)</strong>, where you <strong>manage {{managed_projects}}</strong>.</p>
+		<ul>
+			<li><a href="/projects/create/">Create a project</a></li>
+			<li><a href="/projects/">View my projects</a></li>
+		</ul>
+
+	</div>
+
+	<h3>Work Statistics</h3>
+	<div class="well">
+		<p>You've logged <strong>{{total_worklogs}} tasks</strong>.</p>
+		<p>In total, you've logged <strong>{{total_time}} hours of work</strong> on projects, averaging <strong>{{avg_task_time}} hours per task</strong>.</p>
+		<p>You joined on {{start_date}} and your most recent contribution was on {{end_date}}.</p>
+
+			{%if total_worklogs > 0 %}
+			<ul>Latest tasks
+
+				{%for t in tasks%}
+				<li><a href="/projects/work/view/{{t.id}}/">{{t.summary}}</a> on {{t.project}}</li>
+				{%endfor%}
+			</ul>
+
+			{%endif%}
+	</div>
+
+
+{% endblock %}
