@@ -27,7 +27,7 @@
 		<p>You joined on {{start_date}} and your most recent contribution was on {{end_date}}.</p>
 
 			{%if total_worklogs > 0 %}
-			<ul>Latest tasks
+			<ul>Latest Work Logged
 
 				{%for t in tasks%}
 				<li><a href="/projects/work/view/{{t.id}}/">{{t.summary}}</a> on {{t.project}}</li>
@@ -35,6 +35,9 @@
 			</ul>
 
 			{%endif%}
+			<ul>
+				<li><a href="/projects/todo/">View My Todo</a></li>
+			</ul>
 	</div>
 
 

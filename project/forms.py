@@ -43,11 +43,17 @@ class AddWorklogForm(forms.ModelForm):
 	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Work Description")), label=(""))
 	hours = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Hours Spent")), label=(""))
 	minutes = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Minutes Spent")), label=(""))
-
+	taskClosed = forms.ChoiceField(choices=[], label=("Close a task"))
 
 	class Meta:
 		model = Worklog
-		fields = ('summary', 'description', 'hours', 'minutes')
+		fields = ('summary', 'description', 'hours', 'minutes' )
+
+	def updateChoices( self, choices ):
+
+		self.fields['taskClosed'] = forms.ChoiceField(widget=forms.Select(attrs=dict(required=True)),
+			choices=[('None','Task Completed (None)')]+[(str(x.id), x.summary) for x in choices])
+
 
 class UpdateWorklogForm(forms.ModelForm):
 
@@ -75,3 +81,27 @@ class AddMemberForm(forms.Form):
 
 	class Meta:
 		fields = ('username')
+
+class AddTaskForm(forms.ModelForm):
+
+	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Task Summary")),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Task Description")), label=(""))
+
+	class Meta:
+		model = ProjectTask
+		fields = ('summary', 'description')
+
+class UpdateTaskForm(forms.ModelForm):
+
+	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Task Summary")),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Task Description")), label=(""))
+
+	class Meta:
+		model = ProjectTask
+		fields = ('summary', 'description')
+
+	def save(self, commit=True):
+		newTask = super( AddTaskForm, self ).save(commit=False)
+
+		newTask.summary = self.cleaned_data['summary']
+		newTask.description = self.cleaned_data['description']

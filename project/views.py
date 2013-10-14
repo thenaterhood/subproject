@@ -132,7 +132,7 @@ def edit_project(request, proj_id):
 @login_required
 def view_project(request, proj_id):
 	project = Project.objects.get(id=proj_id)
-	worklogs = Worklog.objects.filter(project=project).all()
+	worklogs = Worklog.objects.filter(project=project).all().reverse()[:5]
 
 	args = {}
 	args['project'] = project
@@ -140,6 +140,7 @@ def view_project(request, proj_id):
 	args['canEdit'] = ( project.manager == request.user )
 	args['isMember'] = ( request.user in project.members.all() )
 	args['worklogs'] = worklogs
+	args['tasks'] = ProjectTask.objects.filter(project=project).filter(completed=False).reverse()[:5]
 	args.update(csrf(request))
 
 	if ( project.manager == request.user ):
@@ -186,12 +187,22 @@ def add_worklog( request, proj_id ):
 
 	if request.method == "POST" and request.user in project.members.all() :
 		workLog = Worklog()
+
 		form = AddWorklogForm(request.POST)
+		tasks = ProjectTask.objects.filter(project=project).filter(completed=False).all()
+		form.updateChoices( tasks )
+
 		if form.is_valid():
+
 			workLog.hours = form.cleaned_data['hours']
 			workLog.minutes = form.cleaned_data['minutes']
 			workLog.summary = form.cleaned_data['summary']
 			workLog.description = form.cleaned_data['description']
+
+			if ( form.cleaned_data['taskClosed'] != "None" ):
+				task = ProjectTask.objects.get( id=form.cleaned_data['taskClosed'] )
+				task.completed=True
+				task.save()
 
 			workLog.owner = request.user
 			workLog.project = project
@@ -206,14 +217,26 @@ def add_worklog( request, proj_id ):
 
 			workLog.save()
 
-			return HttpResponseRedirect('/projects/view/'+str(proj_id)+"/")
+
+
+			return HttpResponseRedirect('/projects/work/view/'+str(workLog.id)+"/")
+
+		else:
+			return HttpResponseRedirect( '/projects/addwork/'+str(project.id) )
 
 	else:
 
 		args = {}
 		args.update(csrf(request))
 		args['project'] = project
-		args['form'] = AddWorklogForm()
+		form = AddWorklogForm()
+		noTask = ProjectTask()
+		noTask.id = -1
+		noTask.summary = "None"
+		tasks = ProjectTask.objects.filter(project=project).filter(completed=False).all()
+		form.updateChoices( tasks )
+		args['form'] = form
+
 
 		if request.user in project.members.all():
 
@@ -264,6 +287,10 @@ def edit_worklog( request, log_id ):
 
 			return HttpResponseRedirect( '/projects/work/view/' + str(worklog.id) +"/" )
 
+		else:
+
+			return HttpResponseRedirect( '/projects/work/edit/' + str(worklog.id) )
+
 	else:
 		initialDict = { 
 		"summary": worklog.summary, 
@@ -308,6 +335,168 @@ def line_stats(request):
 def time_stats(request):
 
 	pass
+
+
+@login_required
+def add_task( request, proj_id ):
+	project = Project.objects.get(id=proj_id)
+
+	if request.method == "POST" and request.user in project.members.all() :
+		projTask = ProjectTask()
+		form = AddTaskForm(request.POST)
+		if form.is_valid():
+			projTask.summary = form.cleaned_data['summary']
+			projTask.description = form.cleaned_data['description']
+
+			projTask.creator = request.user
+			projTask.project = project
+
+			# Update the ProjectStatistic assoc with the project
+			ProjectStatistic.objects.filter(project=project).update(issues=F("issues") + 1)
+
+			UserStatistic.objects.filter(user=request.user).update(issues=F("issues") + 1 )
+
+
+			projTask.save()
+
+			return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
+
+	else:
+
+		args = {}
+		args.update(csrf(request))
+		args['project'] = project
+		args['form'] = AddTaskForm()
+
+		if request.user in project.members.all():
+
+			return render_to_response('task_create.html', args)
+
+		else:
+
+			return HttpResponseRedirect('/projects/')
+
+@login_required
+def view_task(request, task_id):
+
+	task = ProjectTask.objects.get(id=task_id)
+	project = task.project
+
+	args = {}
+	args['project'] = project
+	args['task'] = task
+	args['members'] = task.assigned.all()
+	args['canEdit'] = ( task.creator == request.user )
+	args['isMember'] = ( request.user in task.assigned.all() )
+
+	args.update(csrf(request))
+
+	if ( project.manager == request.user ):
+		args['add_member_form'] = AddMemberForm()
+
+	return render_to_response('task_view.html', args)
+
+@login_required
+def add_task_member(request, task_id):
+
+	task = ProjectTask.objects.get(id=task_id)
+
+	if ( request.method == "POST" and task.creator == request.user ):
+		form = AddMemberForm( request.POST )
+		if ( form.is_valid() ):
+			username = form.cleaned_data['username']
+
+			try:
+				user = User.objects.get(username=username)
+
+				if ( user not in task.assigned.all() ):
+					task.assigned.add( user )
+					task.save()
+			except:
+				pass
+
+
+	return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
+
+@login_required
+def remove_task_member( request, task_id, user_id ):
+	task = ProjectTask.objects.get(id=task_id)
+	user = User.objects.get( id=user_id )
+
+	if ( task.creator == request.user ):
+		task.assigned.remove( user )
+		task.save()
+
+	return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
+
+@login_required
+def edit_task( request, task_id ):
+	task = ProjectTask.objects.get(id=task_id)
+	projStat = ProjectStatistic.objects.get( project=task.project )
+
+	if ( request.method == "POST" and ( request.user in task.assigned.all() or request.user == task.creator ) ):
+		form = UpdateTaskForm( request.POST )
+		if form.is_valid():
+
+			task.summary = form.cleaned_data['summary']
+			task.description = form.cleaned_data['description']
+
+			task.save()
+
+			return HttpResponseRedirect( '/projects/task/view/' + str(task.id) +"/" )
+
+	else:
+		initialDict = { 
+		"summary": task.summary, 
+		"description": task.description,
+		}
+
+		form = UpdateTaskForm()
+		form.initial = initialDict
+
+		args = {}
+		args['form'] = form
+		args.update(csrf(request))
+		args['task'] = task
+
+		return render_to_response('task_edit.html', args)
+
+@login_required
+def view_all_task( request, proj_id ):
+	project = Project.objects.get(id=proj_id)
+
+	if request.user in project.members.all():
+		args = {}
+		args['tasks'] = ProjectTask.objects.filter(project=project)
+		args['project'] = project
+		return render_to_response('task_list.html', args)
+
+	else:
+		return HttpResponseRedirect('/project/')
+
+@login_required
+def view_all_work( request, proj_id ):
+	project = Project.objects.get(id=proj_id)
+
+	if request.user in project.members.all():
+		args = {}
+		args['project'] = project
+		args['logs'] = Worklog.objects.filter(project=project)
+		return render_to_response('worklog_list.html', args)
+
+	else:
+		return HttpResponseRedirect('/project/')
+
+@login_required
+def my_todo( request ):
+	tasks = ProjectTask.objects.filter( assigned=request.user ).filter( completed=False ).all()
+
+	args = {}
+	args['user'] = request.user
+	args['tasks'] = tasks
+	args['num_tasks'] = len(tasks)
+
+	return render_to_response( 'user_todo.html', args)
 
 
 

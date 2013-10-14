@@ -35,12 +35,23 @@
 	</form>
 	</div>
 
+	<h4>Recently Opened Tasks {%if isMember %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
+	<div class="well">
+	<ul>
+		{% for t in tasks %}
+		<li>{{t.creator}}: <a href="/projects/task/view/{{t.id}}/">{{t.summary}}</a></li>
+		{% endfor %}
+		<li><a href="/projects/task/viewall/{{project.id}}">Show All</a></li>
+	</ul>
+</div>
+
 	<h4>Most Recent Worklogs {%if isMember %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
 	<div class="well">
 	<ul>
 		{% for w in worklogs %}
 		<li>{{w.owner}}: <a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></li>
 		{% endfor %}
+		<li><a href="/projects/work/viewall/{{project.id}}">Show All</a></li>
 	</ul>
 </div>
 

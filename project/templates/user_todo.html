@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: My Todo {% endblock %}
+
+{% block content %}
+
+	<h1>My Todo</h1>
+	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you.</p>
+
+	{% if num_tasks == 0 %}
+		<p class="error">Hey! Looks like you don't have anything on your todo.</p>
+	{% endif %}
+
+	{% for t in tasks %}
+
+		<div class="well well-small">
+			<h4><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></h4>
+				<p>Opened: {{t.startDate}} by {{t.creator}}</p>
+				<p><a href="/projects/task/edit/{{t.id}}/">Edit</a></p>
+		</div>
+	{% endfor %}
+
+{% endblock %}

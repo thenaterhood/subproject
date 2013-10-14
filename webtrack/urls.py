@@ -35,5 +35,16 @@ urlpatterns = patterns('',
     url(r'^projects/addwork/(?P<proj_id>\d+)/$', 'project.views.add_worklog'),
     url(r'^projects/work/view/(?P<log_id>\d+)/$', 'project.views.view_worklog'),
     url(r'^projects/work/edit/(?P<log_id>\d+)/$', 'project.views.edit_worklog'),
+    url(r'^projects/work/viewall/(?P<proj_id>\d+)/$', 'project.views.view_all_work'),
     url(r'^projects/stats/lines/$', 'project.views.line_stats'),
+    url(r'^projects/addtask/(?P<proj_id>\d+)/$', 'project.views.add_task'),
+    url(r'^projects/task/view/(?P<task_id>\d+)/$', 'project.views.view_task'),
+    url(r'^projects/task/edit/(?P<task_id>\d+)/$', 'project.views.edit_task'),
+    url(r'^projects/task/viewall/(?P<proj_id>\d+)/$', 'project.views.view_all_task'),
+    url(r'^projects/task/addmember/(?P<task_id>\d+)/$', 'project.views.add_task_member'),
+    url(r'^projects/task/removemember/(?P<task_id>\d+)/(?P<user_id>\d+)/$', 'project.views.remove_task_member'),
+
+    url(r'^projects/todo/', 'project.views.my_todo'),
+
+
 )

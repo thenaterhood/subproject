@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: projects {% endblock %}
+
+{% block content %}
+
+	<h1>Tasks for <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
+
+	{% if num_projects == 0 %}
+		<p class="error">No work logged.</p>
+	{% endif %}
+
+	<p><a href="/projects/addtask/{{project.id}}">Add a task</a></p>
+
+	{% for t in tasks %}
+
+		<div class="well well-small">
+			<h4><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></h4>
+			{% if project in owned %}
+			<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>
+			{% endif %}
+			{% if t.completed %}
+			<p><em>This task has been completed</em></p>
+			{%endif%}
+				<p>Opened: {{t.startDate}} by {{t.creator}}</p>
+				<p><a href="/projects/task/edit/{{t.id}}/">Edit</a></p>
+		</div>
+	{% endfor %}
+
+{% endblock %}

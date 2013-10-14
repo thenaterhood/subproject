@@ -56,5 +56,19 @@ class UserStatistic(models.Model):
 	def __str__(self):
 		return self.user.__str__() + " statistics"
 
+class ProjectTask(models.Model):
+	assigned 	= models.ManyToManyField(User, related_name="Assigned Members")
+	creator 	= models.ForeignKey(User, related_name="Creator")
+	project 	= models.ForeignKey(Project)
+	summary		= models.CharField(max_length=100)
+	description	= models.CharField(max_length=400)
+	completed	= models.BooleanField(default=False)
+	startDate	= models.DateTimeField(auto_now=False, auto_now_add=True)
+	dueDate		= models.DateTimeField(auto_now=False, auto_now_add=True)
+
+	def __str__(self):
+		return self.project + " issue " + str( self.id )
+
+
 
 # Create your models here.
