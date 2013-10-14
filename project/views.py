@@ -34,10 +34,12 @@ def project_welcome(request):
 	args['total_projects'] = len( Project.objects.filter(members=request.user) )
 	args['managed_projects'] = len( Project.objects.filter(manager=request.user) )
 	args['total_worklogs'] = userStats.worklogs
+	tasks = Worklog.objects.filter(owner=request.user).reverse()
 	args['total_time'] = str( userStats.loggedTime / 60 )
 	args['start_date'] = userStats.startDate
 	args['end_date'] = userStats.endDate
-	args['tasks'] = Worklog.objects.filter(owner=request.user).reverse()[:5]
+	args['tasks'] = tasks[:5]
+	args['numTasks'] = len(	ProjectTask.objects.filter( assigned=request.user ).filter( completed=False ).all())
 
 	args['avg_task_time'] = 0
 	if ( userStats.worklogs > 0 ):
