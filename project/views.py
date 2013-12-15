@@ -6,6 +6,8 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import F
+from django.db.models import Q
+from django.db.models import Count
 
 from project.models import *
 from project.forms import *
@@ -39,13 +41,26 @@ def project_welcome(request):
 	args['start_date'] = userStats.startDate
 	args['end_date'] = userStats.endDate
 	args['tasks'] = tasks[:5]
-	args['numTasks'] = len(	ProjectTask.objects.filter( assigned=request.user ).filter( completed=False ).all())
+	args['numTasks'] = len(	ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).all())
 
 	args['avg_task_time'] = 0
 	if ( userStats.worklogs > 0 ):
 		args['avg_task_time'] = str( (userStats.loggedTime/60) / userStats.worklogs )
 
 	return render_to_response('project_welcome.html', args)
+
+@login_required
+def user_all_tasks(request):
+
+	tasks = ProjectTask.objects.filter( creator=request.user )
+
+	args = {}
+	args['user'] = request.user
+	args['tasks'] = tasks
+	args['num_tasks'] = len(tasks)
+	args['notodo'] = True
+
+	return render_to_response( 'user_todo.html', args)
 
 
 @login_required
@@ -142,7 +157,7 @@ def view_project(request, proj_id):
 	args['canEdit'] = ( project.manager == request.user )
 	args['isMember'] = ( request.user in project.members.all() )
 	args['worklogs'] = worklogs
-	args['tasks'] = ProjectTask.objects.filter(project=project).filter(completed=False).reverse()[:5]
+	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()[:5]
 	args.update(csrf(request))
 
 	if ( project.manager == request.user ):
@@ -351,7 +366,6 @@ def add_task( request, proj_id ):
 			projTask.description = form.cleaned_data['description']
 
 			projTask.creator = request.user
-			projTask.project = project
 
 			# Update the ProjectStatistic assoc with the project
 			ProjectStatistic.objects.filter(project=project).update(issues=F("issues") + 1)
@@ -360,6 +374,10 @@ def add_task( request, proj_id ):
 
 
 			projTask.save()
+			projTask.assigned.add( request.user )
+			projTask.openOn.add( project )
+			projTask.save()
+
 
 			return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
 
@@ -382,10 +400,11 @@ def add_task( request, proj_id ):
 def view_task(request, task_id):
 
 	task = ProjectTask.objects.get(id=task_id)
-	project = task.project
+	projects = task.openOn.all()
 
 	args = {}
-	args['project'] = project
+	args['openOn'] = task.openOn.all()
+	args['closedOn'] = task.closedOn.all()
 	args['task'] = task
 	args['members'] = task.assigned.all()
 	args['canEdit'] = ( task.creator == request.user )
@@ -393,10 +412,67 @@ def view_task(request, task_id):
 
 	args.update(csrf(request))
 
-	if ( project.manager == request.user ):
-		args['add_member_form'] = AddMemberForm()
+	args['add_member_form'] = AddMemberForm()
 
 	return render_to_response('task_view.html', args)
+
+@login_required
+def close_task_in_project( request, project_id, task_id ):
+	task = ProjectTask.objects.get(id=task_id)
+
+	project = Project.objects.get( id=project_id )
+
+	if ( request.user in task.assigned.all() or request.user == task.creator ):
+		task.openOn.remove( project )
+		task.closedOn.add( project )
+
+		task.save()
+
+	return HttpResponseRedirect('/projects/task/view/'+str(task.id)+"/")
+
+@login_required
+def open_task_in_project( request, project_id, task_id ):
+
+	task = ProjectTask.objects.get(id=task_id)
+	project = Project.objects.get( id=project_id )
+
+	if ( request.user in task.assigned.all() or request.user == task.creator ):
+		task.openOn.add( project )
+		task.closedOn.remove( project )
+		task.save()
+
+	return HttpResponseRedirect('/projects/task/view/'+str(task.id)+"/")
+
+@login_required
+def add_existing_task_to_project( request, task_id, project_id=False ):
+
+	task = ProjectTask.objects.get(id=task_id)
+
+	if ( project_id != False ):
+		project = Project.objects.get( id=project_id )
+
+		if ( (request.user == task.creator and request.user == project.manager)
+			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
+
+			task.openOn.add( project )
+			task.save()
+
+			return HttpResponseRedirect( '/project/task/view/'+str(task_id)+"/" )
+
+		else:
+			return HttpResponseRedirect( '/projects/welcome' )
+
+	else:
+
+		args = {}
+		args['task'] = task
+
+		args['projects'] = Project.objects.filter( members=request.user )
+
+		return render_to_response( 'project_select.html', args )
+
+
+
 
 @login_required
 def add_task_member(request, task_id):
@@ -434,7 +510,6 @@ def remove_task_member( request, task_id, user_id ):
 @login_required
 def edit_task( request, task_id ):
 	task = ProjectTask.objects.get(id=task_id)
-	projStat = ProjectStatistic.objects.get( project=task.project )
 
 	if ( request.method == "POST" and ( request.user in task.assigned.all() or request.user == task.creator ) ):
 		form = UpdateTaskForm( request.POST )
@@ -469,7 +544,7 @@ def view_all_task( request, proj_id ):
 
 	if request.user in project.members.all():
 		args = {}
-		args['tasks'] = ProjectTask.objects.filter(project=project)
+		args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project)) 
 		args['project'] = project
 		return render_to_response('task_list.html', args)
 
@@ -491,7 +566,7 @@ def view_all_work( request, proj_id ):
 
 @login_required
 def my_todo( request ):
-	tasks = ProjectTask.objects.filter( assigned=request.user ).filter( completed=False ).all()
+	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0)
 
 	args = {}
 	args['user'] = request.user

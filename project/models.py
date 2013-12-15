@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 
 class Project(models.Model):
 	manager 	= models.ForeignKey(User, related_name="Project Manager")
+	subprojects = models.ManyToManyField( 'Project', related_name="Subprojects" )
+	parents		= models.ManyToManyField( 'Project', related_name="Parents" )
 	name 		= models.CharField(max_length=50)
 	description = models.CharField(max_length=140)
 	status 		= models.CharField(max_length=50)
@@ -59,7 +61,8 @@ class UserStatistic(models.Model):
 class ProjectTask(models.Model):
 	assigned 	= models.ManyToManyField(User, related_name="Assigned Members")
 	creator 	= models.ForeignKey(User, related_name="Creator")
-	project 	= models.ForeignKey(Project)
+	openOn	 	= models.ManyToManyField(Project, related_name="Projects")
+	closedOn	= models.ManyToManyField(Project, related_name="Closed On")
 	summary		= models.CharField(max_length=100)
 	description	= models.CharField(max_length=400)
 	completed	= models.BooleanField(default=False)
@@ -67,7 +70,7 @@ class ProjectTask(models.Model):
 	dueDate		= models.DateTimeField(auto_now=False, auto_now_add=True)
 
 	def __str__(self):
-		return self.project + " issue " + str( self.id )
+		return str( self.project ) + " issue " + str( self.id )
 
 
 

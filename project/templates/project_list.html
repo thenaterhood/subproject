@@ -8,24 +8,32 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Stats</a></p>
+	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Statistics</a></p>
 
+	<table class="table table-striped">
+		<tr>
+			<th>Project</th>
+			<th>Manager</th>
+			<th>Status</th>
+			<th>Worklogs</th>
+			<th>Tasks</th>
+		</tr>
 	{% for project in projects %}
 
-		<div class="well well-small">
-			<h4><a href="/projects/view/{{project.id}}">{{ project.name }}</a></h4>
 			{% if project in owned %}
-			<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>
+			<!--<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>-->
 			{% endif %}
-			<ul>
-				<li>Status: {{project.status}}</li>
-				<li>Phase: {{project.phase}}</li>
-				<li>Description: {{project.description}}</li>
-				<li><a href="/projects/addwork/{{project.id}}/">Add worklog</a></li>
-				<li><a href="/projects/task/viewall/{{project.id}}/">View Tasks</a></li>
-				<li><a href="/projects/work/viewall/{{project.id}}/">View Worklogs</a></li>
-			</ul>
+			<tr>
+				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a></td>
+				<td>{{project.manager}}</td>
+				<td>{{project.status}}</td>
+				<!--<li>Description: {{project.description}}</li>-->
+				<td><a href="/projects/addwork/{{project.id}}/">Add worklog</a> / <a href="/projects/work/viewall/{{project.id}}/">View Worklogs</a></td>
+				<td><a href="/projects/task/viewall/{{project.id}}/">View Tasks</a> / <a href="/projects/addtask/{{project.id}}/">Add Tasks</a></td>
+			</tr>
 		</div>
 	{% endfor %}
+
+	</table>
 
 {% endblock %}

@@ -3,7 +3,7 @@
 {% block title %} webtrack: {{project.name}} {% endblock %}
 
 {% block content %}
-	<h3>Viewing {{project.name}}</h3>
+	<h3>Project Dashboard: {{project.name}}</h3>
 		<p><a href="/projects/">Back to Projects</a></p>
 	<br />
 	<h4>Project Details {%if canEdit %} <a href="/projects/edit/{{project.id}}/">Edit</a> {%else%} <em>(Managed by {{project.manager}})</em>{%endif%}</h4>
@@ -17,43 +17,87 @@
 			</ul>
 	</div>
 	<h4>Project Members</h4>
-	<div class="well">
-	<ul>
-		{% for u in members %}
-		<li>{{u}} {%if canEdit %} <a href="/projects/removemember/{{project.id}}/{{u.id}}/">(Remove)</a> {%endif%}</li>
-		{% endfor %}
-	</ul>
 
-	<form id="addProjectMember" action="/projects/addmember/{{project.id}}/" method="POST">{% csrf_token %}
+			<table class="table table-striped">
+			<tr>
+				<th>Member</th>
+				<th>Manage</th>
+			</tr>
 
-		{% for field in add_member_form %}
+			{% for u in members %}
 
-			<div>{{field}}</div>
+			<tr>
+			<td>{{u}}</td>
+			<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/removemember/{{project.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
+			</tr>
+			{% endfor %}
 
-		{% endfor %}
+			<tr>
 
-	</form>
-	</div>
+			<td>
 
-	<h4>Recently Opened Tasks {%if isMember %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
-	<div class="well">
-	<ul>
-		{% for t in tasks %}
-		<li>{{t.creator}}: <a href="/projects/task/view/{{t.id}}/">{{t.summary}}</a></li>
-		{% endfor %}
-		<li><a href="/projects/task/viewall/{{project.id}}">Show All</a></li>
-	</ul>
-</div>
+			<form id="addProjectMember" action="/projects/addmember/{{project.id}}/" method="POST">{% csrf_token %}
 
+			{% for field in add_member_form %}
+
+				{{field}}
+
+			{% endfor %}
+
+			</td>
+			<td><input type="submit" class="btn btn-success" value="Assign">
+						</form>
+
+		</tr>
+
+
+		</table>
+	
+	<h4>Recent Tasks {%if isMember %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
+	<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th>Start Date</th>
+			<th>Opened by</th>
+			<th>Manage</th>
+		</tr>
+
+	{% for t in tasks %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td>{{t.startDate}}</td>
+			<td>{{t.creator}}</td>
+			<td><a href="/projects/task/view/{{t.id}}/">View</a></td>
+		</tr>
+
+	{% endfor %}
+
+	</table>
+	<span style="align:right;"><a class="btn btn-success" href="/projects/task/viewall/{{project.id}}">Show All</a></span>
+
+	<br />
+	<br />
 	<h4>Most Recent Worklogs {%if isMember %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
-	<div class="well">
-	<ul>
-		{% for w in worklogs %}
-		<li>{{w.owner}}: <a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></li>
-		{% endfor %}
-		<li><a href="/projects/work/viewall/{{project.id}}">Show All</a></li>
-	</ul>
-</div>
+		<table class="table table-striped">
+		<tr>
+			<th>Member</th>
+			<th>Summary</th>
+			<th>Time</th>
+			<th>View</th>
+		</tr>
+
+	{% for w in workLogs %}
+		<tr>
+			<td>{{w.owner}}</td>
+			<td><a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></td>
+			<td>{{w.datestamp}}</td>
+			<td><a href="/projects/work/view/{{w.id}}/">Show All</a></td>
+		</tr>
+
+	{% endfor %}
+
+	</table>
+	<span style="align:right;"><a class="btn btn-success" href="/projects/work/viewall/{{project.id}}">Show All</a></span>
 
 
 

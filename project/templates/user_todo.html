@@ -4,20 +4,41 @@
 
 {% block content %}
 
+	{% if notodo %}
+	<h1>Tasks You've Created</h1>
+	{% else %}
 	<h1>My Todo</h1>
-	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you.</p>
-
-	{% if num_tasks == 0 %}
-		<p class="error">Hey! Looks like you don't have anything on your todo.</p>
 	{% endif %}
 
-	{% for t in tasks %}
 
-		<div class="well well-small">
-			<h4><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></h4>
-				<p>Opened: {{t.startDate}} by {{t.creator}}</p>
-				<p><a href="/projects/task/edit/{{t.id}}/">Edit</a></p>
-		</div>
+	{%if notodo %}
+	<p>Your task list shows all the tasks you've created. <a href="/projects/todo">View your assigned tasks (todo) instead.</a></p>
+	{% else %}
+	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
+	{% endif %}
+
+	{% if num_tasks == 0 %}
+		<p class="error">Hey! Looks like you don't have any tasks!</p>
+	{% endif %}
+
+	<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th>Start Date</th>
+			<th>Opened by</th>
+			<th>Manage</th>
+		</tr>
+
+	{% for t in tasks %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td>{{t.startDate}}</td>
+			<td>{{t.creator}}</td>
+			<td><a href="/projects/task/edit/{{t.id}}/">Edit</a></td>
+		</tr>
+
 	{% endfor %}
+
+	</table>
 
 {% endblock %}

@@ -4,43 +4,88 @@
 
 {% block content %}
 	<h2>{{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
-	<p><em>Opened by {{task.creator}} on <a href="/projects/view/{{project.id}}/">{{task.project.name}}</a> {%if canEdit %}<a href="/projects/task/edit/{{task.id}}">(Edit/Delete)</a>{%endif%}</em></p>
+	<p>{{task.description}}</p>
 
-	<h3>Project Details</h3>
-		<div class="well">
-			<ul>
-				<li>Name: {{project.name}}</li>
-				<li>Status: {{project.status}}</li>
-				<li>Phase: {{project.phase}}</li>
-				<li>Description: {{project.description}}</li>
-			</ul>
-		</div>
+	<p><em>Opened by {{task.creator}} {%if canEdit %}<a href="/projects/task/edit/{{task.id}}">(Edit/Delete)</a>{%endif%}</em></p>
 
-	<h3>Task Detail</h3>
-	<div class="well">
-		<h5>{{task.summary}}</h5>
-		<p>{{task.datestamp}}</p>
-		<p>{{task.description}}</p>
-	</div>
+
+	<h3>Projects task belongs to</h3>
+
+		<table class="table table-striped">
+			<tr>
+				<th>Project</th>
+				<th>Manager</th>
+				<th>Description</th>
+				<th>Manage</th>
+			</tr>
+
+			{% for p in openOn %}
+
+			<tr>
+				<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
+				<td>{{p.manager}}</td>
+				<td>{{p.description}}</td>
+
+				<td><a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Completed in Project</a></td>
+			</tr>
+
+			{% endfor %}
+
+			{% for p in closedOn %}
+
+			<tr>
+				<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
+				<td>{{p.manager}}</td>
+				<td>{{p.description}}</td>
+
+				<td><a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished in Project</a></td>
+			</tr>
+
+			{% endfor %}
+
+			<tr>
+				<td colspan="4"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
+
+		</table>
+
+		<hr />
 
 	<h3>Task Assignees</h3>
-		<div class="well">
-		<ul>
-			<li>{{task.creator}}</li>
-			{% for u in members %}
-			<li>{{u}} {%if canEdit %} <a href="/projects/task/removemember/{{task.id}}/{{u.id}}/">(Remove)</a> {%endif%}</li>
-			{% endfor %}
-		</ul>
+		<table class="table table-striped">
+			<tr>
+				<th>Assignee</th>
+				<th>Manage</th>
+			</tr>
 
-		<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
+			{% for u in members %}
+
+			<tr>
+			<td>{{u}}</td>
+			<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
+			</tr>
+			{% endfor %}
+
+			<tr>
+
+			<td>
+
+			<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
 
 			{% for field in add_member_form %}
 
-				<div>{{field}}</div>
+				{{field}}
 
 			{% endfor %}
 
-		</form>
+			</td>
+			<td><input type="submit" class="btn btn-success" value="Assign">
+						</form>
+
+		</tr>
+
+
+		</table>
+
 	</div>
 
 

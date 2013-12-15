@@ -43,6 +43,12 @@ urlpatterns = patterns('',
     url(r'^projects/task/viewall/(?P<proj_id>\d+)/$', 'project.views.view_all_task'),
     url(r'^projects/task/addmember/(?P<task_id>\d+)/$', 'project.views.add_task_member'),
     url(r'^projects/task/removemember/(?P<task_id>\d+)/(?P<user_id>\d+)/$', 'project.views.remove_task_member'),
+    url(r'^projects/(?P<project_id>\d+)/closetask/(?P<task_id>\d+)/$', 'project.views.close_task_in_project'),
+    url(r'^projects/(?P<project_id>\d+)/opentask/(?P<task_id>\d+)/$', 'project.views.open_task_in_project'),
+    url(r'^projects/usertasks/$', 'project.views.user_all_tasks'),
+    url(r'^projects/addtotask/(?P<task_id>\d+)/$', 'project.views.add_existing_task_to_project'),
+    url(r'^projects/addtotask/(?P<task_id>\d+)/(?P<project_id>\d+)/$', 'project.views.add_existing_task_to_project'),
+
 
     url(r'^projects/todo/', 'project.views.my_todo'),
 
