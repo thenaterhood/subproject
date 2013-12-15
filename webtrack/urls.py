@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     url(r'^projects/work/viewall/(?P<proj_id>\d+)/$', 'project.views.view_all_work'),
     url(r'^projects/stats/lines/$', 'project.views.line_stats'),
     url(r'^projects/addtask/(?P<proj_id>\d+)/$', 'project.views.add_task'),
+    url(r'^projects/addtask/$', 'project.views.add_task'),
     url(r'^projects/task/view/(?P<task_id>\d+)/$', 'project.views.view_task'),
     url(r'^projects/task/edit/(?P<task_id>\d+)/$', 'project.views.edit_task'),
     url(r'^projects/task/viewall/(?P<proj_id>\d+)/$', 'project.views.view_all_task'),
@@ -48,7 +49,7 @@ urlpatterns = patterns('',
     url(r'^projects/usertasks/$', 'project.views.user_all_tasks'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/$', 'project.views.add_existing_task_to_project'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/(?P<project_id>\d+)/$', 'project.views.add_existing_task_to_project'),
-
+    url(r'^projects/task/delete/(?P<task_id>\d+)/$', 'project.views.delete_task'),
 
     url(r'^projects/todo/', 'project.views.my_todo'),
 

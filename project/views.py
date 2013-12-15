@@ -61,7 +61,7 @@ def user_all_tasks(request):
 	args['num_tasks'] = len(tasks)
 	args['notodo'] = True
 
-	return render_to_response( 'user_todo.html', args)
+	return render_to_response( 'user_todo.html', RequestContext(request, args) )
 
 
 @login_required
@@ -345,21 +345,10 @@ def line_stats(request):
 
 
 
-
-
-
-@login_required
-def time_stats(request):
-
-	pass
-
-
 @login_required
 def add_task( request, proj_id=False ):
 
-	project = Project.objects.get(id=proj_id)
-
-	if request.method == "POST" and request.user in project.members.all() :
+	if request.method == "POST":
 		projTask = ProjectTask()
 		form = AddTaskForm(request.POST)
 		if form.is_valid():
@@ -369,19 +358,28 @@ def add_task( request, proj_id=False ):
 			projTask.creator = request.user
 
 			# Update the ProjectStatistic assoc with the project
-			ProjectStatistic.objects.filter(project=project).update(issues=F("issues") + 1)
 
 			UserStatistic.objects.filter(user=request.user).update(issues=F("issues") + 1 )
 
 
 			projTask.save()
 			projTask.assigned.add( request.user )
-			projTask.openOn.add( project )
-			projTask.save()
+			if proj_id != False:
+				project = Project.objects.get(id=proj_id)
+
+				if request.user in project.members.all():
+					ProjectStatistic.objects.filter(project=project).update(issues=F("issues") + 1)
+					projTask.openOn.add( project )
+					projTask.save()
+				else:
+					messages.warning( request, "You do not have the rights to add tasks to " + project.name )
 
 			messages.info( request, "Task Saved." )
 
-			return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
+			if ( "saveandassign" in request.POST ):
+				return HttpResponseRedirect('/projects/addtotask/'+str(projTask.id)+"/" )
+			else:
+				return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
 
 		else:
 			messages.error( request, "Invalid form information." )
@@ -391,16 +389,27 @@ def add_task( request, proj_id=False ):
 
 		args = {}
 		args.update(csrf(request))
-		args['project'] = project
+		if ( proj_id != False ):
+			args['project'] = project = Project.objects.get(id=proj_id)
+
 		args['form'] = AddTaskForm()
 
-		if request.user in project.members.all():
+		return render_to_response('task_create.html', RequestContext(request, args) )
 
-			return render_to_response('task_create.html', RequestContext(request, args) )
+@login_required
+def delete_task(request, task_id):
+	task = ProjectTask.objects.get(id=task_id)
 
-		else:
 
-			return HttpResponseRedirect('/projects/')
+	if ( request.user == task.creator ):
+		task.delete()
+		messages.info( request, "Deleted task." )
+		return HttpResponseRedirect('/projects/usertasks/')
+
+	else:
+		messages.error( request, "You do not have the rights to delete this task." )
+		return HttpResponseRedirect('/projects/task/view/'+str(task_id) )
+
 
 @login_required
 def view_task(request, task_id):
@@ -413,6 +422,7 @@ def view_task(request, task_id):
 	args['closedOn'] = task.closedOn.all()
 	args['task'] = task
 	args['members'] = task.assigned.all()
+	args['user'] = request.user
 	args['canEdit'] = ( task.creator == request.user )
 	args['isMember'] = ( request.user in task.assigned.all() )
 
@@ -428,7 +438,7 @@ def close_task_in_project( request, project_id, task_id ):
 
 	project = Project.objects.get( id=project_id )
 
-	if ( request.user in task.assigned.all() or request.user == task.creator ):
+	if ( request.user in task.assigned.all() or request.user == task.creator ) and ( request.user in project.members.all() ):
 		task.openOn.remove( project )
 		task.closedOn.add( project )
 
@@ -442,7 +452,7 @@ def open_task_in_project( request, project_id, task_id ):
 	task = ProjectTask.objects.get(id=task_id)
 	project = Project.objects.get( id=project_id )
 
-	if ( request.user in task.assigned.all() or request.user == task.creator ):
+	if ( request.user in task.assigned.all() or request.user == task.creator ) and ( request.user in project.members.all() ):
 		task.openOn.add( project )
 		task.closedOn.remove( project )
 		task.save()
@@ -522,9 +532,9 @@ def remove_task_member( request, task_id, user_id ):
 def edit_task( request, task_id ):
 	task = ProjectTask.objects.get(id=task_id)
 
-	if ( request.method == "POST" and ( request.user in task.assigned.all() or request.user == task.creator ) ):
+	if ( request.method == "POST"):
 		form = UpdateTaskForm( request.POST )
-		if form.is_valid():
+		if form.is_valid()  and request.user == task.creator:
 
 			task.summary = form.cleaned_data['summary']
 			task.description = form.cleaned_data['description']
@@ -532,6 +542,11 @@ def edit_task( request, task_id ):
 			task.save()
 
 			return HttpResponseRedirect( '/projects/task/view/' + str(task.id) +"/" )
+
+		elif request.user != task.creator:
+			messages.error( request, "You do not have permission to edit this task.")
+			return HttpResponseRedirect( '/projects/task/view/' + str(task.id) +"/" )
+
 
 	else:
 		initialDict = { 
@@ -584,15 +599,5 @@ def my_todo( request ):
 	args['tasks'] = tasks
 	args['num_tasks'] = len(tasks)
 
-	return render_to_response( 'user_todo.html', args)
-
-
-
-
-
-
-
-
-
-
+	return render_to_response( 'user_todo.html', RequestContext(request, args) )
 

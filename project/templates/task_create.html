@@ -4,8 +4,8 @@
 
 {% block content %}
 
-	<h3>Add a task for {{project.name}}</h3>
-	<form id="registerForm" action="/projects/addtask/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back 
+	<h3>Add a task {% if project %} for {{project.name}} {% endif %}</h3>
+	<form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %} <!--Pass information back 
 	to the register url through the POST method-->
 	<fieldset class="form-group">
 
@@ -20,7 +20,11 @@
 </fieldset>
 {% endfor %}
 
-		<input id="registerButton" class="btn btn-danger btn-large" type="submit" value="Create" style="border-radius: 1px;" />
+{% if not project %}
+<input id="submitBtn" class="btn btn-success" type="submit" value="Create and Assign to Project" name="saveandassign">
+{% endif %}
+
+<input id="registerButton" name="save" class="btn btn-success btn-large" type="submit" value="Create and Assign Later" />
 
 	</form> <!--Close the form tag-->
 

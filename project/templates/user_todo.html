@@ -4,6 +4,22 @@
 
 {% block content %}
 
+	{% if messages %}
+    	{% for message in messages %}
+			{% if message.tags == 'error' %}
+    			<div class="alert alert-danger">
+			{% elif message.tags == 'warning' %}
+				<div class="alert alert-warning">
+			{% else %}
+				<div class="alert alert-info">
+			{% endif %}
+							
+    		<button type="button" class="close" data-dismiss="alert">&times;</button>
+    			{{ message }}
+    		</div>
+    	{% endfor %}
+	{% endif %}
+
 	{% if notodo %}
 	<h1>Tasks You've Created</h1>
 	{% else %}
@@ -16,6 +32,7 @@
 	{% else %}
 	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
 	{% endif %}
+	<p><a href="/projects/addtask">Add a Task</a></p>
 
 	{% if num_tasks == 0 %}
 		<p class="error">Hey! Looks like you don't have any tasks!</p>

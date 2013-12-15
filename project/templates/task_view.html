@@ -42,11 +42,23 @@
 			{% for p in openOn %}
 
 			<tr>
-				<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
+				<td>
+					{% if user in p.members.all %}
+					<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
+					{% else %}
+					<p>{{p.name}}</p>
+					{% endif %}
+				</td>
 				<td>{{p.manager}}</td>
 				<td>{{p.description}}</td>
 
-				<td><a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Completed in Project</a></td>
+				<td>
+					{% if user in p.members.all %}
+					<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Completed in Project</a>
+					{% else %}
+					<p>Currently Open</p>
+					{% endif %}
+				</td>
 			</tr>
 
 			{% endfor %}
@@ -58,7 +70,13 @@
 				<td>{{p.manager}}</td>
 				<td>{{p.description}}</td>
 
-				<td><a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished in Project</a></td>
+				<td>
+					{% if user in p.members.all %}
+					<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished in Project</a>
+					{% else %}
+					<p>Currently Closed</p>
+					{% endif %}
+				</td>
 			</tr>
 
 			{% endfor %}

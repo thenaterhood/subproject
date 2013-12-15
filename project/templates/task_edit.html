@@ -20,8 +20,9 @@
 </fieldset>
 {% endfor %}
 
-		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
-		<a class="btn btn-danger btn-large" href="/projects/task/view/{{task.id}}/">Cancel</a>
+		<input class="btn btn-success" type="submit" value="Save" style="border-radius: 1px;" />
+		<a class="btn btn-warning" style="border-radius: 1px;" href="/projects/task/view/{{task.id}}/">Cancel</a>
+		<a class="btn btn-danger" style="border-radius: 1px; float:right;" href="/projects/task/delete/{{task.id}}/">Delete Task</a>
 
 	</form> <!--Close the form tag-->
 
