@@ -4,11 +4,27 @@
 
 {% block content %}
 
+	{% if messages %}
+    	{% for message in messages %}
+			{% if message.tags == 'error' %}
+    			<div class="alert alert-danger">
+			{% elif message.tags == 'warning' %}
+				<div class="alert alert-warning">
+			{% else %}
+				<div class="alert alert-info">
+			{% endif %}
+							
+    		<button type="button" class="close" data-dismiss="alert">&times;</button>
+    			{{ message }}
+    		</div>
+    	{% endfor %}
+	{% endif %}
+
 	<form id="registerForm" action="/user/register/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}
 
-			<div>{{field}}</div>
+			<p>{{field}}</p>
 
 		{% endfor %}
 

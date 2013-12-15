@@ -9,12 +9,12 @@ class UserRegistrationForm(UserCreationForm):
 	Defines the first part of the user registration form.
 	"""
 	email = forms.EmailField(required=True) #creates an email field that is required
-	first_name = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=30, placeholder="First Name")), label=(""))
-	last_name = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=30, placeholder="Last Name")), label=(""))
-	username = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=10, placeholder="Username")), label=(""))
-	email = forms.EmailField(widget=forms.TextInput(attrs=dict(required=True, max_length=30, placeholder="Email")), label=(""))
-	password1 = forms.CharField(widget=forms.PasswordInput(attrs=dict(required=False, max_length=30, render_value=False, placeholder="Password")), label=(""))
-	password2 = forms.CharField(widget=forms.PasswordInput(attrs=dict(required=False, max_length=30, render_value=False, placeholder="Confirm Password")), label=(""))
+	first_name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":30, "placeholder":"First Name", "class":"form-control"}), label=(""))
+	last_name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":30, "placeholder":"Last Name", "class":"form-control"}), label=(""))
+	username = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":10, "placeholder":"Username", "class":"form-control"}), label=(""))
+	email = forms.EmailField(widget=forms.TextInput(attrs={"required":True, "max_length":30, "placeholder":"Email", "class":"form-control"}), label=(""))
+	password1 = forms.CharField(widget=forms.PasswordInput(attrs={"required":False, "max_length":30, "render_value":False, "placeholder":"Password", "class":"form-control"}), label=(""))
+	password2 = forms.CharField(widget=forms.PasswordInput(attrs={"required":False, "max_length":30, "render_value":False, "placeholder":"Confirm Password", "class":"form-control"}), label=(""))
 
 	class Meta: #inner class -> holds anything that isn't a form field -> metadata for the class itself
 		model = User

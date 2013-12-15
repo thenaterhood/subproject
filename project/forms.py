@@ -8,10 +8,10 @@ from project.models import *
 
 class CreateProjectForm(forms.ModelForm):
 
-	name = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Name")), label=(""))
-	status = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Status")), label=(""))
-	phase = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Phase")), label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Project Description in 140 Characters")), label=(""))
+	name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Name", "class":'form-control'}), label=(""))
+	status = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Status", 'class':'form-control'}), label=(""))
+	phase = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Phase", 'class':'form-control'}), label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Project Description in 140 Characters", 'class':'form-control'}), label=(""))
 
 	class Meta:
 		model = Project
@@ -27,11 +27,11 @@ class CreateProjectForm(forms.ModelForm):
 
 class UpdateProjectForm(forms.ModelForm):
 
-	name = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Name")), label=(""))
-	status = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Status")), label=(""))
-	phase = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Project Phase")), label=(""))
-	lines = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True,max_length=50, placeholder="Lines of Code")), label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Project Description in 140 Characters")), label=(""))
+	name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Name", 'class':'form-control'}), label=(""))
+	status = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Status", 'class':'form-control'}), label=(""))
+	phase = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Phase", 'class':'form-control'}), label=(""))
+	lines = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Lines of Code", 'class':'form-control'}), label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Project Description in 140 Characters", 'class':"form-control"}), label=(""))
 
 	class Meta:
 		model = Project
@@ -39,28 +39,22 @@ class UpdateProjectForm(forms.ModelForm):
 
 class AddWorklogForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Work Summary")),label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Work Description")), label=(""))
-	hours = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Hours Spent")), label=(""))
-	minutes = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Minutes Spent")), label=(""))
-	taskClosed = forms.ChoiceField(choices=[], label=("Close a task"))
+	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Work Summary", 'class':'form-control'}),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Work Description", 'class':'form-control'}), label=(""))
+	hours = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Hours Spent", 'class':'form-control'}), label=(""))
+	minutes = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Minutes Spent", 'class':'form-control'}), label=(""))
 
 	class Meta:
 		model = Worklog
 		fields = ('summary', 'description', 'hours', 'minutes' )
 
-	def updateChoices( self, choices ):
-
-		self.fields['taskClosed'] = forms.ChoiceField(widget=forms.Select(attrs=dict(required=True)),
-			choices=[('None','Task Completed (None)')]+[(str(x.id), x.summary) for x in choices])
-
 
 class UpdateWorklogForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Work Summary")),label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Work Description")), label=(""))
-	hours = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Hours Spent")), label=(""))
-	minutes = forms.DecimalField(widget=forms.TextInput(attrs=dict(required=True, max_length=5, placeholder="Minutes Spent")), label=(""))
+	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Work Summary", 'class':'form-control'}),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Work Description", 'class':'form-control'}), label=(""))
+	hours = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Hours Spent", 'class':'form-control'}), label=(""))
+	minutes = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Minutes Spent", 'class':'form-control'}), label=(""))
 
 
 	class Meta:
@@ -77,15 +71,15 @@ class UpdateWorklogForm(forms.ModelForm):
 
 class AddMemberForm(forms.Form):
 
-	username = forms.CharField(widget=forms.TextInput(attrs=dict(required=True, max_length=50, placeholder="Add Member")), label=(""))
+	username = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Add Member", 'class':'form-control'}), label=(""))
 
 	class Meta:
 		fields = ('username')
 
 class AddTaskForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Task Summary")),label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Task Description")), label=(""))
+	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Task Description", 'class':'form-control'}), label=(""))
 
 	class Meta:
 		model = ProjectTask
@@ -93,8 +87,8 @@ class AddTaskForm(forms.ModelForm):
 
 class UpdateTaskForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs=dict(required=True, max_length=140, placeholder="Task Summary")),label=(""))
-	description = forms.CharField(widget=forms.Textarea(attrs=dict(required=False, max_length=300, placeholder="Task Description")), label=(""))
+	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Task Description", 'class':'form-control'}), label=(""))
 
 	class Meta:
 		model = ProjectTask

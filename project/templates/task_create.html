@@ -5,14 +5,20 @@
 {% block content %}
 
 	<h3>Add a task for {{project.name}}</h3>
-	<form id="registerForm" action="/projects/addtask/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+	<form id="registerForm" action="/projects/addtask/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back 
+	to the register url through the POST method-->
+	<fieldset class="form-group">
 
 		{% for field in form %}
-
-			<div>{{field}}</div>
-
-		{% endfor %}
-		<p><em>Members can be assigned after the task is created</em></p>
+<fieldset class="form-group">
+  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+      <input type="text" class="form-control"
+        name="{{ field.name }}"
+        id="id_{{ field.name }}"
+        value="{{ field.value }}" > 
+        <p class="help-text">{{ field.help_text }} </p>
+</fieldset>
+{% endfor %}
 
 		<input id="registerButton" class="btn btn-danger btn-large" type="submit" value="Create" style="border-radius: 1px;" />
 

@@ -8,13 +8,18 @@
 	<form id="registerForm" action="/projects/edit/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}
+<fieldset class="form-group">
+  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+      <input type="text" class="form-control"
+        name="{{ field.name }}"
+        id="id_{{ field.name }}"
+        value="{{ field.value }}" > 
+        <p class="help-text">{{ field.help_text }} </p>
+</fieldset>
+{% endfor %}
 
-			<div>{{field}}</div>
-
-		{% endfor %}
-
-		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
-		<a class="btn btn-danger btn-large" style="border-radius: 1px; display: inline-block;" href="/projects/view/{{project.id}}/">Cancel</a>
+		<input class="btn btn-success" type="submit" value="Save" style="border-radius: 1px;" />
+		<span><a class="btn btn-danger" href="/projects/view/{{project.id}}/">Cancel</a></span>
 
 	</form> <!--Close the form tag-->
 

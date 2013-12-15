@@ -3,6 +3,26 @@
 {% block title %} webtrack: {{project.name}} {% endblock %}
 
 {% block content %}
+
+	{% if form.errors %}
+		<p class="error">Sorry, that's not a valid username/password</p>
+	{% endif %}
+
+	{% if messages %}
+    	{% for message in messages %}
+			{% if message.tags == 'error' %}
+    			<div class="alert alert-danger">
+			{% elif message.tags == 'warning' %}
+				<div class="alert alert-warning">
+			{% else %}
+				<div class="alert alert-info">
+			{% endif %}
+							
+    		<button type="button" class="close" data-dismiss="alert">&times;</button>
+    			{{ message }}
+    		</div>
+    	{% endfor %}
+	{% endif %}
 	<h3>Project Dashboard: {{project.name}}</h3>
 		<p><a href="/projects/">Back to Projects</a></p>
 	<br />
@@ -86,12 +106,12 @@
 			<th>View</th>
 		</tr>
 
-	{% for w in workLogs %}
+	{% for w in worklogs %}
 		<tr>
 			<td>{{w.owner}}</td>
 			<td><a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></td>
 			<td>{{w.datestamp}}</td>
-			<td><a href="/projects/work/view/{{w.id}}/">Show All</a></td>
+			<td><a href="/projects/work/view/{{w.id}}/">View</a></td>
 		</tr>
 
 	{% endfor %}

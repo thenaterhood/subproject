@@ -4,6 +4,7 @@ from django.contrib import auth
 from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from user.forms import * #all forms
 from user.models import *
@@ -16,6 +17,9 @@ def register_user(request):
 	Returns:
 		either the same page or a rendered page of register.html
 	"""
+	args = {}
+	args['form'] = UserRegistrationForm()
+
 	if request.method == 'POST': #see if the method of the request objerct 'POST' -> first time it should be no, second time yes
 		form = UserRegistrationForm(request.POST) #pass the values from POST dictionary into the MyRegistrationForm and create form object
 
@@ -28,12 +32,15 @@ def register_user(request):
 			servUser.save()
 			return HttpResponseRedirect('/user/login/')
 
+		else:
+			args['form'] = UserRegistrationForm(request.POST)
+			messages.error( request, "You didn't fill out the form correctly! Please check your input.")
+
 	#what happens the first time the user visits the register page
 
-	args = {} #set up blank dictionary 
 	args.update(csrf(request)) #pass through the csrf token
-	args['form'] = UserRegistrationForm() #blank MyRegistrationForm, no POST data in arguement, render the forms fields as blank
-	return render_to_response('user_register.html', args) #pass the form to the register.html template
+
+	return render_to_response('user_register.html', RequestContext(request, args) ) #pass the form to the register.html template
 
 def login_user(request):
 	"""
@@ -45,7 +52,7 @@ def login_user(request):
 
 	c = {}
 	c.update(csrf(request))
-	return render_to_response('user_login.html', c)
+	return render_to_response('user_login.html', RequestContext(request, c))
 
 def auth_user(request):
 	"""
@@ -63,6 +70,7 @@ def auth_user(request):
 		auth.login(request, user) #signify the user as logged in
 		return HttpResponseRedirect('/user/welcome') #redirect them to the loggedin page
 	else:
+		messages.error( request, "Invalid Login." )
 		return HttpResponseRedirect('/user/login') #redirect them to the invalid login page
 
 @login_required
@@ -80,5 +88,6 @@ def logout(request):
 	"""
 	c = {}
 	c.update(csrf(request))
+	messages.info( request, "You are now logged out." )
 	auth.logout(request) #use auth to logout the user
-	return render_to_response('user_login.html',c)
+	return render_to_response('user_login.html', RequestContext(request, c) )

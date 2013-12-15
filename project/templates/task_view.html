@@ -3,13 +3,33 @@
 {% block title %} webtrack: task view {% endblock %}
 
 {% block content %}
+
+	{% if form.errors %}
+		<p class="error">Sorry, that's not a valid username/password</p>
+	{% endif %}
+
+	{% if messages %}
+    	{% for message in messages %}
+			{% if message.tags == 'error' %}
+    			<div class="alert alert-danger">
+			{% elif message.tags == 'warning' %}
+				<div class="alert alert-warning">
+			{% else %}
+				<div class="alert alert-info">
+			{% endif %}
+							
+    		<button type="button" class="close" data-dismiss="alert">&times;</button>
+    			{{ message }}
+    		</div>
+    	{% endfor %}
+	{% endif %}
 	<h2>{{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
 	<p>{{task.description}}</p>
 
 	<p><em>Opened by {{task.creator}} {%if canEdit %}<a href="/projects/task/edit/{{task.id}}">(Edit/Delete)</a>{%endif%}</em></p>
 
 
-	<h3>Projects task belongs to</h3>
+	<h3>Projects this task belongs to</h3>
 
 		<table class="table table-striped">
 			<tr>

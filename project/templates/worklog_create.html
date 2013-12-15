@@ -4,14 +4,35 @@
 
 {% block content %}
 
+  {% if messages %}
+      {% for message in messages %}
+      {% if message.tags == 'error' %}
+          <div class="alert alert-danger">
+      {% elif message.tags == 'warning' %}
+        <div class="alert alert-warning">
+      {% else %}
+        <div class="alert alert-info">
+      {% endif %}
+              
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+        </div>
+      {% endfor %}
+  {% endif %}
+
 	<h3>Add a worklog to {{project.name}}</h3>
 	<form id="registerForm" action="/projects/addwork/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}
-
-			<div>{{field}}</div>
-
-		{% endfor %}
+<fieldset class="form-group">
+  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+      <input type="text" class="form-control"
+        name="{{ field.name }}"
+        id="id_{{ field.name }}"
+        value="{{ field.value }}" > 
+        <p class="help-text">{{ field.help_text }} </p>
+</fieldset>
+{% endfor %}
 
 		<input id="registerButton" class="btn btn-danger btn-large" type="submit" value="Create" style="border-radius: 1px;" />
 

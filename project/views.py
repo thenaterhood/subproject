@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import Count
+from django.contrib import messages
 
 from project.models import *
 from project.forms import *
@@ -163,7 +164,7 @@ def view_project(request, proj_id):
 	if ( project.manager == request.user ):
 		args['add_member_form'] = AddMemberForm()
 
-	return render_to_response('project_view.html', args)
+	return render_to_response('project_view.html', RequestContext(request, args) )
 
 @login_required
 def add_member(request, proj_id):
@@ -180,8 +181,9 @@ def add_member(request, proj_id):
 				if ( user not in project.members.all() ):
 					project.members.add( user )
 					project.save()
+					messages.info(request, "Assigned " +user.username+" to project.")
 			except:
-				pass
+				messages.error( request, "User " + username + " is not a valid user.")
 
 
 	return HttpResponseRedirect( '/projects/view/'+str(proj_id)+"/" )
@@ -195,31 +197,35 @@ def remove_member( request, proj_id, user_id ):
 		if ( user != project.manager ):
 			project.members.remove( user )
 			project.save()
+			messages.info( request, "Removed " + user.username + " from project.")
 
 	return HttpResponseRedirect( '/projects/view/'+str(proj_id)+"/" )
 
 @login_required
 def add_worklog( request, proj_id ):
 	project = Project.objects.get(id=proj_id)
+	args = {}
+	args.update(csrf(request))
+	args['project'] = project
+	form = AddWorklogForm()
+	args['form'] = form
 
-	if request.method == "POST" and request.user in project.members.all() :
+	if (request.method == "POST") and (request.user in project.members.all() or request.user == project.manager):
 		workLog = Worklog()
 
 		form = AddWorklogForm(request.POST)
-		tasks = ProjectTask.objects.filter(project=project).filter(completed=False).all()
-		form.updateChoices( tasks )
 
 		if form.is_valid():
 
-			workLog.hours = form.cleaned_data['hours']
-			workLog.minutes = form.cleaned_data['minutes']
+			try:
+				workLog.hours = form.cleaned_data['hours']
+				workLog.minutes = form.cleaned_data['minutes']
+			except:
+				workLog.hours = 0
+				workLog.minutes = 0
+
 			workLog.summary = form.cleaned_data['summary']
 			workLog.description = form.cleaned_data['description']
-
-			if ( form.cleaned_data['taskClosed'] != "None" ):
-				task = ProjectTask.objects.get( id=form.cleaned_data['taskClosed'] )
-				task.completed=True
-				task.save()
 
 			workLog.owner = request.user
 			workLog.project = project
@@ -234,30 +240,23 @@ def add_worklog( request, proj_id ):
 
 			workLog.save()
 
-
+			messages.info( request, "Worklog saved successfully.")
 
 			return HttpResponseRedirect('/projects/work/view/'+str(workLog.id)+"/")
 
 		else:
+
+			messages.error( request, "Form information is incorrect." )
+			args['form'] = form
+
 			return HttpResponseRedirect( '/projects/addwork/'+str(project.id) )
 
 	else:
 
-		args = {}
-		args.update(csrf(request))
-		args['project'] = project
-		form = AddWorklogForm()
-		noTask = ProjectTask()
-		noTask.id = -1
-		noTask.summary = "None"
-		tasks = ProjectTask.objects.filter(project=project).filter(completed=False).all()
-		form.updateChoices( tasks )
-		args['form'] = form
-
 
 		if request.user in project.members.all():
 
-			return render_to_response('worklog_create.html', args)
+			return render_to_response('worklog_create.html', RequestContext(request, args) )
 
 		else:
 
@@ -272,7 +271,7 @@ def view_worklog( request, log_id ):
 	args['canEdit'] = ( request.user == worklog.owner )
 	args['project'] = worklog.project
 
-	return render_to_response('worklog_view.html', args)
+	return render_to_response('worklog_view.html', RequestContext(request, args) )
 
 @login_required
 def edit_worklog( request, log_id ):
@@ -297,14 +296,15 @@ def edit_worklog( request, log_id ):
 			worklog.save()
 
 			# Update the ProjectStatistic for the new time
-			UserStatistic.objects.filter(user=worklog.user).update(loggedTime=F("loggedTime") + logTimeChange )
+			UserStatistic.objects.filter(user=worklog.owner).update(loggedTime=F("loggedTime") + logTimeChange )
 			ProjectStatistic.objects.filter(project=worklog.project).update(loggedTime=F("loggedTime") + logTimeChange)
 
-
+			messages.info( request, "Worklog updated.")
 
 			return HttpResponseRedirect( '/projects/work/view/' + str(worklog.id) +"/" )
 
 		else:
+			messages.error( request, "Invalid information.")
 
 			return HttpResponseRedirect( '/projects/work/edit/' + str(worklog.id) )
 
@@ -378,8 +378,13 @@ def add_task( request, proj_id ):
 			projTask.openOn.add( project )
 			projTask.save()
 
+			messages.info( request, "Task Saved." )
 
 			return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
+
+		else:
+			messages.error( request, "Invalid form information." )
+			return HttpResponseRedirect('/projects')
 
 	else:
 
@@ -390,7 +395,7 @@ def add_task( request, proj_id ):
 
 		if request.user in project.members.all():
 
-			return render_to_response('task_create.html', args)
+			return render_to_response('task_create.html', RequestContext(request, args) )
 
 		else:
 
@@ -414,7 +419,7 @@ def view_task(request, task_id):
 
 	args['add_member_form'] = AddMemberForm()
 
-	return render_to_response('task_view.html', args)
+	return render_to_response('task_view.html', RequestContext(request, args) )
 
 @login_required
 def close_task_in_project( request, project_id, task_id ):
@@ -490,8 +495,10 @@ def add_task_member(request, task_id):
 				if ( user not in task.assigned.all() ):
 					task.assigned.add( user )
 					task.save()
+					messages.info( request, "Assigned " + user.username + " to task.")
 			except:
-				pass
+				
+				messages.error( request, "User " + username + " is not a valid user.")
 
 
 	return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
@@ -504,6 +511,9 @@ def remove_task_member( request, task_id, user_id ):
 	if ( task.creator == request.user ):
 		task.assigned.remove( user )
 		task.save()
+
+		messages.info( request, "Unassigned " + user.username)
+
 
 	return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
 
