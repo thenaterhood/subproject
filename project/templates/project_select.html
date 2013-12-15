@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: select project {% endblock %}
+
+{% block content %}
+
+	{% if num_projects == 0 %}
+		<p class="error">You are not a member of any projects.</p>
+	{% endif %}
+
+	<table class="table table-striped">
+		<tr>
+			<th>Project</th>
+			<th>Manager</th>
+			<th>Status</th>
+			<th>Select</th>
+		</tr>
+	{% for project in projects %}
+
+		{% if project in task.openOn.all or project in task.closedOn.all %}
+
+		{% else %}
+
+			<tr>
+				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a></td>
+				<td>{{project.manager}}</td>
+				<td>{{project.status}}</td>
+				<!--<li>Description: {{project.description}}</li>-->
+				<td><a class="btn btn-success" href="{{project.id}}/">Select</a></td>
+			</tr>
+
+		{% endif %}
+	{% endfor %}
+
+	</table>
+
+	<p>No projects listed? All of your projects may already have this task associated with them.</p>
+
+{% endblock %}
