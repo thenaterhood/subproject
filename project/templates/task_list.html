@@ -17,7 +17,8 @@
 			<th>Summary</th>
 			<th>Start Date</th>
 			<th>Opened by</th>
-			<th>Manage</th>
+			<th>Change Status</th>
+			<th>View</th>
 		</tr>
 
 	{% for t in tasks %}
@@ -25,7 +26,12 @@
 			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
 			<td>{{t.startDate}}</td>
 			<td>{{t.creator}}</td>
-			<td><a href="/projects/task/edit/{{t.id}}/">Edit</a></td>
+			{% if project in t.openOn.all %}
+				<td><a class="btn btn-warning" href="/projects/{{project.id}}/closetask/{{t.id}}/">Mark Completed</a></td>
+			{% else %}
+				<td><a class="btn btn-default" href="/projects/{{project.id}}/opentask/{{t.id}}/">Mark Unfinished</a></td>
+			{% endif %}
+			<td><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
 		</tr>
 
 	{% endfor %}

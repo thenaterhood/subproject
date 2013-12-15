@@ -355,8 +355,7 @@ def time_stats(request):
 
 
 @login_required
-def add_task( request, proj_id ):
-	project = Project.objects.get(id=proj_id)
+def add_task( request, proj_id=False ):
 
 	if request.method == "POST" and request.user in project.members.all() :
 		projTask = ProjectTask()
@@ -433,7 +432,7 @@ def close_task_in_project( request, project_id, task_id ):
 
 		task.save()
 
-	return HttpResponseRedirect('/projects/task/view/'+str(task.id)+"/")
+	return HttpResponseRedirect( request.META['HTTP_REFERER'] )
 
 @login_required
 def open_task_in_project( request, project_id, task_id ):
@@ -446,7 +445,7 @@ def open_task_in_project( request, project_id, task_id ):
 		task.closedOn.remove( project )
 		task.save()
 
-	return HttpResponseRedirect('/projects/task/view/'+str(task.id)+"/")
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 @login_required
 def add_existing_task_to_project( request, task_id, project_id=False ):
@@ -462,7 +461,7 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 			task.openOn.add( project )
 			task.save()
 
-			return HttpResponseRedirect( '/project/task/view/'+str(task_id)+"/" )
+			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
 
 		else:
 			return HttpResponseRedirect( '/projects/welcome' )

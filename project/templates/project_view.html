@@ -77,17 +77,23 @@
 	<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
-			<th>Start Date</th>
 			<th>Opened by</th>
 			<th>Manage</th>
+			<th>View</th>
 		</tr>
 
 	{% for t in tasks %}
 		<tr>
 			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
-			<td>{{t.startDate}}</td>
 			<td>{{t.creator}}</td>
-			<td><a href="/projects/task/view/{{t.id}}/">View</a></td>
+			{% if project in t.openOn.all %}
+				<td><a class="btn btn-warning" href="/projects/{{project.id}}/closetask/{{t.id}}/">Mark Completed</a></td>
+			{% else %}
+				<td><a class="btn btn-default" href="/projects/{{project.id}}/opentask/{{t.id}}/">Mark Unfinished</a></td>
+			{% endif %}
+
+			<td><a class="btn btn-info" href="/projects/task/view/{{t.id}}">View</a></td>
+
 		</tr>
 
 	{% endfor %}
@@ -100,18 +106,18 @@
 	<h4>Most Recent Worklogs {%if isMember %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
 		<table class="table table-striped">
 		<tr>
-			<th>Member</th>
 			<th>Summary</th>
+			<th>Logged By</th>
 			<th>Time</th>
 			<th>View</th>
 		</tr>
 
 	{% for w in worklogs %}
 		<tr>
-			<td>{{w.owner}}</td>
 			<td><a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></td>
+			<td>{{w.owner}}</td>
 			<td>{{w.datestamp}}</td>
-			<td><a href="/projects/work/view/{{w.id}}/">View</a></td>
+			<td><a class="btn btn-info" href="/projects/work/view/{{w.id}}/">View</a></td>
 		</tr>
 
 	{% endfor %}

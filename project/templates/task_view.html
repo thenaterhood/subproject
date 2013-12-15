@@ -23,7 +23,7 @@
     		</div>
     	{% endfor %}
 	{% endif %}
-	<h2>{{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
+	<h2>Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
 	<p>{{task.description}}</p>
 
 	<p><em>Opened by {{task.creator}} {%if canEdit %}<a href="/projects/task/edit/{{task.id}}">(Edit/Delete)</a>{%endif%}</em></p>
