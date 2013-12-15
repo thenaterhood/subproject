@@ -357,6 +357,8 @@ def time_stats(request):
 @login_required
 def add_task( request, proj_id=False ):
 
+	project = Project.objects.get(id=proj_id)
+
 	if request.method == "POST" and request.user in project.members.all() :
 		projTask = ProjectTask()
 		form = AddTaskForm(request.POST)
