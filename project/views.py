@@ -592,7 +592,7 @@ def view_all_work( request, proj_id ):
 
 @login_required
 def my_todo( request ):
-	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0)
+	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
 
 	args = {}
 	args['user'] = request.user
