@@ -15,6 +15,10 @@ from project.forms import *
 import project.thenaterhood.histogram as histogram
 
 def ensure_userstat_exists( user ):
+	"""
+	Ensures that a user has an existing 
+	userstatistic object.
+	"""
 
 	try:
 		UserStatistic.objects.get(user=user)
@@ -28,6 +32,10 @@ def ensure_userstat_exists( user ):
 
 @login_required
 def project_welcome(request):
+	"""
+	Renders the project dashboard with 
+	basic user statistics.
+	"""
 
 	ensure_userstat_exists( request.user )
 
@@ -52,6 +60,10 @@ def project_welcome(request):
 
 @login_required
 def user_all_tasks(request):
+	"""
+	Displays all of the tasks created by the 
+	logged in user
+	"""
 
 	tasks = ProjectTask.objects.filter( creator=request.user )
 
@@ -66,6 +78,11 @@ def user_all_tasks(request):
 
 @login_required
 def list_projects(request):
+	"""
+	Displays a list of all the projects a user 
+	is associated with.
+	"""
+
 	ensure_userstat_exists( request.user )
 
 	projects = Project.objects.filter(members=request.user)
@@ -80,6 +97,11 @@ def list_projects(request):
 
 @login_required
 def create_project(request):
+	"""
+	Provides a new project form and adds 
+	a project to the database after verifying 
+	the data.
+	"""
 
 	if request.method == "POST":
 		newProj = Project()
@@ -113,6 +135,12 @@ def create_project(request):
 
 @login_required
 def edit_project(request, proj_id):
+	"""
+	Retrieves a project and provides a populated form 
+	for updating its information, as well as accepting 
+	an updated version of the form.
+	"""
+
 	project = Project.objects.get(id=proj_id)
 	if ( request.method == "POST" and project.manager == request.user ):
 		form = UpdateProjectForm( request.POST )
@@ -149,6 +177,10 @@ def edit_project(request, proj_id):
 
 @login_required
 def view_project(request, proj_id):
+	"""
+	Displays a project's dashboard
+	"""
+
 	project = Project.objects.get(id=proj_id)
 	worklogs = Worklog.objects.filter(project=project).all().reverse()[:5]
 
@@ -168,6 +200,10 @@ def view_project(request, proj_id):
 
 @login_required
 def add_member(request, proj_id):
+	"""
+	Adds a member to a project
+	"""
+
 	project = Project.objects.get(id=proj_id)
 
 	if ( request.method == "POST" and project.manager == request.user ):
@@ -190,6 +226,9 @@ def add_member(request, proj_id):
 
 @login_required
 def remove_member( request, proj_id, user_id ):
+	"""
+	Removes a member from a project.
+	"""
 	project = Project.objects.get(id=proj_id)
 	user = User.objects.get( id=user_id )
 
@@ -203,6 +242,10 @@ def remove_member( request, proj_id, user_id ):
 
 @login_required
 def add_worklog( request, proj_id ):
+	"""
+	Provides a blank worklog form and accepts 
+	the data from it.
+	"""
 	project = Project.objects.get(id=proj_id)
 	args = {}
 	args.update(csrf(request))
@@ -264,6 +307,9 @@ def add_worklog( request, proj_id ):
 
 @login_required
 def view_worklog( request, log_id ):
+	"""
+	Displays the selected workLog
+	"""
 	worklog = Worklog.objects.get(id=log_id)
 
 	args = {}
@@ -275,6 +321,10 @@ def view_worklog( request, log_id ):
 
 @login_required
 def edit_worklog( request, log_id ):
+	"""
+	Displays a worklog's data and allows for it 
+	to be edited and saved.
+	"""
 	worklog = Worklog.objects.get(id=log_id)
 	projStat = ProjectStatistic.objects.get( project=worklog.project )
 
@@ -328,6 +378,10 @@ def edit_worklog( request, log_id ):
 
 @login_required
 def line_stats(request):
+	"""
+	Displays a histogram of the lines in the user's 
+	projects.
+	"""
 
 	projects = Project.objects.filter(members=request.user)
 
@@ -347,6 +401,11 @@ def line_stats(request):
 
 @login_required
 def add_task( request, proj_id=False ):
+	"""
+	Provides a blank form for creating a new 
+	task and the facilities for saving it and 
+	redirecting to assign it to a project.
+	"""
 
 	if request.method == "POST":
 		projTask = ProjectTask()
@@ -398,6 +457,9 @@ def add_task( request, proj_id=False ):
 
 @login_required
 def delete_task(request, task_id):
+	"""
+	Deletes the selected task
+	"""
 	task = ProjectTask.objects.get(id=task_id)
 
 
@@ -413,6 +475,9 @@ def delete_task(request, task_id):
 
 @login_required
 def view_task(request, task_id):
+	"""
+	Displays a chosen task
+	"""
 
 	task = ProjectTask.objects.get(id=task_id)
 	projects = task.openOn.all()
@@ -434,6 +499,10 @@ def view_task(request, task_id):
 
 @login_required
 def close_task_in_project( request, project_id, task_id ):
+	"""
+	Marks a task in a project as completed for 
+	the given project.
+	"""
 	task = ProjectTask.objects.get(id=task_id)
 
 	project = Project.objects.get( id=project_id )
@@ -448,6 +517,10 @@ def close_task_in_project( request, project_id, task_id ):
 
 @login_required
 def open_task_in_project( request, project_id, task_id ):
+	"""
+	Marks a task in a project as open for the given 
+	project.
+	"""
 
 	task = ProjectTask.objects.get(id=task_id)
 	project = Project.objects.get( id=project_id )
@@ -461,6 +534,12 @@ def open_task_in_project( request, project_id, task_id ):
 
 @login_required
 def add_existing_task_to_project( request, task_id, project_id=False ):
+	"""
+	Associates an existing task with an additional project as 
+	an open task on that project. Renders the project 
+	selection template and accepts the project and task as GET 
+	variables.
+	"""
 
 	task = ProjectTask.objects.get(id=task_id)
 
@@ -492,6 +571,9 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 
 @login_required
 def add_task_member(request, task_id):
+	"""
+	Adds a member (assignee) to a task
+	"""
 
 	task = ProjectTask.objects.get(id=task_id)
 
@@ -516,6 +598,9 @@ def add_task_member(request, task_id):
 
 @login_required
 def remove_task_member( request, task_id, user_id ):
+	"""
+	Removes a task member (assignee)
+	"""
 	task = ProjectTask.objects.get(id=task_id)
 	user = User.objects.get( id=user_id )
 
@@ -530,6 +615,10 @@ def remove_task_member( request, task_id, user_id ):
 
 @login_required
 def edit_task( request, task_id ):
+	"""
+	Provides a form populated with a task's data that 
+	allows the task to be updated and saved.
+	"""
 	task = ProjectTask.objects.get(id=task_id)
 
 	if ( request.method == "POST"):
@@ -566,6 +655,9 @@ def edit_task( request, task_id ):
 
 @login_required
 def view_all_task( request, proj_id ):
+	"""
+	Lists all of the tasks for a selected project 
+	"""
 	project = Project.objects.get(id=proj_id)
 
 	if request.user in project.members.all():
@@ -579,6 +671,10 @@ def view_all_task( request, proj_id ):
 
 @login_required
 def view_all_work( request, proj_id ):
+	"""
+	Lists all of the work logged on a selected 
+	project
+	"""
 	project = Project.objects.get(id=proj_id)
 
 	if request.user in project.members.all():
@@ -592,6 +688,10 @@ def view_all_work( request, proj_id ):
 
 @login_required
 def my_todo( request ):
+	"""
+	Displays the My Todo page with the list of active 
+	tasks the user has assigned to them.
+	"""
 	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
 
 	args = {}
@@ -600,4 +700,34 @@ def my_todo( request ):
 	args['num_tasks'] = len(tasks)
 
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
+
+@login_required
+def convert_task_to_project( request, task_id ):
+	"""
+	Converts a task into a project and removes the 
+	task.
+	"""
+
+	task = ProjectTask.objects.get( id=task_id )
+
+	returnLocation = HttpResponseRedirect('/projects/task/view/'+str(task_id)+"/")
+
+	if ( request.user == task.creator ):
+		project = Project()
+		project.manager = task.creator
+		project.name = task.summary
+		project.description = task.description
+		project.save()
+		project.members = task.assigned.all()
+		project.parents = task.openOn.all()
+		project.save()
+		task.delete()
+
+		messages.info("Task converted to project successfully.")
+		returnLocation = HttpResponseRedirect( '/projects/view/'+str(project.id)+"/" )
+
+	else:
+		messages.warning( request, "You must be the creator of a task to convert it to a project." )
+
+	return returnLocation
 
