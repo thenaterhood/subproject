@@ -9,8 +9,12 @@
 	{% if num_projects == 0 %}
 		<p class="error">No work logged.</p>
 	{% endif %}
-
+	{% if project.active %}
 	<p><a href="/projects/addwork/{{project.id}}">Add a log</a></p>
+	{% else %}
+	<p><em>This project is closed. Work cannot be added to closed projects.</em></p>
+	{% endif %}
+
 
 	<table class="table table-striped">
 		<tr>

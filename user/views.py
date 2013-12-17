@@ -91,3 +91,15 @@ def logout(request):
 	messages.info( request, "You are now logged out." )
 	auth.logout(request) #use auth to logout the user
 	return render_to_response('user_login.html', RequestContext(request, c) )
+
+def view_profile(request, username):
+
+	try:
+		user = User.objects.get( username=username )
+	except:
+		user = None
+
+	pageData = {}
+	pageData['user_profile'] = user
+
+	return render_to_response('user_profile.html', RequestContext(request, pageData) )

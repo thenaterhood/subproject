@@ -12,6 +12,7 @@ class Project(models.Model):
 	lines 		= models.IntegerField(default=0)
 	loc_per_h 	= models.BooleanField(default=True)
 	members		= models.ManyToManyField(User, related_name="Project Members")
+	active		= models.BooleanField(default=True)
 
 
 	def __str__(self):
@@ -68,9 +69,10 @@ class ProjectTask(models.Model):
 	completed	= models.BooleanField(default=False)
 	startDate	= models.DateTimeField(auto_now=False, auto_now_add=True)
 	dueDate		= models.DateTimeField(auto_now=False, auto_now_add=True)
+	inProgress	= models.BooleanField(default=False)
 
 	def __str__(self):
-		return str( self.project ) + " issue " + str( self.id )
+		return "Task " + str( self.id )
 
 
 

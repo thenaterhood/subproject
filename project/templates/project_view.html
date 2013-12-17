@@ -4,9 +4,6 @@
 
 {% block content %}
 
-	{% if form.errors %}
-		<p class="error">Sorry, that's not a valid username/password</p>
-	{% endif %}
 
 	{% if messages %}
     	{% for message in messages %}
@@ -24,9 +21,23 @@
     	{% endfor %}
 	{% endif %}
 	<h3>Project Dashboard: {{project.name}}</h3>
-		<p><a href="/projects/">Back to Projects</a></p>
+		<p>
+			<a class="btn btn-default" href="/projects/">Back to Projects</a>
+			{%if canEdit %} 
+			<a class="btn btn-info" href="/projects/edit/{{project.id}}/">Edit Project</a>
+			{% if project.active %}
+			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
+			{% else %}
+			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Re-open Project</a>
+			{% endif %}
+		{%else%} 
+
+		</p>
 	<br />
-	<h4>Project Details {%if canEdit %} <a href="/projects/edit/{{project.id}}/">Edit</a> {%else%} <em>(Managed by {{project.manager}})</em>{%endif%}</h4>
+	<h4>Project Details 
+
+			<em>(Managed by {{project.manager}})</em>
+		{%endif%}</h4>
 	<div class="well">
 
 			<ul>
@@ -73,7 +84,7 @@
 
 		</table>
 	
-	<h4>Recent Tasks {%if isMember %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
+	<h4>Recent Tasks {%if isMember and project.active %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
 	<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
@@ -103,7 +114,7 @@
 
 	<br />
 	<br />
-	<h4>Most Recent Worklogs {%if isMember %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
+	<h4>Most Recent Worklogs {%if isMember and project.active %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
 		<table class="table table-striped">
 		<tr>
 			<th>Summary</th>

@@ -24,12 +24,13 @@
 			<!--<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>-->
 			{% endif %}
 			<tr>
-				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a></td>
+				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a>{% if not project.active %} <em>(Closed)</em>{% endif %}</td>
 				<td>{{project.manager}}</td>
 				<td>{{project.status}}</td>
 				<!--<li>Description: {{project.description}}</li>-->
-				<td><a href="/projects/work/viewall/{{project.id}}/">View Worklogs</a> / <a href="/projects/addwork/{{project.id}}/">Add worklog</a> </td>
-				<td><a href="/projects/task/viewall/{{project.id}}/">View Tasks</a> / <a href="/projects/addtask/{{project.id}}/">Add Tasks</a></td>
+				<td>
+					<a href="/projects/work/viewall/{{project.id}}/">View Worklogs</a>{% if project.active %} / <a href="/projects/addwork/{{project.id}}/">Add worklog</a> {% endif %}</td>
+				<td><a href="/projects/task/viewall/{{project.id}}/">View Tasks</a>{% if project.active %} / <a href="/projects/addtask/{{project.id}}/">Add Tasks</a>{% endif %}</td>
 			</tr>
 		</div>
 	{% endfor %}

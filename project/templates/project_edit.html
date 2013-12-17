@@ -20,6 +20,11 @@
 
 		<input class="btn btn-success" type="submit" value="Save" style="border-radius: 1px;" />
 		<span><a class="btn btn-danger" href="/projects/view/{{project.id}}/">Cancel</a></span>
+		{% if project.active %}
+		<a class="btn btn-warning" style="float:right;" href="/projects/toggle/{{project.id}}">Close Project</a>
+		{% else %}
+		<a class="btn btn-warning" style="float:right;" href="/projects/toggle/{{project.id}}">Re-open Project</a>
+		{% endif %}
 
 	</form> <!--Close the form tag-->
 

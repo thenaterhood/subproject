@@ -184,6 +184,9 @@ def view_project(request, proj_id):
 	project = Project.objects.get(id=proj_id)
 	worklogs = Worklog.objects.filter(project=project).all().reverse()[:5]
 
+	if not project.active:
+		messages.warning( request, "This project is closed. Work and tasks cannot be added to closed projects.")
+
 	args = {}
 	args['project'] = project
 	args['members'] = project.members.all()
@@ -197,6 +200,30 @@ def view_project(request, proj_id):
 		args['add_member_form'] = AddMemberForm()
 
 	return render_to_response('project_view.html', RequestContext(request, args) )
+
+@login_required
+def task_progress_toggle( request, task_id ):
+	task = ProjectTask.objects.get( id=task_id )
+
+	if ( request.user in task.assigned.all() or request.user == task.creator ):
+		task.inProgress = not task.inProgress
+		task.save()
+
+		messages.info( request, "Task Updated.")
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+@login_required
+def unassign_task_from_project( request, task_id, project_id ):
+	task = ProjectTask.objects.get( id=task_id )
+	project = Project.objects.get( id=project_id )
+
+	if ( request.user in project.members.all() or request.user == task.creator ):
+		task.openOn.remove( project )
+		task.closedOn.remove( project )
+		task.save()
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 @login_required
 def add_member(request, proj_id):
@@ -700,6 +727,67 @@ def my_todo( request ):
 	args['num_tasks'] = len(tasks)
 
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
+
+@login_required
+def view_outline( request, project_id=False ):
+	"""
+	Displays an outline view of all the user's 
+	projects and tasks.
+	"""
+	projects = Project.objects.filter( Q(members=request.user)|Q(manager=request.user) )
+	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
+
+	pageData = {}
+	pageData['outlineHtml'] = ""
+
+
+	for project in projects.all():
+		pageData['outlineHtml'] += createOutline( project, tasks )
+		print( createOutline(project, tasks))
+
+
+	pageData['projects'] = projects
+	pageData['outline'] = tasks
+
+	return render_to_response( 'project_outline.html', pageData )
+
+def createOutline( project, tasks, depth=0, maxdepth=15 ):
+
+	if ( depth < maxdepth ):
+
+		outlineHtml = createOutlineRow( project, tasks, depth )
+
+		for p in project.subprojects.all():
+			outlineHtml += createOutlineRow( p, tasks, depth+1 ) + createOutline( p, tasks, depth=depth+1, maxdepth=maxdepth )
+
+		return outlineHtml
+
+	else:
+		return '<tr><td>Reached maximum display depth.</td></tr>'
+
+
+def createOutlineRow( project, tasks, depth=0 ):
+
+	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
+	projectRow = '<tr><td>'+spacing+'Project: <a href="/projects/view/'+str(project.id)+'">'+project.name+'</a></td></tr>\n'
+	applicableTasks = tasks.filter( openOn=project ).all()
+
+	for t in applicableTasks:
+		projectRow += '<tr><td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'Task: <a href="/projects/task/view/'+str(t.id)+'">'+t.summary+'</a></td></tr>\n'
+
+	return projectRow
+
+@login_required
+def toggle_project( request, project_id ):
+	project = Project.objects.get( id=project_id )
+
+	if ( request.user == project.manager ):
+		project.active = not project.active
+		project.save()
+		messages.info( request, "Project updated.")
+
+	return HttpResponseRedirect('/projects/view/'+str(project_id) )
+
 
 @login_required
 def convert_task_to_project( request, task_id ):

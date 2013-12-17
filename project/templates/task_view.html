@@ -25,8 +25,28 @@
 	{% endif %}
 	<h2>Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
 	<p>{{task.description}}</p>
+	{%if canEdit %}
+		<a class="btn btn-info" href="/projects/task/edit/{{task.id}}">Edit Task</a>
+		{% if not task.inProgress %}
+		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
+		{% else %}
+		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
+		{% endif %}
+		<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}">Delete Task</a>
 
-	<p><em>Opened by {{task.creator}} {%if canEdit %}<a href="/projects/task/edit/{{task.id}}">(Edit/Delete)</a>{%endif%}</em></p>
+		<!--
+		{% if task.active %}
+			<a class="btn btn-warning" href="/projects/task/toggle/{{task.id}}/">Mark as In Progress </a>
+			{% else %}
+			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Re-open Task</a>
+			{% endif %}
+		<a class="btn btn-warning" href="/projects/task/close/{{task.id}}">Close Task</a>
+	-->
+	{%endif%}
+
+	<p><em>Opened by {{task.creator}} </em>
+
+	</p>
 
 
 	<h3>Projects this task belongs to</h3>
@@ -37,6 +57,7 @@
 				<th>Manager</th>
 				<th>Description</th>
 				<th>Manage</th>
+				<th>Remove</th>
 			</tr>
 
 			{% for p in openOn %}
@@ -54,9 +75,17 @@
 
 				<td>
 					{% if user in p.members.all %}
-					<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Completed in Project</a>
+					<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Task Completed</a>
 					{% else %}
 					<p>Currently Open</p>
+					{% endif %}
+				</td>
+
+				<td>
+					{% if user in p.members.all %}
+					<a class="btn btn-danger" href="/projects/{{p.id}}/unassigntask/{{task.id}}/">Remove</a>
+					{% else %}
+					<p>You are not a project member.</p>
 					{% endif %}
 				</td>
 			</tr>
@@ -72,7 +101,7 @@
 
 				<td>
 					{% if user in p.members.all %}
-					<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished in Project</a>
+					<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished</a>
 					{% else %}
 					<p>Currently Closed</p>
 					{% endif %}
@@ -82,7 +111,7 @@
 			{% endfor %}
 
 			<tr>
-				<td colspan="4"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
+				<td colspan="5"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
 
 		</table>
 

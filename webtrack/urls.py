@@ -23,6 +23,7 @@ urlpatterns = patterns('',
     url(r'^user/welcome/$', 'user.views.welcome'),
     url(r'^user/logout/$', 'user.views.logout'),
     url(r'^accounts/login/$', 'user.views.login_user'),
+    url(r'^user/profile/(?P<username>[a-zA-Z0-9_.-]+)/$', 'user.views.view_profile'),
 
     # URLs for the project application
     url(r'^projects/welcome/$', 'project.views.project_welcome'),
@@ -46,10 +47,14 @@ urlpatterns = patterns('',
     url(r'^projects/task/removemember/(?P<task_id>\d+)/(?P<user_id>\d+)/$', 'project.views.remove_task_member'),
     url(r'^projects/(?P<project_id>\d+)/closetask/(?P<task_id>\d+)/$', 'project.views.close_task_in_project'),
     url(r'^projects/(?P<project_id>\d+)/opentask/(?P<task_id>\d+)/$', 'project.views.open_task_in_project'),
+    url(r'^projects/(?P<project_id>\d+)/unassigntask/(?P<task_id>\d+)/$', 'project.views.unassign_task_from_project'),
     url(r'^projects/usertasks/$', 'project.views.user_all_tasks'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/$', 'project.views.add_existing_task_to_project'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/(?P<project_id>\d+)/$', 'project.views.add_existing_task_to_project'),
     url(r'^projects/task/delete/(?P<task_id>\d+)/$', 'project.views.delete_task'),
+    url(r'^projects/outline/$', 'project.views.view_outline'),
+    url(r'^projects/toggle/(?P<project_id>\d+)/$', 'project.views.toggle_project'),
+    url(r'^projects/task/inprogress/(?P<task_id>\d+)/$', 'project.views.task_progress_toggle'),
 
     url(r'^projects/todo/', 'project.views.my_todo'),
 
