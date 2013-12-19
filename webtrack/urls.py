@@ -53,8 +53,13 @@ urlpatterns = patterns('',
     url(r'^projects/addtotask/(?P<task_id>\d+)/(?P<project_id>\d+)/$', 'project.views.add_existing_task_to_project'),
     url(r'^projects/task/delete/(?P<task_id>\d+)/$', 'project.views.delete_task'),
     url(r'^projects/outline/$', 'project.views.view_outline'),
+    url(r'^projects/tree/(?P<project_id>\d+)/$', 'project.views.view_outline'),
     url(r'^projects/toggle/(?P<project_id>\d+)/$', 'project.views.toggle_project'),
     url(r'^projects/task/inprogress/(?P<task_id>\d+)/$', 'project.views.task_progress_toggle'),
+    url(r'^projects/task/tosubproject/(?P<task_id>\d+)/$', 'project.views.convert_task_to_subproject'),
+    url(r'^projects/children/(?P<project_id>\d+)/$', 'project.views.show_children'),
+    url(r'^projects/parents/(?P<project_id>\d+)/$', 'project.views.show_parents'),
+    url(r'^projects/totop/(?P<project_id>\d+)/$', 'project.views.project_to_top'),
 
     url(r'^projects/todo/', 'project.views.my_todo'),
 

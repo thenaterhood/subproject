@@ -23,21 +23,28 @@
 	<h3>Project Dashboard: {{project.name}}</h3>
 		<p>
 			<a class="btn btn-default" href="/projects/">Back to Projects</a>
-			{%if canEdit %} 
+		{%if canEdit %} 
 			<a class="btn btn-info" href="/projects/edit/{{project.id}}/">Edit Project</a>
 			{% if project.active %}
 			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
 			{% else %}
 			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Re-open Project</a>
 			{% endif %}
-		{%else%} 
+		{% endif %} 
+
+			<span style="float:right;"	>
+			<a class="btn btn-info" href="/projects/parents/{{project.id}}">Manage Parents</a>
+	
+			<a class="btn btn-info" href="/projects/children/{{project.id}}">Manage Subprojects</a>
+
+			</span>
 
 		</p>
 	<br />
 	<h4>Project Details 
 
 			<em>(Managed by {{project.manager}})</em>
-		{%endif%}</h4>
+		</h4>
 	<div class="well">
 
 			<ul>
@@ -76,8 +83,8 @@
 			{% endfor %}
 
 			</td>
-			<td><input type="submit" class="btn btn-success" value="Assign">
-						</form>
+			<td>{%if canEdit %}<input type="submit" class="btn btn-success" value="Assign">
+						</form>{% endif %}
 
 		</tr>
 

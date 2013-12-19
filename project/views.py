@@ -69,7 +69,10 @@ def user_all_tasks(request):
 
 	args = {}
 	args['user'] = request.user
-	args['tasks'] = tasks
+	args['tasks'] = tasks.filter( inProgress=False ).all()
+	args['other_num'] = len( args['tasks'] )
+	args['task_wip'] = tasks.filter( inProgress=True ).all()
+	args['wip_num'] = len( args['task_wip'] )
 	args['num_tasks'] = len(tasks)
 	args['notodo'] = True
 
@@ -723,7 +726,10 @@ def my_todo( request ):
 
 	args = {}
 	args['user'] = request.user
-	args['tasks'] = tasks
+	args['tasks'] = tasks.filter( inProgress=False ).all()
+	args['other_num'] = len( args['tasks'] )
+	args['task_wip'] = tasks.filter( inProgress=True ).all()
+	args['wip_num'] = len( args['task_wip'] )
 	args['num_tasks'] = len(tasks)
 
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
@@ -734,17 +740,20 @@ def view_outline( request, project_id=False ):
 	Displays an outline view of all the user's 
 	projects and tasks.
 	"""
-	projects = Project.objects.filter( Q(members=request.user)|Q(manager=request.user) )
 	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
-
 	pageData = {}
-	pageData['outlineHtml'] = ""
 
 
-	for project in projects.all():
-		pageData['outlineHtml'] += createOutline( project, tasks )
-		print( createOutline(project, tasks))
+	if not project_id:
+		projects = Project.objects.filter( Q(members=request.user) ).annotate(c=Count('parents')).filter( c=0 )
+		pageData['outlineHtml'] = ""
 
+		for project in projects.all():
+			pageData['outlineHtml'] += createOutlineRow(project, tasks, depth=0 ) + createOutline( project, tasks )
+	else:
+		projects = Project.objects.get( id=project_id )
+
+		pageData['outlineHtml'] = createOutlineRow(projects, tasks, depth=0 ) + createOutline( projects, tasks )
 
 	pageData['projects'] = projects
 	pageData['outline'] = tasks
@@ -755,7 +764,7 @@ def createOutline( project, tasks, depth=0, maxdepth=15 ):
 
 	if ( depth < maxdepth ):
 
-		outlineHtml = createOutlineRow( project, tasks, depth )
+		outlineHtml = ""
 
 		for p in project.subprojects.all():
 			outlineHtml += createOutlineRow( p, tasks, depth+1 ) + createOutline( p, tasks, depth=depth+1, maxdepth=maxdepth )
@@ -769,13 +778,33 @@ def createOutline( project, tasks, depth=0, maxdepth=15 ):
 def createOutlineRow( project, tasks, depth=0 ):
 
 	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
-	projectRow = '<tr><td>'+spacing+'Project: <a href="/projects/view/'+str(project.id)+'">'+project.name+'</a></td></tr>\n'
+	projectRow = '<tr>\
+		<td>'+spacing+'Project: <a href="/projects/view/'+str(project.id)+'">'+project.name+'</a> \
+		<a class="btn-small btn-info" href="/projects/tree/'+str(project.id)+'">Show Tree</a></td></tr>\n'
 	applicableTasks = tasks.filter( openOn=project ).all()
 
 	for t in applicableTasks:
-		projectRow += '<tr><td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'Task: <a href="/projects/task/view/'+str(t.id)+'">'+t.summary+'</a></td></tr>\n'
+		projectRow += '<tr>\
+			<td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'Task: <a href="/projects/task/view/'+str(t.id)+'">'+t.summary+'</a>\
+			</td>\
+		</tr>\n'
 
 	return projectRow
+
+@login_required
+def project_to_top( request, project_id ):
+
+	project = Project.objects.get( id=project_id )
+	if ( request.user == project.manager ):
+		for p in project.parents.all():
+			project.parents.remove( p )
+			p.subprojects.remove( project )
+			p.save()
+
+		project.save()
+		messages.info(request, 'Project is now a top level project.')
+
+	return HttpResponseRedirect( '/projects/view/'+str(project_id) )
 
 @login_required
 def toggle_project( request, project_id ):
@@ -790,7 +819,7 @@ def toggle_project( request, project_id ):
 
 
 @login_required
-def convert_task_to_project( request, task_id ):
+def convert_task_to_subproject( request, task_id ):
 	"""
 	Converts a task into a project and removes the 
 	task.
@@ -811,11 +840,44 @@ def convert_task_to_project( request, task_id ):
 		project.save()
 		task.delete()
 
-		messages.info("Task converted to project successfully.")
-		returnLocation = HttpResponseRedirect( '/projects/view/'+str(project.id)+"/" )
+		for p in project.parents.all():
+			p.subprojects.add( project )
+			p.save()
+
+
+		messages.info(request, "Task converted to project successfully. You may now edit the project attributes.")
+		returnLocation = HttpResponseRedirect( '/projects/edit/'+str(project.id)+"/" )
 
 	else:
 		messages.warning( request, "You must be the creator of a task to convert it to a project." )
 
 	return returnLocation
+
+@login_required
+def show_children( request, project_id ):
+	project = Project.objects.get( id=project_id )
+
+	pageData = {}
+
+	pageData['projects'] = project.subprojects.all()
+	pageData['project'] = project
+	pageData['relation'] = "children"
+	pageData['user'] = request.user
+
+	return render_to_response( 'project_parent-sub.html', RequestContext(request, pageData) )
+
+@login_required
+def show_parents( request, project_id ):
+	project = Project.objects.get( id=project_id )
+
+	pageData = {}
+
+	pageData['projects'] = project.parents.all()
+	pageData['project'] = project
+	pageData['relation'] = "parents"
+	pageData['user'] = request.user
+
+
+	return render_to_response( 'project_parent-sub.html', RequestContext(request, pageData) )
+
 

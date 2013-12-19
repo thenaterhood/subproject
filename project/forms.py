@@ -28,9 +28,9 @@ class CreateProjectForm(forms.ModelForm):
 class UpdateProjectForm(forms.ModelForm):
 
 	name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Name", 'class':'form-control'}), label=(""))
-	status = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Status", 'class':'form-control'}), label=(""))
-	phase = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Project Phase", 'class':'form-control'}), label=(""))
-	lines = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":50, "placeholder":"Lines of Code", 'class':'form-control'}), label=(""))
+	status = forms.CharField(widget=forms.TextInput(attrs={"required":False, "max_length":50, "placeholder":"Project Status", 'class':'form-control'}), label=(""))
+	phase = forms.CharField(widget=forms.TextInput(attrs={"required":False, "max_length":50, "placeholder":"Project Phase", 'class':'form-control'}), label=(""))
+	lines = forms.DecimalField(widget=forms.TextInput(attrs={"required":False, "max_length":50, "placeholder":"Lines of Code", 'class':'form-control'}), label=(""))
 	description = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Project Description in 140 Characters", 'class':"form-control"}), label=(""))
 
 	class Meta:

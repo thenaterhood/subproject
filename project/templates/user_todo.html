@@ -38,6 +38,35 @@
 		<p class="error">Hey! Looks like you don't have any tasks!</p>
 	{% endif %}
 
+	{% if wip_num %}
+
+	<h3>Tasks In Progress</h3>
+	<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th>Start Date</th>
+			<th>Opened by</th>
+			<th>Manage</th>
+		</tr>
+
+	{% for t in task_wip %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td>{{t.startDate}}</td>
+			<td>{{t.creator}}</td>
+			<td><a href="/projects/task/edit/{{t.id}}/">Edit</a></td>
+		</tr>
+
+	{% endfor %}
+
+
+	</table>
+	{% endif %}
+
+
+	{% if other_num > 0 %}
+
+	<h3>Tasks not in progress</h3>
 	<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
@@ -58,4 +87,5 @@
 
 	</table>
 
+	{% endif %}
 {% endblock %}

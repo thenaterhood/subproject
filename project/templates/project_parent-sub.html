@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: {{relation}} {% endblock %}
+
+{% block content %}
+
+	{% if num_projects == 0 %}
+		<p class="error">You are not a member of any projects.</p>
+	{% endif %}
+	<h1>{{relation}} of <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
+	{% if relation == 'children' %}
+	<p><a href="/projects/childcreate/{{project.id}}">Create New SubProject</a></p>
+	{% else %}
+		{% if user == project.manager %}
+		<p style="display:inline;"><a class="btn btn-warning" href="/projects/totop/{{project.id}}" title="Promote to a top level project and remove subproject status and all parents.">Promote to Top Level Project</a></p>
+		{% endif %}
+		
+	<!-- <p><a href="/projects/parentcreate/">Create New Parent Project</a></p> -->
+	{% endif %}
+
+
+	<table class="table table-striped">
+		<tr>
+			<th>Project</th>
+			<th>Manager</th>
+			<th>Tree</th>
+			<th>View</th>
+		</tr>
+	{% for project in projects %}
+
+			{% if project in owned %}
+			<!--<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>-->
+			{% endif %}
+			<tr>
+				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a>{% if not project.active %} <em>(Closed)</em>{% endif %}</td>
+				<td>{{project.manager}}</td>
+				<!--<li>Description: {{project.description}}</li>-->
+				<td>
+					<a href="/projects/parents/{{project.id}}">Parents</a> / 
+					<a href="/projects/children/{{project.id}}">Children</a>
+				</td>
+				<td><a href="/projects/view/{{project.id}}/">View</a></td>
+			</tr>
+		</div>
+	{% endfor %}
+
+	</table>
+
+{% endblock %}
