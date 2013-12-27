@@ -10,6 +10,8 @@ from django.db.models import Q
 from django.db.models import Count
 from django.contrib import messages
 
+from copy import deepcopy
+
 from project.models import *
 from project.forms import *
 import project.thenaterhood.histogram as histogram
@@ -735,7 +737,7 @@ def my_todo( request ):
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
 
 @login_required
-def view_outline( request, project_id=False ):
+def view_tree( request, project_id=False ):
 	"""
 	Displays an outline view of all the user's 
 	projects and tasks.
@@ -746,36 +748,36 @@ def view_outline( request, project_id=False ):
 
 	if not project_id:
 		projects = Project.objects.filter( Q(members=request.user) ).annotate(c=Count('parents')).filter( c=0 )
-		pageData['outlineHtml'] = ""
+		pageData['treeHtml'] = ""
 
 		for project in projects.all():
-			pageData['outlineHtml'] += createOutlineRow(project, tasks, depth=0 ) + createOutline( project, tasks )
+			pageData['treeHtml'] += createTreeRow(project, tasks, depth=0 ) + createTree( project, tasks )
 	else:
 		projects = Project.objects.get( id=project_id )
 
-		pageData['outlineHtml'] = createOutlineRow(projects, tasks, depth=0 ) + createOutline( projects, tasks )
+		pageData['treeHtml'] = createTreeRow(projects, tasks, depth=0 ) + createTree( projects, tasks )
 
 	pageData['projects'] = projects
-	pageData['outline'] = tasks
+	pageData['tree'] = tasks
 
-	return render_to_response( 'project_outline.html', pageData )
+	return render_to_response( 'project_tree.html', pageData )
 
-def createOutline( project, tasks, depth=0, maxdepth=15 ):
+def createTree( project, tasks, depth=0, maxdepth=15 ):
 
 	if ( depth < maxdepth ):
 
-		outlineHtml = ""
+		treeHtml = ""
 
 		for p in project.subprojects.all():
-			outlineHtml += createOutlineRow( p, tasks, depth+1 ) + createOutline( p, tasks, depth=depth+1, maxdepth=maxdepth )
+			treeHtml += createTreeRow( p, tasks, depth+1 ) + createTree( p, tasks, depth=depth+1, maxdepth=maxdepth )
 
-		return outlineHtml
+		return treeHtml
 
 	else:
 		return '<tr><td>Reached maximum display depth.</td></tr>'
 
 
-def createOutlineRow( project, tasks, depth=0 ):
+def createTreeRow( project, tasks, depth=0 ):
 
 	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
 	projectRow = '<tr>\
@@ -879,5 +881,67 @@ def show_parents( request, project_id ):
 
 
 	return render_to_response( 'project_parent-sub.html', RequestContext(request, pageData) )
+
+@login_required
+def show_outline( request ):
+
+	pageData = {}
+
+
+	try:
+		projects = request.GET['pos'].split(',')
+		if ( len(projects) < 1 or projects[0] == '' ):
+			int('foo')
+
+		pageData['pos'] = request.GET['pos']
+	except:
+		pageData['panel1'] = Project.objects.filter( members=request.user )
+
+		return render_to_response( 'project_outline.html', RequestContext(request, pageData) )
+
+	allProjectsInView = deepcopy(projects)
+
+	if ( len(projects) < 3):
+		projects = projects[-2:]
+		pageData['panel1'] = Project.objects.filter( members=request.user )
+		pageData['selected1'] = Project.objects.get( id=projects[0] )
+		pageData['notfirst'] = False
+
+	else:
+		pageData['panel1pos'] = ",".join(allProjectsInView[:-2])
+		previous = projects[-3]
+		projects = projects[-2:]
+		pageData['notfirst'] = True
+
+		prevProject = Project.objects.get(id=previous)
+		pageData['selected1'] = Project.objects.get( id=projects[0] )
+		pageData['panel1'] = Project.objects.filter( parents=prevProject )
+		pageData['panel1task'] = ProjectTask.objects.filter( openOn=prevProject )
+
+	if ( len(projects) >= 1):
+		if ( len(projects) == 1):
+			pageData['panel2pos'] = ",".join(allProjectsInView)
+		else:
+			pageData['panel2pos'] = ",".join(allProjectsInView[0:-1])
+
+		pageData['panel2'] = Project.objects.filter( parents=pageData['selected1'] )
+
+		pageData['panel2task'] = ProjectTask.objects.filter( openOn=pageData['selected1'] )
+
+	if ( len(projects) >= 2):
+		pageData['panel3pos'] = ",".join(allProjectsInView[0:len(allProjectsInView)])
+
+
+		pageData['selected2'] = Project.objects.get( id=projects[1] )
+		pageData['panel3'] = Project.objects.filter( parents=pageData['selected2'])
+
+		pageData['panel3task'] = ProjectTask.objects.filter( openOn=pageData['selected2'] )
+
+	return render_to_response( 'project_outline.html', RequestContext(request, pageData) )
+
+
+
+
+
 
 

@@ -1,25 +1,136 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: outline {% endblock %}
+{% block title %} webtrack: projects {% endblock %}
 
 {% block content %}
+<h1>Panel View</h1>
+<p>This view allows you to browse your projects in a side-by-side panel view of projects and subprojects</p>
+<div class="container">
+<div class="row equalHeight">
+  <div class="span3 col-md-2">
 
-	<h1>Outline View</h1>
+  	{% if panel1 %}
 
-	{% if num_projects == 0 %}
-		<p class="error">You are not a member of any projects.</p>
-	{% endif %}
+  		{% if notfirst %}
+  		<h4><em>Subprojects</em></h4>
+  		{% else %}
+  		<h4><em>Projects</em></h4>
+  		{% endif %}
 
-	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Statistics</a></p>
+  	{% endif %}
 
-	<table class="table table-condensed table-striped">
+  		{% for p in panel1 %}
 
-	{% autoescape off %}
+  		<li>
+  			{% if selected1 and selected1 == p %}
+  			<strong>
+  			{% endif %}
+  			<a href="/projects/outline/?pos={% if notfirst %}{{panel1pos}},{% endif %}{{p.id}}">{{p.name}}</a>
 
-	{{outlineHtml}}
+  			{% if selected1 and selected1 == p %}
+  			<i class="fa fa-chevron-right"></i></strong>
+  			{% endif %}
 
-	{% endautoescape %}
+  		</li>
 
-	</table>
+  		{% endfor %}
+
+
+  		{% if panel1task %}
+	  	<h4><em>Tasks</em></h4>
+	  	{% endif %}
+
+	  	{% for t in panel1task %}
+
+	  	<li>
+	  		{{t.summary}}
+	  	</li>
+
+	  	{% endfor %}
+
+  </div>
+
+
+  <div class="span3 col-md-2">
+
+  		{% if panel2 %}
+  		<h4><em>Subprojects</em></h4>
+  		{% endif %}
+
+  		{% for p in panel2 %}
+
+  		<li>
+  			{% if selected2 and selected2 == p %}
+  			<strong>
+  			{% endif %}
+  			<a href="/projects/outline/?pos={{panel2pos}},{{p.id}}">{{p.name}}</a>
+
+  			{% if selected2 and selected2 == p %}
+  			</strong>
+  			{% endif %}
+
+  		</li>
+
+  		{% endfor %}
+
+
+  		{% if panel2task %}
+	  	<h4><em>Tasks</em></h4>
+	  	{% endif %}
+
+	  	{% for t in panel2task %}
+
+	  	<li>
+	  		{{t.summary}}
+	  	</li>
+
+	  	{% endfor %}
+
+
+  </div>
+
+
+  <div class="span3 col-md-2">
+
+  	  	{% if panel3 %}
+  		<h4><em>Subprojects</em></h4>
+  		{% endif %}
+
+  		{% for p in panel3 %}
+
+  		<li>
+  			{% if selected3 and selected3 == p %}
+  			<strong>
+  			{% endif %}
+  			<a href="/projects/outline/?pos={{panel3pos}},{{p.id}}">{{p.name}}</a>
+
+  			{% if selected3 and selected3 == p %}
+  			</strong>
+  			{% endif %}
+
+  		</li>
+
+  		{% endfor %}
+
+
+  		{% if panel3task %}
+	  	<h4><em>Tasks</em></h4>
+	  	{% endif %}
+
+	  	{% for t in panel3task %}
+
+	  	<li>
+	  		{{t.summary}}
+	  	</li>
+
+	  	{% endfor %}
+
+  </div>
+
+</div>  
+</div>
+
+<br />
+<br />
 
 {% endblock %}

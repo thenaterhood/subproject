@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: outline {% endblock %}
+
+{% block content %}
+
+	<h1>Outline View</h1>
+
+	{% if num_projects == 0 %}
+		<p class="error">You are not a member of any projects.</p>
+	{% endif %}
+
+	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Statistics</a></p>
+
+	<table class="table table-condensed table-striped">
+
+	{% autoescape off %}
+
+	{{treeHtml}}
+
+	{% endautoescape %}
+
+	</table>
+
+{% endblock %}

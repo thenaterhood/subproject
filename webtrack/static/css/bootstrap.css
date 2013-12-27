@@ -2791,8 +2791,8 @@ input[type="button"].btn-block {
 
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../fonts/glyphicons-halflings-regular.eot');
-  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+  src: url('/static/fonts/glyphicons-halflings-regular.eot');
+  src: url('/static/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 
 .glyphicon {
@@ -7730,4 +7730,52 @@ input[type="color"]:focus,
 
 .affix {
   position: fixed;
+}
+
+.span12 {
+  width: 940px;
+}
+
+.span11 {
+  width: 860px;
+}
+
+.span10 {
+  width: 780px;
+}
+
+.span9 {
+  width: 700px;
+}
+
+.span8 {
+  width: 620px;
+}
+
+.span7 {
+  width: 540px;
+}
+
+.span6 {
+  width: 460px;
+}
+
+.span5 {
+  width: 380px;
+}
+
+.span4 {
+  width: 300px;
+}
+
+.span3 {
+  width: 220px;
+}
+
+.span2 {
+  width: 140px;
+}
+
+.span1 {
+  width: 60px;
 }
