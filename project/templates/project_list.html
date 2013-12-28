@@ -4,6 +4,7 @@
 
 {% block content %}
 
+	<h1>My Projects</h1>
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
@@ -12,7 +13,7 @@
 
 	<table class="table table-striped">
 		<tr>
-			<th>Project</th>
+			<th><img src="/static/img/project.png" width="24px" />Project</th>
 			<th>Manager</th>
 			<th>Status</th>
 			<th>Worklogs</th>

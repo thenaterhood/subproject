@@ -4,22 +4,25 @@
 
 {% block content %}
 
-	<h3>Create a Project</h3>
-	<form id="registerForm" action="/projects/create/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+<h3>Create a Project</h3>
+<form id="registerForm" action="/projects/create/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
-		{% for field in form %}
-<fieldset class="form-group">
-  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-      <input type="text" class="form-control"
-        name="{{ field.name }}"
-        id="id_{{ field.name }}"
-        value="{{ field.value }}" > 
-        <p class="help-text">{{ field.help_text }} </p>
-</fieldset>
-{% endfor %}
+	{% for field in form %}
+	<fieldset class="form-group">
+		<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+		<input type="text" class="form-control"
+		name="{{ field.name }}"
+		id="id_{{ field.name }}"
+		value="{{ field.value }}" > 
+		<p class="help-text">{{ field.help_text }} </p>
+	</fieldset>
 
-		<input id="registerButton" class="btn btn-danger btn-large" type="submit" value="Create" style="border-radius: 1px;" />
+	{% endfor %}
+    <input name="parent" type="hidden" value="{{ parent }}" />
+  <input name="returnUrl" type="hidden" value="{{ returnUrl }}" />
 
-	</form> <!--Close the form tag-->
+	<input id="registerButton" class="btn btn-danger btn-large" type="submit" value="Create" style="border-radius: 1px;" />
+
+</form> <!--Close the form tag-->
 
 {% endblock %}

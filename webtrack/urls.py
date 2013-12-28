@@ -61,6 +61,10 @@ urlpatterns = patterns('',
     url(r'^projects/parents/(?P<project_id>\d+)/$', 'project.views.show_parents'),
     url(r'^projects/totop/(?P<project_id>\d+)/$', 'project.views.project_to_top'),
     url(r'^projects/outline/$', 'project.views.show_outline'),
+    url(r'^projects/browser/$', 'project.views.show_browser'),
+    url(r'^projects/browser/(?P<open_project>\d+)/$', 'project.views.show_browser'),
+    url(r'^projects/newsub/(?P<parent>\d+)/$', 'project.views.create_project'),
+
 
 
 

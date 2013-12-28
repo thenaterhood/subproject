@@ -25,10 +25,10 @@
   			{% if selected1 and selected1 == p %}
   			<strong>
   			{% endif %}
-  			<a href="/projects/outline/?pos={% if notfirst %}{{panel1pos}},{% endif %}{{p.id}}">{{p.name}}</a>
+  			<a href="/projects/outline/?pos={% if notfirst %}{{panel1pos}},{% endif %}{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected1 and selected1 == p %}
-  			<i class="fa fa-chevron-right"></i></strong>
+  			</strong>
   			{% endif %}
 
   		</li>
@@ -43,7 +43,7 @@
 	  	{% for t in panel1task %}
 
 	  	<li>
-	  		{{t.summary}}
+	  		<img src="/static/img/task.png" width="24px" />{{t.summary}}
 	  	</li>
 
 	  	{% endfor %}
@@ -63,7 +63,7 @@
   			{% if selected2 and selected2 == p %}
   			<strong>
   			{% endif %}
-  			<a href="/projects/outline/?pos={{panel2pos}},{{p.id}}">{{p.name}}</a>
+  			<a href="/projects/outline/?pos={{panel2pos}},{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected2 and selected2 == p %}
   			</strong>
@@ -81,7 +81,7 @@
 	  	{% for t in panel2task %}
 
 	  	<li>
-	  		{{t.summary}}
+	  		<img src="/static/img/task.png" width="24px" />{{t.summary}}
 	  	</li>
 
 	  	{% endfor %}
@@ -102,7 +102,7 @@
   			{% if selected3 and selected3 == p %}
   			<strong>
   			{% endif %}
-  			<a href="/projects/outline/?pos={{panel3pos}},{{p.id}}">{{p.name}}</a>
+  			<a href="/projects/outline/?pos={{panel3pos}},{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected3 and selected3 == p %}
   			</strong>
@@ -120,7 +120,7 @@
 	  	{% for t in panel3task %}
 
 	  	<li>
-	  		{{t.summary}}
+	  		<img src="/static/img/task.png" width="24px" />{{t.summary}}
 	  	</li>
 
 	  	{% endfor %}

@@ -101,7 +101,7 @@ def list_projects(request):
 	return render_to_response('project_list.html', args)
 
 @login_required
-def create_project(request):
+def create_project(request, parent=False):
 	"""
 	Provides a new project form and adds 
 	a project to the database after verifying 
@@ -109,6 +109,12 @@ def create_project(request):
 	"""
 
 	if request.method == "POST":
+
+		if ( not request.POST['returnUrl'] ):
+			redirTo = '/projects/'
+		else:
+			redirTo = request.POST['returnUrl']
+
 		newProj = Project()
 		newStat = ProjectStatistic()
 		form = CreateProjectForm(request.POST)
@@ -124,18 +130,26 @@ def create_project(request):
 			newProj.members.add( request.user )
 			newStat.project = newProj
 
+			if ( request.POST['parent'] != "False" ):
+				parentProject = Project.objects.get( id=request.POST['parent'] )
+
+				newProj.parents.add(parentProject)
+				parentProject.subprojects.add(newProj)
+				parentProject.save()
+
 			newStat.save()
 
 			newProj.save()
 
-			return HttpResponseRedirect('/projects/')
+			return HttpResponseRedirect(redirTo)
 
 	else:
 
 		args = {}
 		args.update(csrf(request))
+		args['returnUrl'] = request.META['HTTP_REFERER']
 		args['form'] = CreateProjectForm()
-
+		args['parent'] = parent
 		return render_to_response('project_create.html', args)
 
 @login_required
@@ -441,6 +455,7 @@ def add_task( request, proj_id=False ):
 
 	if request.method == "POST":
 		projTask = ProjectTask()
+
 		form = AddTaskForm(request.POST)
 		if form.is_valid():
 			projTask.summary = form.cleaned_data['summary']
@@ -470,7 +485,10 @@ def add_task( request, proj_id=False ):
 			if ( "saveandassign" in request.POST ):
 				return HttpResponseRedirect('/projects/addtotask/'+str(projTask.id)+"/" )
 			else:
-				return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
+				if ( request.POST['returnUrl'] == '' ):
+					return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
+				else:
+					return HttpResponseRedirect(request.POST['returnUrl'])
 
 		else:
 			messages.error( request, "Invalid form information." )
@@ -479,6 +497,7 @@ def add_task( request, proj_id=False ):
 	else:
 
 		args = {}
+		args['returnUrl'] = request.META['HTTP_REFERER']
 		args.update(csrf(request))
 		if ( proj_id != False ):
 			args['project'] = project = Project.objects.get(id=proj_id)
@@ -781,13 +800,13 @@ def createTreeRow( project, tasks, depth=0 ):
 
 	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
 	projectRow = '<tr>\
-		<td>'+spacing+'Project: <a href="/projects/view/'+str(project.id)+'">'+project.name+'</a> \
+		<td>'+spacing+'<a href="/projects/view/'+str(project.id)+'"><img src="/static/img/project.png" width="24px" />'+project.name+'</a> \
 		<a class="btn-small btn-info" href="/projects/tree/'+str(project.id)+'">Show Tree</a></td></tr>\n'
 	applicableTasks = tasks.filter( openOn=project ).all()
 
 	for t in applicableTasks:
 		projectRow += '<tr>\
-			<td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'Task: <a href="/projects/task/view/'+str(t.id)+'">'+t.summary+'</a>\
+			<td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'<a href="/projects/task/view/'+str(t.id)+'"><img src="/static/img/task.png" width="24px" />'+t.summary+'</a>\
 			</td>\
 		</tr>\n'
 
@@ -939,7 +958,24 @@ def show_outline( request ):
 
 	return render_to_response( 'project_outline.html', RequestContext(request, pageData) )
 
+@login_required
+def show_browser( request, open_project=False ):
 
+	pageData = {}
+	pageData['user'] = request.user
+
+	if ( not open_project ):
+
+		pageData['projects'] = Project.objects.filter( members=request.user )
+
+	else:
+		selected = Project.objects.get( id=open_project )
+		pageData['selected'] = selected
+		pageData['projects'] = Project.objects.filter( parents=selected )
+		pageData['tasks'] = ProjectTask.objects.filter( Q(openOn=selected)|Q(closedOn=selected) ).filter( assigned=request.user )
+		pageData['work'] = Worklog.objects.filter( project=selected )
+
+	return render_to_response( 'project_browser.html', RequestContext(request, pageData) )
 
 
 

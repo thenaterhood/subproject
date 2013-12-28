@@ -4,27 +4,29 @@
 
 {% block content %}
 
-	<h3>Add a task {% if project %} for {{project.name}} {% endif %}</h3>
+<h3>Add a task {% if project %} for {{project.name}} {% endif %}</h3>
 	<form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %} <!--Pass information back 
-	to the register url through the POST method-->
-	<fieldset class="form-group">
+		to the register url through the POST method-->
 
 		{% for field in form %}
-<fieldset class="form-group">
-  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-      <input type="text" class="form-control"
-        name="{{ field.name }}"
-        id="id_{{ field.name }}"
-        value="{{ field.value }}" > 
-        <p class="help-text">{{ field.help_text }} </p>
-</fieldset>
-{% endfor %}
+		<fieldset class="form-group">
+			<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+			<input type="text" class="form-control"
+			name="{{ field.name }}"
+			id="id_{{ field.name }}"
+			value="{{ field.value }}" /> 
+			<p class="help-text">{{ field.help_text }} </p>
+		</fieldset>
+		{% endfor %}
 
-{% if not project %}
-<input id="submitBtn" class="btn btn-success" type="submit" value="Create and Assign to Project" name="saveandassign">
-{% endif %}
+		<input name="returnUrl" type="hidden" value="{{ returnUrl }}" />
 
-<input id="registerButton" name="save" class="btn btn-success btn-large" type="submit" value="Create and Assign Later" />
+
+		{% if not project %}
+		<input id="submitBtn" class="btn btn-success" type="submit" value="Create and Assign to Project" name="saveandassign" />
+		{% endif %}
+
+		<input id="registerButton" name="save" class="btn btn-success btn-large" type="submit" value="Create and Assign Later" />
 
 	</form> <!--Close the form tag-->
 
