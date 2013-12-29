@@ -20,7 +20,7 @@
     	{% endfor %}
 	{% endif %}
 
-	<h3>Edit a Project</h3>
+	<h3><img src="/static/img/project.png" />Edit a Project</h3>
 	<form id="registerForm" action="/projects/edit/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}

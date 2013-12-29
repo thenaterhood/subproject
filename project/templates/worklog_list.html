@@ -4,7 +4,7 @@
 
 {% block content %}
 
-	<h1>Work logged on <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
+	<h1><img src="/static/img/work.png" />Work logged on <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
 
 	{% if num_projects == 0 %}
 		<p class="error">No work logged.</p>

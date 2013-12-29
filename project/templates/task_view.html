@@ -23,7 +23,7 @@
     		</div>
     	{% endfor %}
 	{% endif %}
-	<h2>Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
+	<h2><img src="/static/img/task.png" />Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
 	<p>{{task.description}}</p>
 	{%if canEdit %}
 		<a class="btn btn-info" href="/projects/task/edit/{{task.id}}">Edit Task</a>
@@ -49,7 +49,7 @@
 	</p>
 
 
-	<h3>Projects this task belongs to</h3>
+	<h3><img src="/static/img/project.png" />Projects this task belongs to</h3>
 
 		<table class="table table-striped">
 			<tr>
@@ -117,7 +117,7 @@
 
 		<hr />
 
-	<h3>Task Assignees</h3>
+	<h3><img src="/static/img/members.png" />Task Assignees</h3>
 		<table class="table table-striped">
 			<tr>
 				<th>Assignee</th>

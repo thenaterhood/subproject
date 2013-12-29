@@ -6,7 +6,7 @@
 
 	<div>
 
-	<h3>Edit Task</h3>
+	<h3><img src="/static/img/task.png" />Edit Task</h3>
 	<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}

@@ -23,7 +23,7 @@
     		</div>
     	{% endfor %}
 	{% endif %}
-	<h2>{{worklog.summary}}</h2>
+	<h2><img src="/static/img/work.png" />{{worklog.summary}}</h2>
 	<p><em>Logged by {{worklog.owner}} on {{worklog.project.name}} {%if canEdit %}<a href="/projects/work/edit/{{worklog.id}}">(Edit/Delete)</a>{%endif%}</em></p>
 
 	<h3>Project Details</h3>

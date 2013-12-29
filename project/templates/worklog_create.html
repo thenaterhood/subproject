@@ -20,7 +20,7 @@
       {% endfor %}
   {% endif %}
 
-	<h3>Add a worklog to {{project.name}}</h3>
+	<h3><img src="/static/img/work.png" />Add a worklog to {{project.name}}</h3>
 	<form id="registerForm" action="/projects/addwork/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}

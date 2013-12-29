@@ -4,7 +4,7 @@
 
 {% block content %}
 
-	<h1>My Projects</h1>
+	<h1><img src="/static/img/project.png" />My Projects</h1>
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
@@ -16,8 +16,8 @@
 			<th><img src="/static/img/project.png" width="24px" />Project</th>
 			<th>Manager</th>
 			<th>Status</th>
-			<th>Worklogs</th>
-			<th>Tasks</th>
+			<th><img src="/static/img/work.png" width="24px" />Worklogs</th>
+			<th><img src="/static/img/task.png" width="24px" />Tasks</th>
 		</tr>
 	{% for project in projects %}
 

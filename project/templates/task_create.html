@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h3>Add a task {% if project %} for {{project.name}} {% endif %}</h3>
+<h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} {% endif %}</h3>
 	<form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %} <!--Pass information back 
 		to the register url through the POST method-->
 

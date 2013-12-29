@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h3>Create a Project</h3>
+<h3><img src="/static/img/project.png" />Create a Project</h3>
 <form id="registerForm" action="/projects/create/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 	{% for field in form %}
