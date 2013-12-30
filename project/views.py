@@ -104,7 +104,7 @@ def list_projects(request):
 	args['owned'] = managedProjects
 	args['num_projects'] = len(projects)
 
-	return render_to_response('project_list.html', args)
+	return render_to_response('project_list.html', RequestContext( request, args) )
 
 @login_required
 def create_project(request, parent=False):
@@ -195,7 +195,7 @@ def assign_child( request, parent_id, child_id=False ):
 		pageData = {}
 		parentProj = Project.objects.get( id=parent_id )
 		pageData['projects'] = Project.objects.filter( manager=request.user ).exclude( id=parent_id ).exclude( parents=parentProj )
-		return render_to_response( 'project_select.html', pageData )
+		return render_to_response( 'project_select.html', RequestContext( request, pageData ) )
 
 @login_required
 def edit_project(request, proj_id):
@@ -465,7 +465,7 @@ def edit_worklog( request, log_id ):
 		args.update(csrf(request))
 		args['worklog'] = worklog
 
-		return render_to_response('worklog_edit.html', args)
+		return render_to_response('worklog_edit.html', RequestContext( request, args) )
 
 @login_required
 def line_stats(request):
@@ -856,7 +856,7 @@ def view_tree( request, project_id=False ):
 	pageData['projects'] = projects
 	pageData['tree'] = tasks
 
-	return render_to_response( 'project_tree.html', pageData )
+	return render_to_response( 'project_tree.html', RequestContext( request, pageData ) )
 
 def createTree( project, tasks, depth=0, maxdepth=15 ):
 
@@ -913,7 +913,10 @@ def toggle_project( request, project_id ):
 		project.save()
 		messages.info( request, "Project updated.")
 
-	return HttpResponseRedirect('/projects/view/'+str(project_id) )
+	try:
+		return HttpResponseRedirect(request.META['HTTP_REFERER'])
+	except:
+		return HttpResponseRedirect('/projects/view/'+str(project_id) )
 
 
 @login_required

@@ -29,9 +29,14 @@
   	{% if panel1 %}
 
   		{% if notfirst %}
-    <h4><em><a href="/projects/view/{{selected0.id}}">{{selected0.name}}</a></em></h4>
+      <h4><em><a href="/projects/view/{{selected0.id}}">{{selected0.name}}</a></em></h4>
+      {% if selected0.active %}
       <li><a href="/projects/newsub/{{selected0.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
-      <li><a href="/projects/addtask/{{selected0.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
+      <li><a href="/projects/addtask/{{selected0.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li>
+      {% else %}
+      <li><em>This project is closed.</em></li>
+      {% endif %}
+      <hr />
   		{% else %}
   		<h4><em>Projects</em></h4>
   		{% endif %}
@@ -70,9 +75,15 @@
 
   		{% if selected1 %}
 
-    <h4><em><a href="/projects/view/{{selected1.id}}">{{selected1.name}}</a></em></h4>
+      <h4><em><a href="/projects/view/{{selected1.id}}">{{selected1.name}}</a></em></h4>
+      {% if selected1.active %}
       <li><a href="/projects/newsub/{{selected1.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
-      <li><a href="/projects/addtask/{{selected1.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
+      <li><a href="/projects/addtask/{{selected1.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li>
+      {% else %}
+      <li><em>This project is closed.</em></li>
+      {% endif %}
+      <hr />
+
   		{% endif %}
 
   		{% for p in panel2 %}
@@ -107,8 +118,13 @@
 
   	  {% if selected2 %}
   		<h4><em><a href="/projects/view/{{selected2.id}}">{{selected2.name}}</a></em></h4>
+      {% if selected2.active %}
       <li><a href="/projects/newsub/{{selected2.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
-      <li><a href="/projects/addtask/{{selected2.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
+      <li><a href="/projects/addtask/{{selected2.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li>
+      {% else %}
+      <li><em>This project is closed.</em></li>
+      {% endif %}
+      <hr />
 
   		{% endif %}
 

@@ -24,16 +24,20 @@
 <p>Displays your projects in a folder-style layout. <img src="/static/img/project.png" width='24px'/> = project, <img src="/static/img/task.png" width='24px'> = task, <img src="/static/img/work.png" width='24px'/> = logged work.</p>
 <hr />
 {% if selected %}
-<div style="float:left; display:block;">Browsing "{{selected.name}}"</div>
+<div style="float:left; display:block;">Browsing "<a href="/projects/view/{{selected.id}}">{{selected.name}}</a>"</div>
 {% endif %}
 
-<div style="float:right; display:block;">Add: 
+<div style="float:right; display:block;"> 
 
-	{% if selected %}
+	{% if selected and selected.active %}
+	Add:
 	<a href="/projects/addtask/{{selected.id}}">+Task</a>&nbsp;
 	<a href="/projects/addwork/{{selected.id}}">+Worklog</a>&nbsp;
 	<a href="/projects/newsub/{{selected.id}}">+Project</a>
+	{% elif selected and not selected.active %}
+	<em>This project is closed. {% if user == selected.manager %}<a href="/projects/toggle/{{selected.id}}">Re-open</a>{% endif %}</em>
 	{% else %}
+	Add:
 	<a href="/projects/addtask">+Task</a>&nbsp;
 	<a href="/projects/create">+Project</a>
 
