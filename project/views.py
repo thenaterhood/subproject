@@ -47,6 +47,8 @@ def project_welcome(request):
 	args['total_projects'] = len( Project.objects.filter(members=request.user) )
 	args['managed_projects'] = len( Project.objects.filter(manager=request.user) )
 	args['total_worklogs'] = userStats.worklogs
+	args['total_tasks'] = ProjectTask.objects.filter( creator=request.user ).count()
+	args['active_tasks'] = ProjectTask.objects.filter( creator=request.user ).filter( inProgress=True ).count()
 	tasks = Worklog.objects.filter(owner=request.user).reverse()
 	args['total_time'] = str( userStats.loggedTime / 60 )
 	args['start_date'] = userStats.startDate
