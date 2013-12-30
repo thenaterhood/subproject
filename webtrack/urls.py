@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     # URLs for the user application
-    url(r'^$', 'user.views.welcome'),
+    url(r'^$', 'project.views.project_welcome'),
     url(r'^user/register/$', 'user.views.register_user'),
     url(r'^user/login/$', 'user.views.login_user'),
     url(r'^user/auth/$', 'user.views.auth_user'),
