@@ -3,6 +3,22 @@
 {% block title %} webtrack: add issue {% endblock %}
 
 {% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'error' %}
+      <div class="alert alert-danger">
+    {% elif message.tags == 'warning' %}
+      <div class="alert alert-warning">
+    {% else %}
+      <div class="alert alert-info">
+    {% endif %}
+            
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
 <form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %}
 
 <h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} &nbsp;&nbsp;&nbsp; <input name="useexisting" class="btn btn-success" type="submit" value="Choose an existing task instead" />{% endif %}</h3>

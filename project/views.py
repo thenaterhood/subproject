@@ -153,6 +153,13 @@ def create_project(request, parent=False):
 			request.session['returnUrl'] = request.POST['returnUrl']
 			return HttpResponseRedirect('/projects/'+str(request.POST['parent'])+'/assignchild')
 
+		else:
+
+			pageData = {}
+			pageData['form'] = CreateProjectForm( request.POST )
+			messages.warning( request, "Please check your input, all fields are required." )
+			return render_to_response( 'project_create.html', RequestContext( request, pageData) )
+
 
 	else:
 
@@ -218,6 +225,15 @@ def edit_project(request, proj_id):
 			project.save()
 
 			return HttpResponseRedirect( '/projects/view/' + str(project.id) +"/" )
+
+		else:
+			pageData = {}
+			pageData['form'] = UpdateProjectForm(request.POST)
+			messages.error( request, 'Please fill out all the fields.')
+
+			return render_to_response('project_edit.html', RequestContext( request, pageData) )
+
+
 
 	else:
 		initialDict = { 
@@ -381,9 +397,10 @@ def add_worklog( request, proj_id ):
 		else:
 
 			messages.error( request, "Form information is incorrect." )
-			args['form'] = form
+			args['form'] = AddWorklogForm( request.POST )
 
-			return HttpResponseRedirect( '/projects/addwork/'+str(project.id) )
+
+			return render_to_response( 'worklog_create.html', RequestContext(request, args) )
 
 	else:
 
@@ -445,9 +462,11 @@ def edit_worklog( request, log_id ):
 			return HttpResponseRedirect( '/projects/work/view/' + str(worklog.id) +"/" )
 
 		else:
-			messages.error( request, "Invalid information.")
+			messages.error( request, "Invalid form information.")
+			pageData = {}
+			pageData['form'] = UpdateWorklogForm( request.POST )
 
-			return HttpResponseRedirect( '/projects/work/edit/' + str(worklog.id) )
+			return render_to_response( 'worklog_edit.html', RequestContext( request, pageData) )
 
 	else:
 		initialDict = { 
@@ -556,8 +575,11 @@ def add_task( request, proj_id=False ):
 					return HttpResponseRedirect(request.POST['returnUrl'])
 
 		else:
-			messages.error( request, "Invalid form information." )
-			return HttpResponseRedirect('/projects')
+			messages.error( request, "Please fill out both fields." )
+
+			pageData = {}
+			pageData['form'] = AddTaskForm( request.POST )
+			return render_to_response( 'task_create.html', RequestContext( request, pageData))
 
 	elif "useexisting" in request.POST:
 
@@ -764,6 +786,13 @@ def edit_task( request, task_id ):
 			messages.error( request, "You do not have permission to edit this task.")
 			return HttpResponseRedirect( '/projects/task/view/' + str(task.id) +"/" )
 
+		else:
+
+			messages.error( request, "Please fill out both fields.")
+			pageData = {}
+			pageData['form'] = UpdateTaskForm( request.POST )
+			pageData['task'] = ProjectTask.objects.get( id=task_id )
+			return render_to_response( 'task_edit.html', RequestContext(request, pageData) )
 
 	else:
 		initialDict = { 
