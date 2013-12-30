@@ -3,6 +3,21 @@
 {% block title %} webtrack: projects {% endblock %}
 
 {% block content %}
+{% if messages %}
+	{% for message in messages %}
+		{% if message.tags == 'error' %}
+			<div class="alert alert-danger">
+		{% elif message.tags == 'warning' %}
+			<div class="alert alert-warning">
+		{% else %}
+			<div class="alert alert-info">
+		{% endif %}
+						
+		<button type="button" class="close" data-dismiss="alert">&times;</button>
+			{{ message }}
+		</div>
+	{% endfor %}
+{% endif %}
 
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>

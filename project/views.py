@@ -43,6 +43,10 @@ def project_welcome(request):
 
 	# Assemble a collection of statistics to render to the template
 	args = {}
+	messages.warning( request, "This app is in what could be considered alpha stage. Don't store anything \
+		important on it as it will not be up reliably and the database may be cleared periodically as more \
+		development goes on. Right now it supports logging tasks completed on projects and adding/removing \
+		project collaborators. There's more to come and the UI is not final. ")
 	userStats = UserStatistic.objects.get( user=request.user )
 	args['total_projects'] = len( Project.objects.filter(members=request.user) )
 	args['managed_projects'] = len( Project.objects.filter(manager=request.user) )
@@ -60,7 +64,7 @@ def project_welcome(request):
 	if ( userStats.worklogs > 0 ):
 		args['avg_task_time'] = str( (userStats.loggedTime/60) / userStats.worklogs )
 
-	return render_to_response('project_welcome.html', args)
+	return render_to_response('project_welcome.html', RequestContext( request, args) )
 
 @login_required
 def user_all_tasks(request):
