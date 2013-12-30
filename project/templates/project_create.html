@@ -3,9 +3,15 @@
 {% block title %} webtrack: create project {% endblock %}
 
 {% block content %}
-
-<h3><img src="/static/img/project.png" />Create a Project</h3>
 <form id="registerForm" action="/projects/create/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+<h3>
+	<img src="/static/img/project.png" />
+	Create a Project
+
+	{% if parent %}&nbsp;&nbsp;&nbsp;<input class="btn btn-success" name="useexisting" type="submit" value="Select an Existing Project Instead" />{% endif %}
+
+</h3>
+
 
 	{% for field in form %}
 	<fieldset class="form-group">

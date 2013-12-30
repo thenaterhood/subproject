@@ -118,7 +118,7 @@ def create_project(request, parent=False):
 		newProj = Project()
 		newStat = ProjectStatistic()
 		form = CreateProjectForm(request.POST)
-		if form.is_valid():
+		if form.is_valid() and not "useexisting" in request.POST:
 			newProj.name = form.cleaned_data['name']
 			newProj.phase = form.cleaned_data['phase']
 			newProj.status = form.cleaned_data['status']
@@ -143,14 +143,50 @@ def create_project(request, parent=False):
 
 			return HttpResponseRedirect(redirTo)
 
+		elif "useexisting" in request.POST:
+			request.session['returnUrl'] = request.POST['returnUrl']
+			return HttpResponseRedirect('/projects/'+str(request.POST['parent'])+'/assignchild')
+
+
 	else:
 
 		args = {}
 		args.update(csrf(request))
 		args['returnUrl'] = request.META['HTTP_REFERER']
+		args['addingSub'] = parent
 		args['form'] = CreateProjectForm()
 		args['parent'] = parent
 		return render_to_response('project_create.html', args)
+
+def assign_child( request, parent_id, child_id=False ):
+
+	if ( child_id ):
+
+		try:
+			parent = Project.objects.get( id=parent_id )
+			child = Project.objects.get( id=child_id )
+
+			parent.subprojects.add( child )
+			child.parents.add( parent )
+
+			parent.save()
+			child.save()
+
+			if ( "returnUrl" in request.session ):
+				returnUrl = request.session['returnUrl']
+				del request.session['returnUrl']
+				return HttpResponseRedirect( returnUrl )
+			else:
+				return HttpResponseRedirect( '/projects/view/'+str(parent_id) )
+
+		except:
+			return HttpResponseRedirect( '/projects/' )
+
+	else:
+		pageData = {}
+		parentProj = Project.objects.get( id=parent_id )
+		pageData['projects'] = Project.objects.filter( manager=request.user ).exclude( id=parent_id ).exclude( parents=parentProj )
+		return render_to_response( 'project_select.html', pageData )
 
 @login_required
 def edit_project(request, proj_id):
@@ -443,7 +479,27 @@ def line_stats(request):
 
 	return render_to_response('project_stats_lines.html', args)
 
+@login_required
+def assign_task( request, proj_id, task_id=False ):
 
+	if ( task_id ):
+		project = Project.objects.get( id=proj_id )
+		task = ProjectTask.objects.get( id=task_id )
+
+		task.openOn.add( project )
+		task.save()
+
+		if ( 'returnUrl' in request.session ):
+			return HttpResponseRedirect( request.session['returnUrl'])
+		else:
+			return HttpResponseRedirect( '/projects/view/'+str(proj_id ) )
+
+	else:
+		pageData = {}
+		project = Project.objects.get( id=proj_id )
+		pageData['tasks'] = ProjectTask.objects.filter( creator=request.user ).exclude( openOn=project ).exclude( closedOn=project )
+
+		return render_to_response('task_select.html', pageData)
 
 @login_required
 def add_task( request, proj_id=False ):
@@ -453,7 +509,7 @@ def add_task( request, proj_id=False ):
 	redirecting to assign it to a project.
 	"""
 
-	if request.method == "POST":
+	if request.method == "POST" and "useexisting" not in request.POST:
 		projTask = ProjectTask()
 
 		form = AddTaskForm(request.POST)
@@ -494,10 +550,22 @@ def add_task( request, proj_id=False ):
 			messages.error( request, "Invalid form information." )
 			return HttpResponseRedirect('/projects')
 
+	elif "useexisting" in request.POST:
+
+		if "returnUrl" in request.POST:
+			request.session['returnUrl'] = request.POST['returnUrl']
+		else:
+			request.session['returnUrl'] = '/projects/view/'+str(proj_id)
+
+		return HttpResponseRedirect('/projects/'+str(proj_id)+'/assigntask' )
+
 	else:
 
 		args = {}
-		args['returnUrl'] = request.META['HTTP_REFERER']
+		try:
+			args['returnUrl'] = request.META['HTTP_REFERER']
+		except:
+			args['returnUrl'] = '/projects/usertasks'
 		args.update(csrf(request))
 		if ( proj_id != False ):
 			args['project'] = project = Project.objects.get(id=proj_id)
@@ -933,6 +1001,8 @@ def show_outline( request ):
 		pageData['notfirst'] = True
 
 		prevProject = Project.objects.get(id=previous)
+		pageData['selected0'] = prevProject
+
 		pageData['selected1'] = Project.objects.get( id=projects[0] )
 		pageData['panel1'] = Project.objects.filter( parents=prevProject )
 		pageData['panel1task'] = ProjectTask.objects.filter( openOn=prevProject )

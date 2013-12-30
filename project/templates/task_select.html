@@ -4,7 +4,7 @@
 
 {% block content %}
 
-	<h1><img src="/static/img/project.png" />Select a Project</h1>
+	<h1><img src="/static/img/task.png" />Select a Task</h1>
 
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
@@ -12,26 +12,20 @@
 
 	<table class="table table-striped">
 		<tr>
-			<th>Project</th>
-			<th>Manager</th>
-			<th>Status</th>
+			<th>Task Summary</th>
+			<th>In Progress</th>
 			<th>Select</th>
 		</tr>
-	{% for project in projects %}
+	{% for t in tasks %}
 
-		{% if project in task.openOn.all or project in task.closedOn.all %}
-
-		{% else %}
 
 			<tr>
-				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a></td>
-				<td>{{project.manager}}</td>
-				<td>{{project.status}}</td>
+				<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+				<td>{% if t.inProgress %}Yes{% else %}No{% endif %}</td>
 				<!--<li>Description: {{project.description}}</li>-->
-				<td><a class="btn btn-success" href="{{project.id}}/">Select</a></td>
+				<td><a class="btn btn-success" href="{{t.id}}/">Select</a></td>
 			</tr>
 
-		{% endif %}
 	{% endfor %}
 
 	</table>

@@ -3,10 +3,9 @@
 {% block title %} webtrack: add issue {% endblock %}
 
 {% block content %}
+<form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %}
 
-<h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} {% endif %}</h3>
-	<form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %} <!--Pass information back 
-		to the register url through the POST method-->
+<h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} &nbsp;&nbsp;&nbsp; <input name="useexisting" class="btn btn-success" type="submit" value="Choose an existing task instead" />{% endif %}</h3>
 
 		{% for field in form %}
 		<fieldset class="form-group">
@@ -26,7 +25,7 @@
 		<input id="submitBtn" class="btn btn-success" type="submit" value="Create and Assign to Project" name="saveandassign" />
 		{% endif %}
 
-		<input id="registerButton" name="save" class="btn btn-success btn-large" type="submit" value="Create and Assign Later" />
+		<input id="registerButton" name="save" class="btn btn-success btn-large" type="submit" value="Create" />
 
 	</form> <!--Close the form tag-->
 

@@ -12,7 +12,9 @@
   	{% if panel1 %}
 
   		{% if notfirst %}
-  		<h4><em>Subprojects</em></h4>
+    <h4><em><a href="/projects/view/{{selected0.id}}">{{selected0.name}}</a></em></h4>
+      <li><a href="/projects/newsub/{{selected0.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
+      <li><a href="/projects/addtask/{{selected0.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
   		{% else %}
   		<h4><em>Projects</em></h4>
   		{% endif %}
@@ -28,17 +30,13 @@
   			<a href="/projects/outline/?pos={% if notfirst %}{{panel1pos}},{% endif %}{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected1 and selected1 == p %}
-  			</strong>
+  			&#8594;</strong>
   			{% endif %}
 
   		</li>
 
   		{% endfor %}
 
-
-  		{% if panel1task %}
-	  	<h4><em>Tasks</em></h4>
-	  	{% endif %}
 
 	  	{% for t in panel1task %}
 
@@ -53,8 +51,11 @@
 
   <div class="span3 col-md-2">
 
-  		{% if panel2 %}
-  		<h4><em>Subprojects</em></h4>
+  		{% if selected1 %}
+
+    <h4><em><a href="/projects/view/{{selected1.id}}">{{selected1.name}}</a></em></h4>
+      <li><a href="/projects/newsub/{{selected1.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
+      <li><a href="/projects/addtask/{{selected1.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
   		{% endif %}
 
   		{% for p in panel2 %}
@@ -66,17 +67,12 @@
   			<a href="/projects/outline/?pos={{panel2pos}},{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected2 and selected2 == p %}
-  			</strong>
+  			&#8594;</strong>
   			{% endif %}
 
   		</li>
 
   		{% endfor %}
-
-
-  		{% if panel2task %}
-	  	<h4><em>Tasks</em></h4>
-	  	{% endif %}
 
 	  	{% for t in panel2task %}
 
@@ -92,8 +88,11 @@
 
   <div class="span3 col-md-2">
 
-  	  	{% if panel3 %}
-  		<h4><em>Subprojects</em></h4>
+  	  {% if selected2 %}
+  		<h4><em><a href="/projects/view/{{selected2.id}}">{{selected2.name}}</a></em></h4>
+      <li><a href="/projects/newsub/{{selected2.id}}"><img src="/static/img/project.png" width="24px" /><em>Add Subproject</em></a></li>
+      <li><a href="/projects/addtask/{{selected2.id}}"><img src="/static/img/task.png" width="24px" /><em>Add Task</em></a></li><hr />
+
   		{% endif %}
 
   		{% for p in panel3 %}
@@ -105,17 +104,12 @@
   			<a href="/projects/outline/?pos={{panel3pos}},{{p.id}}"><img src="/static/img/project.png" width="24px" />{{p.name}}</a>
 
   			{% if selected3 and selected3 == p %}
-  			</strong>
+  			&#8594;</strong>
   			{% endif %}
 
   		</li>
 
   		{% endfor %}
-
-
-  		{% if panel3task %}
-	  	<h4><em>Tasks</em></h4>
-	  	{% endif %}
 
 	  	{% for t in panel3task %}
 

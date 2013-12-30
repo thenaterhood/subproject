@@ -64,9 +64,10 @@ urlpatterns = patterns('',
     url(r'^projects/browser/$', 'project.views.show_browser'),
     url(r'^projects/browser/(?P<open_project>\d+)/$', 'project.views.show_browser'),
     url(r'^projects/newsub/(?P<parent>\d+)/$', 'project.views.create_project'),
-
-
-
+    url(r'^projects/(?P<parent_id>\d+)/assignchild/$', 'project.views.assign_child'),
+    url(r'^projects/(?P<parent_id>\d+)/assignchild/(?P<child_id>\d+)/$', 'project.views.assign_child'),
+    url(r'^projects/(?P<proj_id>\d+)/assigntask/$', 'project.views.assign_task'),
+    url(r'^projects/(?P<proj_id>\d+)/assigntask/(?P<task_id>\d+)/$', 'project.views.assign_task'),
 
     url(r'^projects/todo/', 'project.views.my_todo'),
 

@@ -24,7 +24,6 @@
     	{% endfor %}
 	{% endif %}
 	<h2><img src="/static/img/task.png" />Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
-	<p>{{task.description}}</p>
 	{%if canEdit %}
 		<a class="btn btn-info" href="/projects/task/edit/{{task.id}}">Edit Task</a>
 		{% if not task.inProgress %}
@@ -43,13 +42,17 @@
 		<a class="btn btn-warning" href="/projects/task/close/{{task.id}}">Close Task</a>
 	-->
 	{%endif%}
+	<br />
+	<br />
+			<h4>Task Details</h4>
 
-	<p><em>Opened by {{task.creator}} </em>
+	<div class="well">
+			<p><em>Opened by {{task.creator}} </em>
 
-	</p>
+			<p>Description: {{task.description}}</p>
+	</div>
 
-
-	<h3><img src="/static/img/project.png" />Projects this task belongs to</h3>
+	<h4><img src="/static/img/project.png" />Projects this task belongs to</h4>
 
 		<table class="table table-striped">
 			<tr>
@@ -117,7 +120,7 @@
 
 		<hr />
 
-	<h3><img src="/static/img/members.png" />Task Assignees</h3>
+	<h4><img src="/static/img/members.png" />Task Assignees</h4>
 		<table class="table table-striped">
 			<tr>
 				<th>Assignee</th>
