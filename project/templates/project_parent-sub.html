@@ -9,7 +9,7 @@
 	{% endif %}
 	<h1>{{relation}} of <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
 	{% if relation == 'children' %}
-	<p><a href="/projects/childcreate/{{project.id}}">Create New SubProject</a></p>
+	<p><a href="/projects/newsub/{{project.id}}">Create New SubProject</a></p>
 	{% else %}
 		{% if user == project.manager %}
 		<p style="display:inline;"><a class="btn btn-warning" href="/projects/totop/{{project.id}}" title="Promote to a top level project and remove subproject status and all parents.">Promote to Top Level Project</a></p>

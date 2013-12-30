@@ -152,7 +152,10 @@ def create_project(request, parent=False):
 
 		args = {}
 		args.update(csrf(request))
-		args['returnUrl'] = request.META['HTTP_REFERER']
+		try:
+			args['returnUrl'] = request.META['HTTP_REFERER']
+		except:
+			args['returnUrl'] = '/projects/'
 		args['addingSub'] = parent
 		args['form'] = CreateProjectForm()
 		args['parent'] = parent
