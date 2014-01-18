@@ -262,19 +262,38 @@ def view_project(request, proj_id):
 	"""
 
 	project = Project.objects.get(id=proj_id)
-	worklogs = Worklog.objects.filter(project=project).all().reverse()[:5]
+	worklogs = Worklog.objects.filter(project=project).all().reverse()
 
 	if not project.active:
 		messages.warning( request, "This project is closed. Work and tasks cannot be added to closed projects.")
 
 	args = {}
+	args['parents'] = project.parents.all()
+	args['num_parents'] = args['parents'].count()
 	args['project'] = project
+	args['children'] = project.subprojects.all()
+	args['num_childre'] = args['children'].count()
 	args['members'] = project.members.all()
 	args['canEdit'] = ( project.manager == request.user )
 	args['isMember'] = ( request.user in project.members.all() )
+	args['num_members'] = project.members.all().count()
 	args['worklogs'] = worklogs
-	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()[:5]
-	args.update(csrf(request))
+	args['num_worklogs'] = worklogs.count()
+	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()
+	args['num_tasks'] = args['tasks'].count()
+
+	initialDict = { 
+		"name": project.name, 
+		"status": project.status, 
+		"phase": project.phase, 
+		"description": project.description,
+		"lines": project.lines
+		}
+
+	form = UpdateProjectForm()
+	form.initial = initialDict
+
+	args['form'] = form
 
 	if ( project.manager == request.user ):
 		args['add_member_form'] = AddMemberForm()
