@@ -20,9 +20,8 @@
 		</div>
 		{% endfor %}
 		{% endif %}
-		<h3><img src="/static/img/project.png" />{{project.name}} <small>Dashboard</small></h3>
+		<h3><img src="/static/img/project.png" />{{project.name}} <small>Project View</small></h3>
 		<p>
-			<a class="btn btn-default" href="/projects/">Back to Projects</a>
 			{%if canEdit %} 
 			{% if project.active %}
 			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
@@ -35,7 +34,7 @@
 
 		<div class="tabbable">
 			<ul class="nav nav-tabs">
-				<li class="active"><a href="#pane1" data-toggle="tab">Overview</a></li>
+				<li class="active"><a href="#pane1" data-toggle="tab"><img src="/static/img/info.png" height="24px" /> Overview</a></li>
 				<li><a href="#tasks" data-toggle="tab"><img src="/static/img/task.png" height="24px" /> Tasks</a></li>
 				<li><a href="#worklogs" data-toggle="tab"><img src="/static/img/work.png" height="24px" /> Worklogs</a></li>
 				<li><a href="#tree" data-toggle="tab"><img src="/static/img/tree.jpg" height="24px" /> Tree</a></li>
@@ -57,12 +56,13 @@
 							<li><img src="/static/img/work.png" width="32px" /> {{num_worklogs}} work items logged</li>
 							<li><img src="/static/img/task.png" width="32px" /> {{num_tasks}} tasks created</li>
 							<li><img src="/static/img/members.png" width="32px" /> {{num_members}} members</li>
-
-
 						</ul>
 				</div>
 				<div id="tasks" class="tab-pane">
 					<h4><img src="/static/img/task.png" />Tasks {%if isMember and project.active %}<a href="/projects/addtask/{{project.id}}/">(Add)</a>{%endif%}</h4>
+					{% if num_tasks < 1 %}
+					<p>No tasks have been added to this project.</p>
+					{% else %}
 					<table class="table table-striped">
 						<tr>
 							<th>Summary</th>
@@ -88,9 +88,13 @@
 						{% endfor %}
 
 					</table>
+					{% endif %}
 				</div>
 				<div id="worklogs" class="tab-pane">
 					<h4><img src="/static/img/work.png" />Logged Work {%if isMember and project.active %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
+					{% if num_worklogs < 1 %}
+					<p>No work has been logged on this project.</p>
+					{% else %}
 					<table class="table table-striped">
 						<tr>
 							<th>Summary</th>
@@ -110,6 +114,7 @@
 						{% endfor %}
 
 					</table>
+					{% endif %}
 				</div>
 				<div id="tree" class="tab-pane">
 					<h3><img src="/static/img/tree.jpg" width="64px" />Parents</h3>

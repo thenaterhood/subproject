@@ -4,34 +4,32 @@
 
 {% block content %}
 
-	{% if form.errors %}
-		<p class="error">Sorry, that's not a valid username/password</p>
-	{% endif %}
+{% if form.errors %}
+<p class="error">Sorry, that's not a valid username/password</p>
+{% endif %}
 
-	{% if messages %}
-    	{% for message in messages %}
-			{% if message.tags == 'error' %}
-    			<div class="alert alert-danger">
-			{% elif message.tags == 'warning' %}
-				<div class="alert alert-warning">
-			{% else %}
-				<div class="alert alert-info">
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == 'error' %}
+<div class="alert alert-danger">
+	{% elif message.tags == 'warning' %}
+	<div class="alert alert-warning">
+		{% else %}
+		<div class="alert alert-info">
 			{% endif %}
-							
-    		<button type="button" class="close" data-dismiss="alert">&times;</button>
-    			{{ message }}
-    		</div>
-    	{% endfor %}
-	{% endif %}
-	<h2><img src="/static/img/task.png" />Task: {{task.summary}} {%if task.completed%}(Completed){%endif%}</h2>
-	{%if canEdit %}
-		<a class="btn btn-info" href="/projects/task/edit/{{task.id}}">Edit Task</a>
+
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			{{ message }}
+		</div>
+		{% endfor %}
+		{% endif %}
+		<h2><img src="/static/img/task.png" />{{task.summary}} {%if task.completed%}(Completed){%endif%} <small>Task View</small></h2>
+		{%if canEdit %}
 		{% if not task.inProgress %}
 		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
 		{% else %}
 		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
 		{% endif %}
-		<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}">Delete Task</a>
 
 		<!--
 		{% if task.active %}
@@ -44,120 +42,169 @@
 	{%endif%}
 	<br />
 	<br />
-			<h4>Task Details</h4>
 
-	<div class="well">
-			<p><em>Opened by {{task.creator}} </em>
+	<div class="tabbable">
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#overview" data-toggle="tab"><img src="/static/img/info.png" width="24px" /> Overview</a></li>
+			<li><a href="#projects" data-toggle="tab"><img src="/static/img/project.png" width="24px" /> Projects</a></li>
+			<li><a href="#assignees" data-toggle="tab"><img src="/static/img/members.png" width="24px" /> Assignees</a></li>
+			{% if canEdit %}
+			<li><a href="#edit" data-toggle="tab"><img src="/static/img/edit.png" width="24px" /> Edit</a></li>
+			{% endif %}
+		</ul>
+		<div class="tab-content">
+			<div id="overview" class="tab-pane active">
+				<h4>Task Details</h4>
 
-			<p>Description: {{task.description}}</p>
-	</div>
+				<div class="well">
+					<p><em>Opened by {{task.creator}} </em>
 
-	<h4><img src="/static/img/project.png" />Projects this task belongs to</h4>
+						<p>Description: {{task.description}}</p>
+					</div>
+				</div>
+				<div id="projects" class="tab-pane">
+					<h4><img src="/static/img/project.png" />Projects this task belongs to</h4>
 
-		<table class="table table-striped">
-			<tr>
-				<th>Project</th>
-				<th>Manager</th>
-				<th>Description</th>
-				<th>Manage</th>
-				<th>Remove</th>
-			</tr>
+					<table class="table table-striped">
+						<tr>
+							<th>Project</th>
+							<th>Manager</th>
+							<th>Description</th>
+							<th>Manage</th>
+							<th>Remove</th>
+						</tr>
 
-			{% for p in openOn %}
+						{% for p in openOn %}
 
-			<tr>
-				<td>
-					{% if user in p.members.all %}
-					<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
-					{% else %}
-					<p>{{p.name}}</p>
-					{% endif %}
-				</td>
-				<td>{{p.manager}}</td>
-				<td>{{p.description}}</td>
+						<tr>
+							<td>
+								{% if user in p.members.all %}
+								<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
+								{% else %}
+								<p>{{p.name}}</p>
+								{% endif %}
+							</td>
+							<td>{{p.manager}}</td>
+							<td>{{p.description}}</td>
 
-				<td>
-					{% if user in p.members.all %}
-					<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Task Completed</a>
-					{% else %}
-					<p>Currently Open</p>
-					{% endif %}
-				</td>
+							<td>
+								{% if user in p.members.all %}
+								<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Task Completed</a>
+								{% else %}
+								<p>Currently Open</p>
+								{% endif %}
+							</td>
 
-				<td>
-					{% if user in p.members.all %}
-					<a class="btn btn-danger" href="/projects/{{p.id}}/unassigntask/{{task.id}}/">Remove</a>
-					{% else %}
-					<p>You are not a project member.</p>
-					{% endif %}
-				</td>
-			</tr>
+							<td>
+								{% if user in p.members.all %}
+								<a class="btn btn-danger" href="/projects/{{p.id}}/unassigntask/{{task.id}}/">Remove</a>
+								{% else %}
+								<p>You are not a project member.</p>
+								{% endif %}
+							</td>
+						</tr>
 
-			{% endfor %}
+						{% endfor %}
 
-			{% for p in closedOn %}
+						{% for p in closedOn %}
 
-			<tr>
-				<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
-				<td>{{p.manager}}</td>
-				<td>{{p.description}}</td>
+						<tr>
+							<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
+							<td>{{p.manager}}</td>
+							<td>{{p.description}}</td>
 
-				<td>
-					{% if user in p.members.all %}
-					<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished</a>
-					{% else %}
-					<p>Currently Closed</p>
-					{% endif %}
-				</td>
-			</tr>
+							<td>
+								{% if user in p.members.all %}
+								<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished</a>
+								{% else %}
+								<p>Currently Closed</p>
+								{% endif %}
+							</td>
+						</tr>
 
-			{% endfor %}
+						{% endfor %}
 
-			<tr>
-				<td colspan="5"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
+						<tr>
+							<td colspan="5"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
 
-		</table>
+						</table>
+					</div>
+					<div id="assignees" class="tab-pane">
+						<h4><img src="/static/img/members.png" />Task Assignees</h4>
+						<table class="table table-striped">
+							<tr>
+								<th>Assignee</th>
+								<th>Manage</th>
+							</tr>
 
-		<hr />
+							{% for u in members %}
 
-	<h4><img src="/static/img/members.png" />Task Assignees</h4>
-		<table class="table table-striped">
-			<tr>
-				<th>Assignee</th>
-				<th>Manage</th>
-			</tr>
+							<tr>
+								<td>{{u}}</td>
+								<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
+							</tr>
+							{% endfor %}
 
-			{% for u in members %}
+							{% if canEdit %}
 
-			<tr>
-			<td>{{u}}</td>
-			<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
-			</tr>
-			{% endfor %}
+							<tr>
 
-			<tr>
+								<td>
 
-			<td>
+									<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
 
-			<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
+										{% for field in add_member_form %}
 
-			{% for field in add_member_form %}
+										{{field}}
 
-				{{field}}
+										{% endfor %}
 
-			{% endfor %}
+									</td>
+									<td><input type="submit" class="btn btn-success" value="Assign">
+									</form>
 
-			</td>
-			<td><input type="submit" class="btn btn-success" value="Assign">
-						</form>
-
-		</tr>
-
-
-		</table>
-
-	</div>
+								</tr>
+								{% endif %}
 
 
+							</table>
+						</div>
+						{% if canEdit %}
+						<div id="edit" class="tab-pane">
+							<h3><img src="/static/img/task.png" />Edit Task</h3>
+							<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
-{% endblock %}
+								{% for field in form %}
+								<fieldset class="form-group">
+									<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+									<input type="text" class="form-control"
+									name="{{ field.name }}"
+									id="id_{{ field.name }}"
+									value="{{ field.value }}" > 
+									<p class="help-text">{{ field.help_text }} </p>
+								</fieldset>
+								{% endfor %}
+
+								<input class="btn btn-success" type="submit" value="Save" />
+								<a class="btn btn-warning" href="/projects/task/view/{{task.id}}/">Cancel</a>
+
+								<span style="float:right;">
+									<a class="btn btn-warning" href="/projects/task/tosubproject/{{task.id}}">Convert to Project</a>
+									<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}/">Delete Task</a>
+								</span>
+
+							</form>
+						</div>
+						{% endif %}
+
+					</div><!-- /.tab-content -->
+				</div><!-- /.tabbable -->
+				<br />
+				<br />
+
+
+			</div>
+
+
+
+			{% endblock %}

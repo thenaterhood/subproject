@@ -652,6 +652,15 @@ def view_task(request, task_id):
 	projects = task.openOn.all()
 
 	args = {}
+	initialDict = { 
+		"summary": task.summary, 
+		"description": task.description,
+		}
+
+	form = UpdateTaskForm()
+	form.initial = initialDict
+
+	args['form'] = form
 	args['openOn'] = task.openOn.all()
 	args['closedOn'] = task.closedOn.all()
 	args['task'] = task
@@ -840,10 +849,11 @@ def view_all_task( request, proj_id ):
 		args = {}
 		args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project)) 
 		args['project'] = project
-		return render_to_response('task_list.html', args)
+		return HttpResponseRedirect( '/projects/view/'+str(proj_id)+'/#tasks')
+		#return render_to_response('task_list.html', args)
 
 	else:
-		return HttpResponseRedirect('/project/')
+		return HttpResponseRedirect('/projects/')
 
 @login_required
 def view_all_work( request, proj_id ):
@@ -857,10 +867,11 @@ def view_all_work( request, proj_id ):
 		args = {}
 		args['project'] = project
 		args['logs'] = Worklog.objects.filter(project=project)
-		return render_to_response('worklog_list.html', args)
+		return HttpResponseRedirect( '/projects/view/' + str(proj_id) + "/#worklogs")
+		#return render_to_response('worklog_list.html', args)
 
 	else:
-		return HttpResponseRedirect('/project/')
+		return HttpResponseRedirect('/projects/')
 
 @login_required
 def my_todo( request ):
