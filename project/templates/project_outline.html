@@ -21,7 +21,12 @@
 {% endif %}
 
 <h1><img src="/static/img/outline.png" />Panel View</h1>
-<p>This view allows you to browse your projects in a side-by-side panel view of projects and subprojects</p>
+<p>This view allows you to browse your projects in a side-by-side panel view of projects and subprojects.</p>
+<hr />
+
+{% if empty %}
+<p>You are not a member of any projects or tasks. Get started by <a href="/projects/addtask/">creating a task</a> or <a href="/projects/create">starting a project.</p>
+{% endif %}
 <div class="container">
 <div class="row equalHeight">
   <div class="span3 col-md-2">

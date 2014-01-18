@@ -868,6 +868,7 @@ def view_tree( request, project_id=False ):
 	projects and tasks.
 	"""
 	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
+	num_projects = 0
 	pageData = {}
 
 
@@ -876,14 +877,17 @@ def view_tree( request, project_id=False ):
 		pageData['treeHtml'] = ""
 
 		for project in projects.all():
+			num_projects += 1
 			pageData['treeHtml'] += createTreeRow(project, tasks, depth=0 ) + createTree( project, tasks )
 	else:
 		projects = Project.objects.get( id=project_id )
+		num_projects = 1
 
 		pageData['treeHtml'] = createTreeRow(projects, tasks, depth=0 ) + createTree( projects, tasks )
 
 	pageData['projects'] = projects
 	pageData['tree'] = tasks
+	pageData['num_projects'] = num_projects
 
 	return render_to_response( 'project_tree.html', RequestContext( request, pageData ) )
 
@@ -907,12 +911,12 @@ def createTreeRow( project, tasks, depth=0 ):
 	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
 	projectRow = '<tr>\
 		<td>'+spacing+'<a href="/projects/view/'+str(project.id)+'"><img src="/static/img/project.png" width="24px" />'+project.name+'</a> \
-		<a class="btn-small btn-info" href="/projects/tree/'+str(project.id)+'">Show Tree</a></td></tr>\n'
+		<a title="Show Tree" href="/projects/tree/'+str(project.id)+'"><img src="/static/img/tree.jpg" width="24px" alt="Show Tree"/></a></td></tr>\n'
 	applicableTasks = tasks.filter( openOn=project ).all()
 
 	for t in applicableTasks:
 		projectRow += '<tr>\
-			<td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1*2) )+'<a href="/projects/task/view/'+str(t.id)+'"><img src="/static/img/task.png" width="24px" />'+t.summary+'</a>\
+			<td>'+('&nbsp;&nbsp;&nbsp;' * (depth+1)*2 )+'<a href="/projects/task/view/'+str(t.id)+'"><img src="/static/img/task.png" width="24px" />'+t.summary+'</a>\
 			</td>\
 		</tr>\n'
 
@@ -1003,6 +1007,7 @@ def show_parents( request, project_id ):
 	pageData = {}
 
 	pageData['projects'] = project.parents.all()
+	pageData['parents'] = pageData['projects'].count()
 	pageData['project'] = project
 	pageData['relation'] = "parents"
 	pageData['user'] = request.user
@@ -1024,6 +1029,7 @@ def show_outline( request ):
 		pageData['pos'] = request.GET['pos']
 	except:
 		pageData['panel1'] = Project.objects.filter( members=request.user )
+		pageData['empty'] = ( pageData['panel1'].count() < 1)
 
 		return render_to_response( 'project_outline.html', RequestContext(request, pageData) )
 

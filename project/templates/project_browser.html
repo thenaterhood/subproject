@@ -21,7 +21,7 @@
 {% endif %}
 
 <h1><img src="/static/img/outline.png" />Project Browser</h1>
-<p>Displays your projects in a folder-style layout. <img src="/static/img/project.png" width='24px'/> = project, <img src="/static/img/task.png" width='24px'> = task, <img src="/static/img/work.png" width='24px'/> = logged work.</p>
+<p>Displays your projects in a folder-style layout. <img src="/static/img/project.png" width='24px'/> = project, <img src="/static/img/task.png" width='24px'> = task, <img src="/static/img/work.png" width='24px'/> = logged work. Right click on an item for more options.</p>
 <hr />
 {% if selected %}
 <div style="float:left; display:block;">Browsing "<a href="/projects/view/{{selected.id}}">{{selected.name}}</a>"</div>
@@ -60,10 +60,17 @@
 
 		{% if not projects and not tasks and not work %}
 
-		<p><em>This project does not contain subprojects, tasks, or work.</em> Add: 
-		<a href="/projects/addtask/{{selected.id}}">+Task</a>&nbsp;
-	<a href="/projects/addwork/{{selected.id}}">+Worklog</a>&nbsp;
-	<a href="/projects/newsub/{{selected.id}}">+Project</a></p>
+			{% if selected %}
+			<p><em>This project does not contain subprojects, tasks, or work.</em> Add: 
+			<a href="/projects/addtask/{{selected.id}}">+Task</a>&nbsp;
+		<a href="/projects/addwork/{{selected.id}}">+Worklog</a>&nbsp;
+		<a href="/projects/newsub/{{selected.id}}">+Project</a></p>
+			{% else %}
+
+					<p><em>You are not a member of any projects and haven't created tasks or work. 
+						Get started by <a href="/projects/addtask/">creating a task</a> or <a href="/projects/create">starting a project.</a></em></p>
+
+			{% endif %}
 
 		{% endif %}
 

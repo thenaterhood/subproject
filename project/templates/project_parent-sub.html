@@ -7,11 +7,11 @@
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
-	<h1>{{relation}} of <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
+	<h1 style="text-transform:capitalize;">{{relation}} of <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
 	{% if relation == 'children' %}
-	<p><a href="/projects/newsub/{{project.id}}">Create New SubProject</a></p>
+	<p><a href="/projects/newsub/{{project.id}}">Create New Subproject</a></p>
 	{% else %}
-		{% if user == project.manager %}
+		{% if user == project.manager  and parents > 0 %}
 		<p style="display:inline;"><a class="btn btn-warning" href="/projects/totop/{{project.id}}" title="Promote to a top level project and remove subproject status and all parents.">Promote to Top Level Project</a></p>
 		{% endif %}
 		

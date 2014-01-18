@@ -6,11 +6,17 @@
 
 	<h1><img src="/static/img/outline.png" />Outline View</h1>
 
+
+	<p>Shows your projects and tasks in a tree-style layout. Click the tree icon (<img src="/static/img/tree.jpg" width="24px" />) to view only a specific point in the tree.</p>
+	<p><a href="/projects/create/">Create a Project</a></p>
+
+	<hr />
+
 	{% if num_projects == 0 %}
-		<p class="error">You are not a member of any projects.</p>
+		<p>You are not a member of any projects or tasks. Get started by <a href="/projects/addtask/">creating a task</a> or <a href="/projects/create">starting a project</a>.</p>	
 	{% endif %}
 
-	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Statistics</a></p>
+
 
 	<table class="table table-condensed table-striped">
 
