@@ -255,6 +255,8 @@ def edit_project(request, proj_id):
 		return render_to_response('project_edit.html', args)
 
 
+
+
 @login_required
 def view_project(request, proj_id):
 	"""
@@ -263,6 +265,7 @@ def view_project(request, proj_id):
 
 	project = Project.objects.get(id=proj_id)
 	worklogs = Worklog.objects.filter(project=project).all().reverse()
+	tags = project.tags.all()
 
 	if not project.active:
 		messages.warning( request, "This project is closed. Work and tasks cannot be added to closed projects.")
@@ -439,7 +442,18 @@ def view_worklog( request, log_id ):
 	"""
 	worklog = Worklog.objects.get(id=log_id)
 
+	initialDict = { 
+		"summary": worklog.summary, 
+		"minutes": worklog.minutes, 
+		"hours": worklog.hours, 
+		"description": worklog.description,
+		}
+
+	form = UpdateWorklogForm()
+	form.initial = initialDict
+
 	args = {}
+	args['form'] = form
 	args['worklog'] = worklog
 	args['canEdit'] = ( request.user == worklog.owner )
 	args['project'] = worklog.project

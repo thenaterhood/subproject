@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} Toolshare: Login {% endblock %}
+{% block title %} Webtrack: Worklog {% endblock %}
 
 {% block content %}
 
@@ -23,25 +23,51 @@
     		</div>
     	{% endfor %}
 	{% endif %}
-	<h2><img src="/static/img/work.png" />{{worklog.summary}}</h2>
-	<p><em>Logged by {{worklog.owner}} on {{worklog.project.name}} {%if canEdit %}<a href="/projects/work/edit/{{worklog.id}}">(Edit/Delete)</a>{%endif%}</em></p>
+	<h2><img src="/static/img/work.png" />{{worklog.summary}} <small>logged by {{worklog.owner}}</small></h2>
 
-	<h3>Project Details</h3>
-		<div class="well">
-			<ul>
-				<li>Name: {{project.name}}</li>
-				<li>Status: {{project.status}}</li>
-				<li>Phase: {{project.phase}}</li>
-				<li>Description: {{project.description}}</li>
-			</ul>
-		</div>
+	<div class="tabbable">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#overview" data-toggle="tab"><img src="/static/img/info.png" width="24px" /> Overview</a></li>
+    {% if canEdit %}
+    <li><a href="#edit" data-toggle="tab"><img src="/static/img/edit.png" width="24px" /> Edit</a></li>
+    {% endif %}
+
+  </ul>
+  <div class="tab-content">
+    <div id="overview" class="tab-pane active">
 
 	<h3>Work Detail</h3>
 	<div class="well">
-		<h5>{{worklog.summary}} - {{worklog.hours}}:{{worklog.minutes}}</h5>
-		<p>{{worklog.datestamp}}</p>
+		<p>{{worklog.hours}} hours, {{worklog.minutes}} minutes of work logged on {{worklog.project.name}}.</p>
+		<p>Logged on {{worklog.datestamp}}</p>
 		<p>{{worklog.description}}</p>
 	</div>
+
+
+    </div>
+    {% if canEdit %}
+    <div id="edit" class="tab-pane">
+    	<form id="registerForm" action="/projects/work/edit/{{worklog.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+		{% for field in form %}
+<fieldset class="form-group">
+  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+      <input type="text" class="form-control"
+        name="{{ field.name }}"
+        id="id_{{ field.name }}"
+        value="{{ field.value }}" > 
+        <p class="help-text">{{ field.help_text }} </p>
+</fieldset>
+{% endfor %}
+
+		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
+		<a class="btn btn-danger btn-large" href="/projects/work/view/{{worklog.id}}/">Cancel</a>
+
+	</form> <!--Close the form tag-->
+  </div><!-- /.tab-content -->
+      {% endif %}
+
+</div><!-- /.tabbable -->
 
 
 
