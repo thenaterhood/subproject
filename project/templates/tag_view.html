@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: task view {% endblock %}
+
+{% block content %}
+
+{% if form.errors %}
+<p class="error">Sorry, that's not a valid username/password</p>
+{% endif %}
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags == 'error' %}
+<div class="alert alert-danger">
+	{% elif message.tags == 'warning' %}
+	<div class="alert alert-warning">
+		{% else %}
+		<div class="alert alert-info">
+			{% endif %}
+
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			{{ message }}
+		</div>
+		{% endfor %}
+		{% endif %}
+		<h2><img src="/static/img/tag.png" />{{tag.name}} <small>Tag Detail</small></h2>
+		<p>Tags can be used to better organize and classify projects and tasks.</p>
+
+	<br />
+	<br />
+
+	<div class="tabbable">
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#overview" data-toggle="tab"><img src="/static/img/info.png" width="24px" /> Overview</a></li>
+			<li><a href="#projects" data-toggle="tab"><img src="/static/img/project.png" width="24px" /> Projects</a></li>
+			<li><a href="#tasks" data-toggle="tab"><img src="/static/img/task.png" width="24px" /> Tasks</a></li>
+
+			{% if canEdit %}
+			<li><a href="#assignees" data-toggle="tab"><img src="/static/img/members.png" width="24px" /> Users/Viewers</a></li>
+
+			<li><a href="#edit" data-toggle="tab"><img src="/static/img/edit.png" width="24px" /> Edit</a></li>
+			{% endif %}
+		</ul>
+		<div class="tab-content">
+			<div id="overview" class="tab-pane active">
+				<h4>Tag Details</h4>
+
+				<div class="well">
+					<p><em>Created by {{tag.owner}} </em>
+
+						<p>Description: {{tag.description}}</p>
+					</div>
+				</div>
+				<div id="projects" class="tab-pane">
+					<h4><img src="/static/img/project.png" />Projects tagged with {{tag.name}}</h4>
+
+					<table class="table table-striped">
+						<tr>
+							<th>Project</th>
+							<th>Manager</th>
+							<th>Description</th>
+							<th>Untag</th>
+						</tr>
+
+						{% for p in taggedProjects %}
+
+						<tr>
+							<td>
+								{% if user in p.members.all %}
+								<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
+								{% else %}
+								<p>{{p.name}}</p>
+								{% endif %}
+							</td>
+							<td>{{p.manager}}</td>
+							<td>{{p.description}}</td>
+
+							<td>
+								{% if canEdit %}
+								<a class="btn btn-danger" href="/projects/{{p.id}}/untag/{{tag.id}}/">Untag</a>
+								{% else %}
+								<p>You can't change this tag.</p>
+								{% endif %}
+							</td>
+						</tr>
+
+						{% endfor %}
+
+						
+
+
+							</table>
+						</div>
+
+						<div id="tasks" class="tab-pane">
+					<h4><img src="/static/img/task.png" />Tasks tagged with {{tag.name}}</h4>
+
+					<table class="table table-striped">
+						<tr>
+							<th>Summary</th>
+							<th>Opened By</th>
+							<th>Untag</th>
+						</tr>
+
+						{% for p in taggedTasks %}
+
+						<tr>
+							<td>
+								{% if user in p.assigned.all %}
+								<a href="/projects/view/{{p.id}}/">{{p.summary}}</a>
+								{% else %}
+								<p>{{p.summary}}</p>
+								{% endif %}
+							</td>
+							<td>{{p.creator}}</td>
+
+							<td>
+								{% if canEdit %}
+								<a class="btn btn-danger" href="/projects/task/{{p.id}}/untag/{{tag.id}}/">Untag</a>
+								{% else %}
+								<p>You can't change this tag.</p>
+								{% endif %}
+							</td>
+						</tr>
+
+						{% endfor %}
+
+						
+
+
+							</table>
+						</div>
+						{% if canEdit %}
+						<div id="assignees" class="tab-pane">
+
+							<h3><img src="/static/img/members.png" /> Tag Viewers</h3>
+							<p>Tag viewers can view and search by this tag.</p>
+							{% if public %}
+							<p>This tag is public, and can be viewed by anyone.</p>
+							{% else %}
+							<table class="table table-striped">
+								<tr>
+									<th>Viewer name</th>
+									<th>Revoke</th>
+								</tr>
+
+								{% for u in viewers %}
+								<tr>
+									<td>{{u}}</td>
+									<td><a class="btn btn-danger" href="/projects/tag/{{tag.id}}/revokeviewer/{{u.id}}">Revoke</a></td>
+								</tr>
+								{% endfor %}
+
+								<tr>
+
+								<td>
+
+									<form id="addTagViewer" action="/projects/tag/addviewer/{{tag.id}}/" method="POST">{% csrf_token %}
+
+										{% for field in add_user_form %}
+
+										{{field}}
+
+										{% endfor %}
+
+									</td>
+									<td><input type="submit" class="btn btn-success" value="Add">
+									</form>
+
+
+							{% endif %}
+
+							</table>
+
+							<h3><img src="/static/img/members.png" /> Tag Users</h3>
+							<p>Tag users can view and search this tag, and can add it to additional tasks or projects. 
+								The tag owner is not shown in this list, as they can't have their access revoked. Tag users are also able to add and revoke other tag users and viewers.</p>
+
+							<table class="table table-striped">
+								<tr>
+									<th>User</th>
+									<th>Revoke</th>
+								</tr>
+
+								{% for u in users %}
+								<tr>
+									<td>{{u}}</td>
+									<td><a class="btn btn-danger" href="/projects/tag/{{tag.id}}/revokeuser/{{u.id}}">Revoke</a></td>
+								</tr>
+								{% endfor %}
+
+								<tr>
+
+								<td>
+
+									<form id="addTagUser" action="/projects/tag/adduser/{{tag.id}}/" method="POST">{% csrf_token %}
+
+										{% for field in add_user_form %}
+
+										{{field}}
+
+										{% endfor %}
+
+									</td>
+									<td><input type="submit" class="btn btn-success" value="Add">
+									</form>
+
+								</tr>
+
+							</table>
+
+
+						</div>
+
+						<div id="edit" class="tab-pane">
+							<h3><img src="/static/img/edit.png" />Edit Tag</h3>
+							<form id="registerForm" action="/projects/tag/edit/{{tag.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+								{% for field in form %}
+								<fieldset class="form-group">
+									<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+									{{field}}
+									<p class="help-text">{{ field.help_text }} </p>
+								</fieldset>
+								{% endfor %}
+
+								<input class="btn btn-success" type="submit" value="Save" />
+								<a class="btn btn-warning" href="/projects/tags/{{tag.id}}/">Cancel</a>
+
+								<span style="float:right;">
+									<a class="btn btn-danger" href="/projects/tag/delete/{{tag.id}}/">Delete Tag</a>
+								</span>
+
+							</form>
+						</div>
+						{% endif %}
+
+
+
+					</div><!-- /.tab-content -->
+				</div><!-- /.tabbable -->
+				<br />
+				<br />
+
+
+			</div>
+
+
+
+			{% endblock %}

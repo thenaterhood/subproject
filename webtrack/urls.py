@@ -87,5 +87,29 @@ urlpatterns = patterns('',
     url(r'^projects/browser/(?P<open_project>\d+)/$', 'project.views.show_browser'),
     url(r'^projects/todo/', 'project.views.my_todo'),
 
+    # Tag management
+    url(r'^projects/newtag/$', 'project.views.add_tag'),
+    url(r'^projects/tags/(?P<tag_id>\d+)/$', 'project.views.view_tag'),
+    url(r'^projects/tag/edit/(?P<tag_id>\d+)/$', 'project.views.add_tag' ),
+    url(r'^projects/tag/delete/(?P<tag_id>\d+)/$', 'project.views.delete_tag' ),
+    url(r'^projects/tag/adduser/(?P<tag_id>\d+)/$', 'project.views.toggle_tag_user' ),
+    url(r'^projects/tag/addviewer/(?P<tag_id>\d+)/$', 'project.views.toggle_tag_viewer' ),
+    url(r'^projects/tag/(?P<tag_id>\d+)/revokeuser/(?P<user_id>\d+)/$', 'project.views.toggle_tag_user' ),
+    url(r'^projects/tag/(?P<tag_id>\d+)/revokeviewer/(?P<user_id>\d+)/$', 'project.views.toggle_tag_viewer' ),
+    url(r'^projects/tags/', 'project.views.list_tags'),
+
+    # Tag association
+    url(r'^projects/(?P<proj_id>\d+)/addtag/$', 'project.views.assign_project_tag' ),
+    url(r'^projects/(?P<proj_id>\d+)/addtag/(?P<tag_id>\d+)/$', 'project.views.assign_project_tag' ),
+
+    url(r'^projects/task/(?P<task_id>\d+)/addtag/$', 'project.views.assign_task_tag' ),
+    url(r'^projects/task/(?P<task_id>\d+)/addtag/(?P<tag_id>\d+)/$', 'project.views.assign_task_tag' ),
+
+    url(r'^projects/(?P<project_id>\d+)/untag/(?P<tag_id>\d+)/$', 'project.views.untag_project' ),
+    url(r'^projects/task/(?P<task_id>\d+)/untag/(?P<tag_id>\d+)/$', 'project.views.untag_task' ),
+
+    url(r'^projects/(?P<project_id>\d+)/addtag/new', 'project.views.add_tag'),
+    url(r'^projects/task/(?P<task_id>\d+)/addtag/new', 'project.views.add_tag'),
+
 
 )

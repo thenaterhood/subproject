@@ -13,6 +13,7 @@ class Project(models.Model):
 	loc_per_h 	= models.BooleanField(default=True)
 	members		= models.ManyToManyField(User, related_name="Project Members")
 	active		= models.BooleanField(default=True)
+	tags		= models.ManyToManyField('Tag', related_name="Project Tags")
 
 
 	def __str__(self):
@@ -70,9 +71,24 @@ class ProjectTask(models.Model):
 	startDate	= models.DateTimeField(auto_now=False, auto_now_add=True)
 	dueDate		= models.DateTimeField(auto_now=False, auto_now_add=True)
 	inProgress	= models.BooleanField(default=False)
+	tags		= models.ManyToManyField('Tag', related_name="Task Tags")
 
 	def __str__(self):
-		return "Task " + str( self.id )
+		return "Task " + str( self.summary )
+
+class Tag(models.Model):
+	owner 		= models.ForeignKey(User, related_name="Owner" )
+	name 		= models.CharField(max_length=100)
+	description = models.CharField(max_length=255)
+	active 		= models.BooleanField(default=True)
+	public		= models.BooleanField(default=False)
+	users 		= models.ManyToManyField(User, related_name="Tag users")
+	viewers		= models.ManyToManyField(User, related_name="Tag viewers")
+
+	def __str__(self):
+		return "Tag " + self.name + ": " + str(self.user)
+
+
 
 
 

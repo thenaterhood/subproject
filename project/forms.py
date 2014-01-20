@@ -78,7 +78,7 @@ class AddMemberForm(forms.Form):
 
 class AddTaskForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
+	summary = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
 	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Task Description", 'class':'form-control'}), label=(""))
 
 	class Meta:
@@ -87,7 +87,7 @@ class AddTaskForm(forms.ModelForm):
 
 class UpdateTaskForm(forms.ModelForm):
 
-	summary = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
+	summary = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":140, "placeholder":"Task Summary", 'class':'form-control'}),label=(""))
 	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Task Description", 'class':'form-control'}), label=(""))
 
 	class Meta:
@@ -99,3 +99,14 @@ class UpdateTaskForm(forms.ModelForm):
 
 		newTask.summary = self.cleaned_data['summary']
 		newTask.description = self.cleaned_data['description']
+
+class AddTagForm(forms.ModelForm):
+
+	name = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":100, "placeholder":"Tag Name", 'class':'form-control'}),label=(""))
+	public = forms.BooleanField(widget=forms.CheckboxInput(attrs={'class':'form-control', 'title':'Make this tag publicly visible.'}))
+	description = forms.CharField(widget=forms.Textarea(attrs={"required":True, "max_length":255, "placeholder":"Tag Description", 'class':'form-control'}),label=(""))
+
+
+	class Meta:
+		model = Tag
+		fields = ('name', 'description', 'public')

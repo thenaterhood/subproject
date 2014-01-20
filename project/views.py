@@ -254,8 +254,174 @@ def edit_project(request, proj_id):
 
 		return render_to_response('project_edit.html', args)
 
+@login_required
+def toggle_tag_viewer( request, tag_id, user_id=False ):
+	tag = Tag.objects.get( id=tag_id )
+
+	if ( (request.user == tag.owner or request.user in tag.users.all() ) ):
+		if ( not user_id ):
+			form = AddMemberForm( request.POST )
+			form.is_valid()
+			user = User.objects.get( username=form.cleaned_data['username'] )
+		else:
+			user = User.objects.get( id=user_id )
 
 
+		if ( user in tag.viewers.all() ):
+			tag.viewers.remove( user )
+		else:
+			tag.viewers.add( user )
+
+		tag.save()
+
+	messages.info( request, "Updated " + str(user) + "'s tag viewer status." )
+	return HttpResponseRedirect( '/projects/tags/' + str(tag_id) )
+
+
+@login_required
+def toggle_tag_user( request, tag_id, user_id=False ):
+	tag = Tag.objects.get( id=tag_id )
+
+	if ( request.user == tag.owner or request.user in tag.users.all() ):
+		
+		if ( not user_id ):
+			form = AddMemberForm( request.POST )
+			form.is_valid()
+			user = User.objects.get( username=form.cleaned_data['username'] )
+		else:
+			user = User.objects.get( id=user_id )
+
+		if ( user in tag.users.all() ):
+			tag.users.remove( user )
+		else:
+			tag.users.add( user )
+
+		tag.save()
+
+	messages.info( request, "Updated " + str(user) + "'s tag user status." )
+
+	return HttpResponseRedirect( '/projects/tags/' + str(tag_id) )
+
+@login_required
+def delete_tag( request, tag_id ):
+	tag = Tag.objects.get( id=tag_id )
+	if ( request.user == tag.owner ):
+		tag.delete()
+
+		messages.info( request, "Deleted tag " + tag.name )
+
+	return HttpResponseRedirect( '/' )
+
+@login_required
+def view_tag( request, tag_id ):
+	"""
+	Displays a tag 
+	"""
+	tag = Tag.objects.get( id=tag_id )
+
+	if ( request.user == tag.owner 
+		or request.user in tag.viewers.all() 
+		or request.user in tag.users.all() 
+		or tag.public ):
+
+		pageData = {}
+		pageData['tag'] = tag
+		pageData['canEdit'] = ( request.user == tag.owner or request.user in tag.users.all() )
+		pageData['taggedProjects'] = Project.objects.filter( tags=tag )
+		pageData['taggedTasks'] = ProjectTask.objects.filter( tags=tag )
+		pageData['viewers'] = tag.viewers.all()
+		pageData['users'] = tag.users.all()
+		pageData['public'] = tag.public
+		pageData['add_user_form'] = AddMemberForm()
+		form = AddTagForm()
+		initialDict = {
+			'public': tag.public,
+			'name' : tag.name,
+			'description' : tag.description
+		}
+		form.initial = initialDict
+		pageData['form'] = form
+
+		return render_to_response('tag_view.html', RequestContext(request, pageData) )
+
+	else:
+		return HttpResponseRedirect( '/projects/mytags' )
+
+@login_required
+def add_tag( request, tag_id=False, project_id=False, task_id=False ):
+	"""
+	Provides a page where tags can be 
+	created by the user.
+	"""
+	if request.method == 'POST':
+		postData = deepcopy( request.POST )
+
+		if ( 'public' not in request.POST ):
+			postData['public'] = 'off'
+
+		form = AddTagForm( postData )
+
+		if form.is_valid():
+
+			if ( not tag_id ):
+				newTag = Tag()
+			else:
+				newTag = Tag.objects.get( id=tag_id )
+
+			newTag.name = form.cleaned_data['name']
+			newTag.description = form.cleaned_data['description']
+			newTag.public = form.cleaned_data['public']
+			newTag.owner = request.user
+
+			if ( 'public' not in request.POST ):
+				newTag.public = False
+
+			newTag.save()
+
+			if ( task_id ):
+				task = ProjectTask.objects.get( id=task_id )
+				task.tags.add( newTag )
+				task.save()
+			if ( project_id ):
+				project = Project.objects.get( id=project_id )
+				project.tags.add( newTag )
+				project.save()
+
+			if ( 'returnUrl' in request.session ):
+				return HttpResponseRedirect( request.session['returnUrl'] )
+			else:
+				return HttpResponseRedirect( '/projects/tags/' + str(newTag.id) )
+
+
+		else:
+
+			pageData = {}
+			pageData['form'] = form
+			pageData['postTo'] = request.get_full_path()
+			messages.warning( request, "Please check your inputs." )
+			return render_to_response('tag_create.html', RequestContext(request, pageData))
+
+
+	else:
+		form = AddTagForm()
+		args = {}
+		args['form'] = form
+		args['postTo'] = request.get_full_path()
+		return render_to_response('tag_create.html', RequestContext(request, args))
+
+@login_required
+def list_tags( request ):
+	"""
+	Displays a list of the user's tags
+	"""
+
+	tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+
+	pageData = {}
+	pageData['tags'] = tags
+	pageData['user'] = request.user
+
+	return render_to_response( 'tag_list.html', RequestContext(request, pageData))
 
 @login_required
 def view_project(request, proj_id):
@@ -275,7 +441,7 @@ def view_project(request, proj_id):
 	args['num_parents'] = args['parents'].count()
 	args['project'] = project
 	args['children'] = project.subprojects.all()
-	args['num_childre'] = args['children'].count()
+	args['num_children'] = args['children'].count()
 	args['members'] = project.members.all()
 	args['canEdit'] = ( project.manager == request.user )
 	args['isMember'] = ( request.user in project.members.all() )
@@ -284,6 +450,8 @@ def view_project(request, proj_id):
 	args['num_worklogs'] = worklogs.count()
 	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()
 	args['num_tasks'] = args['tasks'].count()
+	args['tags'] = project.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) )
+	args['yourTags'] = args['tags'].filter(Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user))
 
 	initialDict = { 
 		"name": project.name, 
@@ -563,6 +731,72 @@ def assign_task( request, proj_id, task_id=False ):
 		return render_to_response('task_select.html', pageData)
 
 @login_required
+def assign_project_tag( request, proj_id, tag_id=False ):
+
+	returnUrl = '/projects/view/' + str(proj_id)
+
+	if not tag_id:
+		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) )
+		project = Project.objects.get( id=proj_id )
+
+		pageData = {}
+		pageData['project'] = project
+		pageData['tags'] = tags
+		pageData['allowNew'] = True
+
+		if ( 'HTTP_REFERER' in request.META ):
+			request.session['returnUrl'] = request.META['HTTP_REFERER']
+
+		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+
+	else:
+
+		project = Project.objects.get( id=proj_id )
+		tag = Tag.objects.get( id=tag_id )
+
+		if ( request.user in tag.users.all() or request.user == tag.owner ):
+			project.tags.add( tag )
+			project.save()
+
+
+		if ( 'returnUrl' in request.session ):
+			returnUrl = request.session['returnUrl']
+
+		return HttpResponseRedirect( returnUrl )
+
+@login_required
+def assign_task_tag( request, task_id, tag_id=False ):
+
+	returnUrl = '/projects/task/view/' + str(task_id)
+
+	if not tag_id:
+		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) )
+		task = ProjectTask.objects.get( id=task_id )
+
+		pageData = {}
+		pageData['task'] = task
+		pageData['tags'] = tags
+		pageData['allowNew'] = True
+
+
+		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+
+	else:
+
+		task = ProjectTask.objects.get( id=task_id )
+		tag = Tag.objects.get( id=tag_id )
+
+		if ( request.user in tag.users.all() or request.user == tag.owner ):
+
+			task.tags.add( tag )
+			task.save()
+
+
+		return HttpResponseRedirect( returnUrl )
+
+
+
+@login_required
 def add_task( request, proj_id=False ):
 	"""
 	Provides a blank form for creating a new 
@@ -655,6 +889,33 @@ def delete_task(request, task_id):
 		messages.error( request, "You do not have the rights to delete this task." )
 		return HttpResponseRedirect('/projects/task/view/'+str(task_id) )
 
+@login_required
+def untag_project( request, project_id, tag_id ):
+	tag = Tag.objects.get( id=tag_id )
+	project = Project.objects.get( id=project_id )
+
+	if ( request.user in tag.users.all() or request.user == tag.owner ):
+		project.tags.remove( tag )
+		messages.info( request, "Untagged project " + project.name )
+
+	else:
+		messages.warning( request, "You are not allowed to remove this tag." )
+
+	return HttpResponseRedirect( '/projects/view/' + str(project_id) )
+
+@login_required
+def untag_task( request, task_id, tag_id ):
+	tag = Tag.objects.get( id=tag_id )
+	task = ProjectTask.objects.get( id=task_id )
+
+	if ( request.user in tag.users.all() or request.user == tag.owner ):
+		task.tags.remove( tag )
+		messages.info( request, "Untagged task " + task.summary )
+	else:
+		messages.warning( request, "You are not allowed to remove this tag. ")
+
+	return HttpResponseRedirect( '/projects/task/view/' + str(task_id) )
+
 
 @login_required
 def view_task(request, task_id):
@@ -682,6 +943,8 @@ def view_task(request, task_id):
 	args['user'] = request.user
 	args['canEdit'] = ( task.creator == request.user )
 	args['isMember'] = ( request.user in task.assigned.all() )
+	args['tags'] = task.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) )
+	args['yourTags'] = args['tags'].filter(Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user))
 
 	args.update(csrf(request))
 
@@ -1137,6 +1400,10 @@ def show_browser( request, open_project=False ):
 		pageData['work'] = Worklog.objects.filter( project=selected )
 
 	return render_to_response( 'project_browser.html', RequestContext(request, pageData) )
+
+
+
+
 
 
 
