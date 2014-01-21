@@ -31,6 +31,7 @@
 			<th><img src="/static/img/tag.png" width="24px" />Tag Name</th>
 			<th>Owner</th>
 			<th>Your Role</th>
+			<th>Filter</th>
 			<th><img src="/static/img/edit.png" width="24px" />Edit</th>
 		</tr>
 	{% for t in tags %}
@@ -42,6 +43,7 @@
 				<td><a href="/projects/tags/{{t.id}}/">{{ t.name }}</a></td>
 				<td>{{t.owner}}</td>
 				<td>{% if t.owner == user %}Owner{% elif user in t.users.all %}User{% else %}Viewer{% endif %}</td>
+				<td><a href="/projects/addtagfilter/{{t.id}}/">Filter with this tag</a></td>
 				<!--<li>Description: {{project.description}}</li>-->
 				<td>{% if t.owner == user or user in t.users.all %}<a href="/projects/tags/{{t.id}}/#edit">Edit</a>{% else %}You can only view this tag.{% endif %}</td>
 			</tr>

@@ -2,6 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Project(models.Model):
+	"""
+	Defines a Project model which can have tags, 
+	tasks, and additional members associated with it.
+
+	This is the basis of the application.
+	"""
 	manager 	= models.ForeignKey(User, related_name="Project Manager")
 	subprojects = models.ManyToManyField( 'Project', related_name="Subprojects" )
 	parents		= models.ManyToManyField( 'Project', related_name="Parents" )
@@ -20,6 +26,10 @@ class Project(models.Model):
 		return self.name +" (manager: " + self.manager.__str__() + ")"
 
 class Worklog(models.Model):
+	"""
+	Defines a model that contains data for work logged 
+	on a Project.
+	"""
 	project 	= models.ForeignKey(Project)
 	owner 		= models.ForeignKey(User)
 	summary 	= models.CharField(max_length=140)
@@ -33,6 +43,10 @@ class Worklog(models.Model):
 
 
 class ProjectStatistic(models.Model):
+	"""
+	Contains a cache of certain statistics for 
+	a Project in the project tracking app.
+	"""
 	project 	= models.ForeignKey(Project)
 	loggedTime 	= models.IntegerField(default=0)
 	worklogs 	= models.IntegerField(default=0)
@@ -47,6 +61,10 @@ class ProjectStatistic(models.Model):
 		return self.project.__str__() + " statistics"
 
 class UserStatistic(models.Model):
+	"""
+	Contains a cache of certain statistics for a 
+	User of the project tracking app.
+	"""
 	user 		= models.ForeignKey(User)
 	loggedTime 	= models.IntegerField(default=0)
 	worklogs 	= models.IntegerField(default=0)
@@ -61,6 +79,10 @@ class UserStatistic(models.Model):
 		return self.user.__str__() + " statistics"
 
 class ProjectTask(models.Model):
+	"""
+	Defines a task (which may or may not be associated 
+	with a project).
+	"""
 	assigned 	= models.ManyToManyField(User, related_name="Assigned Members")
 	creator 	= models.ForeignKey(User, related_name="Creator")
 	openOn	 	= models.ManyToManyField(Project, related_name="Projects")
@@ -77,6 +99,11 @@ class ProjectTask(models.Model):
 		return "Task " + str( self.summary )
 
 class Tag(models.Model):
+	"""
+	Defines a Tag, which can be associated with Projects and 
+	ProjectTasks in order to better classify projects and tasks 
+	and provide a method of filtering views.
+	"""
 	owner 		= models.ForeignKey(User, related_name="Owner" )
 	name 		= models.CharField(max_length=100)
 	description = models.CharField(max_length=255)
@@ -86,10 +113,5 @@ class Tag(models.Model):
 	viewers		= models.ManyToManyField(User, related_name="Tag viewers")
 
 	def __str__(self):
-		return "Tag " + self.name + ": " + str(self.user)
+		return "Tag " + self.name + ": " + str(self.owner)
 
-
-
-
-
-# Create your models here.

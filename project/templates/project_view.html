@@ -220,7 +220,13 @@
 
 				<tr>
 					<td>{{u}}</td>
-					<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/removemember/{{project.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
+					<td> {%if canEdit and u != project.manager %} <a class="btn btn-danger" href="/projects/removemember/{{project.id}}/{{u.id}}/">Unassign</a> {%endif%}
+
+						{% if u == project.manager %}
+						<p>Project Manager</p>
+						{% endif %}
+
+					</td>
 				</tr>
 				{% endfor %}
 

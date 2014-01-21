@@ -123,17 +123,10 @@ def create_project(request, parent=False):
 
 		newProj = Project()
 		newStat = ProjectStatistic()
-		form = CreateProjectForm(request.POST)
+		form = EditProjectForm(request.POST)
 		if form.is_valid() and not "useexisting" in request.POST:
-			newProj.name = form.cleaned_data['name']
-			newProj.phase = form.cleaned_data['phase']
-			newProj.status = form.cleaned_data['status']
-			newProj.description = form.cleaned_data['description']
 
-			newProj.manager = request.user
-
-			newProj.save()
-			newProj.members.add( request.user )
+			newProj = form.save( owner=request.user )
 			newStat.project = newProj
 
 			if ( request.POST['parent'] != "False" ):
@@ -156,7 +149,7 @@ def create_project(request, parent=False):
 		else:
 
 			pageData = {}
-			pageData['form'] = CreateProjectForm( request.POST )
+			pageData['form'] = EditProjectForm( request.POST )
 			messages.warning( request, "Please check your input, all fields are required." )
 			return render_to_response( 'project_create.html', RequestContext( request, pageData) )
 
@@ -170,12 +163,23 @@ def create_project(request, parent=False):
 		except:
 			args['returnUrl'] = '/projects/'
 		args['addingSub'] = parent
-		args['form'] = CreateProjectForm()
+		args['form'] = EditProjectForm()
 		args['parent'] = parent
 		return render_to_response('project_create.html', args)
 
 def assign_child( request, parent_id, child_id=False ):
+	"""
+	Assigns a new subproject to a project.
 
+	Arguments:
+		parent_id - integer ID of the parent project
+		child_id - integer ID of the to-be child project (
+			false triggers displaying the selection page)
+
+	Returns:
+		The rendered selection page or a redirect back to the 
+		original page.
+	"""
 	if ( child_id ):
 
 		try:
@@ -213,22 +217,17 @@ def edit_project(request, proj_id):
 	"""
 
 	project = Project.objects.get(id=proj_id)
-	if ( request.method == "POST" and project.manager == request.user ):
-		form = UpdateProjectForm( request.POST )
-		if form.is_valid():
-			project.name = form.cleaned_data['name']
-			project.status = form.cleaned_data['status']
-			project.phase = form.cleaned_data['phase']
-			project.lines = form.cleaned_data['lines']
-			project.description = form.cleaned_data['description']
 
-			project.save()
+	if ( request.method == "POST" and project.manager == request.user ):
+		form = EditProjectForm( request.POST, instance=project )
+		if form.is_valid():
+			form.save()
 
 			return HttpResponseRedirect( '/projects/view/' + str(project.id) +"/" )
 
 		else:
 			pageData = {}
-			pageData['form'] = UpdateProjectForm(request.POST)
+			pageData['form'] = EditProjectForm(request.POST, instance=project)
 			messages.error( request, 'Please fill out all the fields.')
 
 			return render_to_response('project_edit.html', RequestContext( request, pageData) )
@@ -236,16 +235,8 @@ def edit_project(request, proj_id):
 
 
 	else:
-		initialDict = { 
-		"name": project.name, 
-		"status": project.status, 
-		"phase": project.phase, 
-		"description": project.description,
-		"lines": project.lines
-		}
 
-		form = UpdateProjectForm()
-		form.initial = initialDict
+		form = EditProjectForm(instance=project)
 
 		args = {}
 		args['form'] = form
@@ -256,6 +247,18 @@ def edit_project(request, proj_id):
 
 @login_required
 def toggle_tag_viewer( request, tag_id, user_id=False ):
+	"""
+	Adds or removes a user's tag viewing rights for a 
+	selected tag.
+
+	Arguments:
+		tag_id - integer tag to remove rights from
+		user_id - integer user ID to remove from the tag viewers.
+			False triggers a search in the POST array for a username.
+
+	Returns:
+		a redirect back to the page the request originated from.
+	"""
 	tag = Tag.objects.get( id=tag_id )
 
 	if ( (request.user == tag.owner or request.user in tag.users.all() ) ):
@@ -280,6 +283,18 @@ def toggle_tag_viewer( request, tag_id, user_id=False ):
 
 @login_required
 def toggle_tag_user( request, tag_id, user_id=False ):
+	"""
+	Adds or removes a user's tag user rights for a 
+	selected tag.
+
+	Arguments:
+		tag_id - integer tag to remove rights from
+		user_id - integer user ID to remove from the tag viewers.
+			False triggers a search in the POST array for a username.
+
+	Returns:
+		a redirect back to the page the request originated from.
+	"""
 	tag = Tag.objects.get( id=tag_id )
 
 	if ( request.user == tag.owner or request.user in tag.users.all() ):
@@ -304,6 +319,12 @@ def toggle_tag_user( request, tag_id, user_id=False ):
 
 @login_required
 def delete_tag( request, tag_id ):
+	"""
+	Deletes a tag from the system.
+
+	Arguments:
+		tag_id - integer tag ID
+	"""
 	tag = Tag.objects.get( id=tag_id )
 	if ( request.user == tag.owner ):
 		tag.delete()
@@ -453,16 +474,8 @@ def view_project(request, proj_id):
 	args['tags'] = project.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) )
 	args['yourTags'] = args['tags'].filter(Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user))
 
-	initialDict = { 
-		"name": project.name, 
-		"status": project.status, 
-		"phase": project.phase, 
-		"description": project.description,
-		"lines": project.lines
-		}
 
-	form = UpdateProjectForm()
-	form.initial = initialDict
+	form = EditProjectForm(instance=project)
 
 	args['form'] = form
 
@@ -473,6 +486,12 @@ def view_project(request, proj_id):
 
 @login_required
 def task_progress_toggle( request, task_id ):
+	"""
+	Toggles a task's in progress status
+
+	Arguments:
+		task_id: integer task ID to toggle
+	"""
 	task = ProjectTask.objects.get( id=task_id )
 
 	if ( request.user in task.assigned.all() or request.user == task.creator ):
@@ -485,6 +504,16 @@ def task_progress_toggle( request, task_id ):
 
 @login_required
 def unassign_task_from_project( request, task_id, project_id ):
+	"""
+	Removes a task's association with a project.
+
+	Arguments:
+		task_id: integer task ID to remove from project
+		project_id: integer project ID to remove task from
+
+	Returns:
+		a redirect back to the page the request originated on
+	"""
 	task = ProjectTask.objects.get( id=task_id )
 	project = Project.objects.get( id=project_id )
 
@@ -547,28 +576,17 @@ def add_worklog( request, proj_id ):
 	args = {}
 	args.update(csrf(request))
 	args['project'] = project
-	form = AddWorklogForm()
+	form = EditWorklogForm()
 	args['form'] = form
 
 	if (request.method == "POST") and (request.user in project.members.all() or request.user == project.manager):
 		workLog = Worklog()
 
-		form = AddWorklogForm(request.POST)
+		form = EditWorklogForm(request.POST)
 
 		if form.is_valid():
 
-			try:
-				workLog.hours = form.cleaned_data['hours']
-				workLog.minutes = form.cleaned_data['minutes']
-			except:
-				workLog.hours = 0
-				workLog.minutes = 0
-
-			workLog.summary = form.cleaned_data['summary']
-			workLog.description = form.cleaned_data['description']
-
-			workLog.owner = request.user
-			workLog.project = project
+			workLog = form.save( owner=request.user, project=project )
 
 			# Update the ProjectStatistic assoc with the project
 			ProjectStatistic.objects.filter(project=project).update(worklogs=F("worklogs") + 1)
@@ -577,9 +595,6 @@ def add_worklog( request, proj_id ):
 			UserStatistic.objects.filter(user=request.user).update(worklogs=F("worklogs") + 1 )
 			UserStatistic.objects.filter(user=request.user).update(loggedTime=F("loggedTime") + (workLog.minutes + (workLog.hours * 60) ) )
 
-
-			workLog.save()
-
 			messages.info( request, "Worklog saved successfully.")
 
 			return HttpResponseRedirect('/projects/work/view/'+str(workLog.id)+"/")
@@ -587,7 +602,7 @@ def add_worklog( request, proj_id ):
 		else:
 
 			messages.error( request, "Form information is incorrect." )
-			args['form'] = AddWorklogForm( request.POST )
+			args['form'] = EditWorklogForm( request.POST )
 
 
 			return render_to_response( 'worklog_create.html', RequestContext(request, args) )
@@ -617,7 +632,7 @@ def view_worklog( request, log_id ):
 		"description": worklog.description,
 		}
 
-	form = UpdateWorklogForm()
+	form = EditWorklogForm()
 	form.initial = initialDict
 
 	args = {}
@@ -638,21 +653,16 @@ def edit_worklog( request, log_id ):
 	projStat = ProjectStatistic.objects.get( project=worklog.project )
 
 	if ( request.method == "POST" and worklog.owner == request.user ):
-		form = UpdateWorklogForm( request.POST )
+		form = EditWorklogForm( request.POST, instance=worklog )
 		if form.is_valid():
 
 			oldTime = worklog.minutes + (worklog.hours * 60)
 
-			worklog.summary = form.cleaned_data['summary']
-			worklog.description = form.cleaned_data['description']
-			worklog.hours = form.cleaned_data['hours']
-			worklog.minutes = form.cleaned_data['minutes']
+			worklog = form.save()
 
 			newTime = worklog.minutes + (worklog.hours * 60)
 
 			logTimeChange = newTime - oldTime
-
-			worklog.save()
 
 			# Update the ProjectStatistic for the new time
 			UserStatistic.objects.filter(user=worklog.owner).update(loggedTime=F("loggedTime") + logTimeChange )
@@ -665,24 +675,16 @@ def edit_worklog( request, log_id ):
 		else:
 			messages.error( request, "Invalid form information.")
 			pageData = {}
-			pageData['form'] = UpdateWorklogForm( request.POST )
+			pageData['form'] = EditWorklogForm( request.POST )
 
 			return render_to_response( 'worklog_edit.html', RequestContext( request, pageData) )
 
 	else:
-		initialDict = { 
-		"summary": worklog.summary, 
-		"minutes": worklog.minutes, 
-		"hours": worklog.hours, 
-		"description": worklog.description,
-		}
 
-		form = UpdateWorklogForm()
-		form.initial = initialDict
+		form = EditWorklogForm( instance=worklog )
 
 		args = {}
 		args['form'] = form
-		args.update(csrf(request))
 		args['worklog'] = worklog
 
 		return render_to_response('worklog_edit.html', RequestContext( request, args) )
@@ -710,7 +712,18 @@ def line_stats(request):
 
 @login_required
 def assign_task( request, proj_id, task_id=False ):
+	"""
+	Assigns a task to a project
 
+	Arguments:
+		task_id - integer task ID (initially false to 
+			trigger selection page)
+		proj_id - integer project ID
+
+	Returns:
+		rendered task selection template or redirect to 
+		original page after selection.
+	"""
 	if ( task_id ):
 		project = Project.objects.get( id=proj_id )
 		task = ProjectTask.objects.get( id=task_id )
@@ -732,7 +745,18 @@ def assign_task( request, proj_id, task_id=False ):
 
 @login_required
 def assign_project_tag( request, proj_id, tag_id=False ):
+	"""
+	Adds a new or existing tag to a project.
 
+	Arguments:
+		proj_id: integer project ID
+		tag_id: integer tag ID (initially false to trigger 
+			selection)
+
+	Returns:
+		The rendered tag selection page or a redirect to the 
+		initial URL the user arrived from.
+	"""
 	returnUrl = '/projects/view/' + str(proj_id)
 
 	if not tag_id:
@@ -766,7 +790,18 @@ def assign_project_tag( request, proj_id, tag_id=False ):
 
 @login_required
 def assign_task_tag( request, task_id, tag_id=False ):
+	"""
+	Adds an existing or new tag to an existing task.
 
+	Arguments:
+		task_id: integer task ID
+		tag_id: integer tag ID (initially False to trigger
+			selection page)
+
+	Returns:
+		a rendered tag selection page or a redirect to the 
+		original page.
+	"""
 	returnUrl = '/projects/task/view/' + str(task_id)
 
 	if not tag_id:
@@ -805,22 +840,18 @@ def add_task( request, proj_id=False ):
 	"""
 
 	if request.method == "POST" and "useexisting" not in request.POST:
-		projTask = ProjectTask()
 
-		form = AddTaskForm(request.POST)
+		form = EditTaskForm(request.POST)
 		if form.is_valid():
-			projTask.summary = form.cleaned_data['summary']
-			projTask.description = form.cleaned_data['description']
 
-			projTask.creator = request.user
+			projTask = form.save( owner=request.user )
 
 			# Update the ProjectStatistic assoc with the project
 
 			UserStatistic.objects.filter(user=request.user).update(issues=F("issues") + 1 )
 
-
-			projTask.save()
 			projTask.assigned.add( request.user )
+
 			if proj_id != False:
 				project = Project.objects.get(id=proj_id)
 
@@ -845,7 +876,7 @@ def add_task( request, proj_id=False ):
 			messages.error( request, "Please fill out both fields." )
 
 			pageData = {}
-			pageData['form'] = AddTaskForm( request.POST )
+			pageData['form'] = EditTaskForm( request.POST )
 			return render_to_response( 'task_create.html', RequestContext( request, pageData))
 
 	elif "useexisting" in request.POST:
@@ -864,11 +895,11 @@ def add_task( request, proj_id=False ):
 			args['returnUrl'] = request.META['HTTP_REFERER']
 		except:
 			args['returnUrl'] = '/projects/usertasks'
-		args.update(csrf(request))
+
 		if ( proj_id != False ):
 			args['project'] = project = Project.objects.get(id=proj_id)
 
-		args['form'] = AddTaskForm()
+		args['form'] = EditTaskForm()
 
 		return render_to_response('task_create.html', RequestContext(request, args) )
 
@@ -932,7 +963,7 @@ def view_task(request, task_id):
 		"description": task.description,
 		}
 
-	form = UpdateTaskForm()
+	form = EditTaskForm()
 	form.initial = initialDict
 
 	args['form'] = form
@@ -952,40 +983,46 @@ def view_task(request, task_id):
 
 	return render_to_response('task_view.html', RequestContext(request, args) )
 
-@login_required
-def close_task_in_project( request, project_id, task_id ):
-	"""
-	Marks a task in a project as completed for 
-	the given project.
-	"""
-	task = ProjectTask.objects.get(id=task_id)
 
+@login_required
+def toggle_project_task_status( request, project_id, task_id ):
+	"""
+	Toggles a task open or closed on a project
+
+	Arguments:
+		project_id - integer project id
+		task_id - integer task id
+
+	Returns:
+		http redirect back to referring page or 
+		the project view page if there isn't a referer 
+	"""
+	task = ProjectTask.objects.get( id=task_id )
 	project = Project.objects.get( id=project_id )
 
 	if ( request.user in task.assigned.all() or request.user == task.creator ) and ( request.user in project.members.all() ):
-		task.openOn.remove( project )
-		task.closedOn.add( project )
+		if ( project in task.openOn.all() ):
+			task.openOn.remove( project )
+			task.closedOn.add( project )
 
-		task.save()
+		elif ( project in task.closedOn.all() ):
+			task.openOn.add( project )
+			task.closedOn.remove( project )
 
-	return HttpResponseRedirect( request.META['HTTP_REFERER'] )
+		else:
+			task.openOn.add( project )
 
-@login_required
-def open_task_in_project( request, project_id, task_id ):
-	"""
-	Marks a task in a project as open for the given 
-	project.
-	"""
+		messages.info( request, "Updated task on project." )
 
-	task = ProjectTask.objects.get(id=task_id)
-	project = Project.objects.get( id=project_id )
+	try:
+		return HttpResponseRedirect( request.META['HTTP_REFERER'] )
+	except:
+		return HttpResponseRedirect( '/projects/view/' + str(project_id) +'/' )
 
-	if ( request.user in task.assigned.all() or request.user == task.creator ) and ( request.user in project.members.all() ):
-		task.openOn.add( project )
-		task.closedOn.remove( project )
-		task.save()
 
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+	
+
 
 @login_required
 def add_existing_task_to_project( request, task_id, project_id=False ):
@@ -994,6 +1031,16 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 	an open task on that project. Renders the project 
 	selection template and accepts the project and task as GET 
 	variables.
+
+	Arguments:
+		task_id - integer task id 
+		project_id - integer project id: false for rendering 
+			the initial selection page and true when the page returns 
+			a selection from the user.
+
+	Returns:
+		the project selection page initially, then the project 
+		view page after, if the user has permission to see it.
 	"""
 
 	task = ProjectTask.objects.get(id=task_id)
@@ -1028,6 +1075,13 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 def add_task_member(request, task_id):
 	"""
 	Adds a member (assignee) to a task
+
+	Arguments:
+		task_id - integer task ID
+		user_id - integer user ID
+
+	Returns:
+		redirect back to the project view page 
 	"""
 
 	task = ProjectTask.objects.get(id=task_id)
@@ -1055,6 +1109,13 @@ def add_task_member(request, task_id):
 def remove_task_member( request, task_id, user_id ):
 	"""
 	Removes a task member (assignee)
+
+	Arguments:
+		task_id - integer task ID
+		user_id - integer user ID
+
+	Returns:
+		redirect back to the project view page 
 	"""
 	task = ProjectTask.objects.get(id=task_id)
 	user = User.objects.get( id=user_id )
@@ -1077,11 +1138,8 @@ def edit_task( request, task_id ):
 	task = ProjectTask.objects.get(id=task_id)
 
 	if ( request.method == "POST"):
-		form = UpdateTaskForm( request.POST )
+		form = EditTaskForm( request.POST, instance=task )
 		if form.is_valid()  and request.user == task.creator:
-
-			task.summary = form.cleaned_data['summary']
-			task.description = form.cleaned_data['description']
 
 			task.save()
 
@@ -1095,25 +1153,19 @@ def edit_task( request, task_id ):
 
 			messages.error( request, "Please fill out both fields.")
 			pageData = {}
-			pageData['form'] = UpdateTaskForm( request.POST )
+			pageData['form'] = EditTaskForm( request.POST )
 			pageData['task'] = ProjectTask.objects.get( id=task_id )
 			return render_to_response( 'task_edit.html', RequestContext(request, pageData) )
 
 	else:
-		initialDict = { 
-		"summary": task.summary, 
-		"description": task.description,
-		}
 
-		form = UpdateTaskForm()
-		form.initial = initialDict
+		form = EditTaskForm(instance=task)
 
 		args = {}
 		args['form'] = form
-		args.update(csrf(request))
 		args['task'] = task
 
-		return render_to_response('task_edit.html', args)
+		return render_to_response('task_edit.html', RequestContext(request, args) )
 
 @login_required
 def view_all_task( request, proj_id ):
@@ -1231,6 +1283,19 @@ def createTreeRow( project, tasks, depth=0 ):
 
 @login_required
 def project_to_top( request, project_id ):
+	"""
+	Converts a project to a top-level project 
+	in the tree by removing all of its parents 
+	and removing it as a subproject from any 
+	parent projects.
+
+	Arguments:
+		project_id - integer a project id 
+
+	Returns:
+		an HttpResponseRedirect to the project view 
+
+	"""
 
 	project = Project.objects.get( id=project_id )
 	if ( request.user == project.manager ):
@@ -1246,6 +1311,16 @@ def project_to_top( request, project_id ):
 
 @login_required
 def toggle_project( request, project_id ):
+	"""
+	Toggles a project between being active 
+	and inactive.
+
+	Arguments:
+		project_id - int a project id
+
+	Returns:
+		HttpRedirect to the referring page or project view
+	"""
 	project = Project.objects.get( id=project_id )
 
 	if ( request.user == project.manager ):
@@ -1263,7 +1338,11 @@ def toggle_project( request, project_id ):
 def convert_task_to_subproject( request, task_id ):
 	"""
 	Converts a task into a project and removes the 
-	task.
+	original task.
+
+	Arguments:
+		task_id: integer ID of the task to convert
+
 	"""
 
 	task = ProjectTask.objects.get( id=task_id )
@@ -1275,15 +1354,21 @@ def convert_task_to_subproject( request, task_id ):
 		project.manager = task.creator
 		project.name = task.summary
 		project.description = task.description
+		project.lines = 0
+		project.phase = "None"
+		project.status = "None"
+
 		project.save()
 		project.members = task.assigned.all()
 		project.parents = task.openOn.all()
+		project.tags = task.tags.all()
 		project.save()
 		task.delete()
 
 		for p in project.parents.all():
 			p.subprojects.add( project )
-			p.save()
+
+
 
 
 		messages.info(request, "Task converted to project successfully. You may now edit the project attributes.")
@@ -1401,11 +1486,173 @@ def show_browser( request, open_project=False ):
 
 	return render_to_response( 'project_browser.html', RequestContext(request, pageData) )
 
+def apply_project_filter( request, projects ):
+	if ( 'filter' in request.session ):
+		tags = request.session['filter']['projecttags']
+		keywords = request.session['filter']['keywords']
+
+	else:
+		request.session['filter'] = {}
+		request.session['filter']['projecttags'] = []
+		request.session['filter']['keywords'] = []
+
+		tags = []
+
+	tags = Tag.objects.filter( id__in=tags )
+
+	for t in tags:
+		projects = projects.filter( tags=t )
+
+	return projects
+
+
+def apply_task_filter( request ):
+	if ( 'filter' in request.session ):
+		tags = request.session['filter']['tasktags']
+		keywords = request.session['filter']['keywords']
+
+	else:
+		reset_filter( request )
+	
+		tags = []
+
+	tasks = ProjectTask.objects.all()
+
+	tags = Tag.objects.filter( id__in=tags )
+	
+	for t in tags:
+		tasks = tasks.filter( tags=t )
+
+	return tasks
+
+def add_task_filter( request, tag_id=False ):
+
+	if ( 'filter' in request.session ):
+		tag = Tag.objects.get( id=tag_id )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['tasktags'].append( tag_id )
+
+	else:
+		reset_filter( request )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['tasktags'].append( tag_id )
+
+	print( request.session['filter'] )
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+def add_filter( request, tag_id ):
+	if ( 'filter' in request.session ):
+		tag = Tag.objects.get( id=tag_id )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['projecttags'].append( tag_id )
+		request.session['filter']['tasktags'].append(tag_id)
+
+	else:
+		reset_filter( request )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['projecttags'].append( tag_id )
+		request.session['filter']['tasktags'].append(tag_id)
+
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+def select_project_filter( request, tag_id=False ):
+	if ( not tag_id ):
+		request.session['returnUrl'] = request.META['HTTP_REFERER']
+		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+		pageData = { 'tags':tags }
+		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+
+	else:
+		addTag = add_project_filter( request, tag_id )
+		return HttpResponseRedirect( request.session['returnUrl'] )
+
+def select_tag_filter( request, tag_id=False ):
+	if ( not tag_id ):
+		request.session['returnUrl'] = request.META['HTTP_REFERER']
+		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+		pageData = { 'tags':tags }
+		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+
+	else:
+		addTag = add_tag_filter( request, tag_id )
+		return HttpResponseRedirect( request.session['returnUrl'] )
 
 
 
+def add_project_filter( request, tag_id=False ):
+	if ( 'filter' in request.session ):
+		tag = Tag.objects.get( id=tag_id )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['projecttags'].append( tag_id )
+
+	else:
+		reset_filter( request )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['projecttags'].append( tag_id )
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+def remove_project_filter( request, tag_id ):
+	if ( 'filter' not in request.session ):
+		reset_filter( request )
+	else:
+		if ( tag_id in request.session['filter']['projecttags'] ):
+			request.session['filter']['projecttags'].remove( tag_id )
+			request.session['filter_update'] = "yes"
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+def remove_task_filter( request, tag_id ):
+	if ( 'filter' not in request.session ):
+		reset_filter( request )
+	else:
+		if ( tag_id in request.session['filter']['tasktags'] ):
+			request.session['filter']['tasktags'].remove( tag_id )
+			request.session['filter_update'] = "yes"
+
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 
+def reset_filter( request ):
+
+	request.session['filter'] = {}
+	request.session['filter']['projecttags'] = []
+	request.session['filter']['tasktags'] = []
+
+	request.session['filter']['keywords'] = []		
+	request.session['filter_update'] = "yes"
+
+
+	return HttpResponseRedirect( request.META['HTTP_REFERER'] )
+
+
+
+def set_filter_message( request ):
+	if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
+		projecttags = Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
+		tasktags = Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+		tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
+		tagmessage += "Project Tags: "
+		for t in projecttags:
+			tagmessage += "\n \
+			<a href='/projects/rmprojectfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
+			<img src='/static/img/delete.png' width='16px' alt='X'/>\
+			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
+
+		tagmessage += "<a href='/projects/filter/addprojecttag/'>(Add Another)</a>\n<br />\nTask Tags:"
+		for t in tasktags:
+			tagmessage += "\n \
+			<a href='/projects/rmtaskfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
+			<img src='/static/img/delete.png' width='16px' alt='X'/>\
+			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
+
+		tagmessage += "<a href='/projects/filter/addtasktag/'>(Add Another)</a>"
+
+
+		messages.info( request, tagmessage, extra_tags='safe')
 
 

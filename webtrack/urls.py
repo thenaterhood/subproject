@@ -62,8 +62,8 @@ urlpatterns = patterns('',
 
 
     # Project task management
-    url(r'^projects/(?P<project_id>\d+)/closetask/(?P<task_id>\d+)/$', 'project.views.close_task_in_project'),
-    url(r'^projects/(?P<project_id>\d+)/opentask/(?P<task_id>\d+)/$', 'project.views.open_task_in_project'),
+    url(r'^projects/(?P<project_id>\d+)/closetask/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
+    url(r'^projects/(?P<project_id>\d+)/opentask/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
     url(r'^projects/(?P<project_id>\d+)/unassigntask/(?P<task_id>\d+)/$', 'project.views.unassign_task_from_project'),
     url(r'^projects/task/inprogress/(?P<task_id>\d+)/$', 'project.views.task_progress_toggle'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/$', 'project.views.add_existing_task_to_project'),
@@ -110,6 +110,24 @@ urlpatterns = patterns('',
 
     url(r'^projects/(?P<project_id>\d+)/addtag/new', 'project.views.add_tag'),
     url(r'^projects/task/(?P<task_id>\d+)/addtag/new', 'project.views.add_tag'),
+
+    # Filter stuff
+    url(r'^projects/addtaskfilter/(?P<tag_id>\d+)/$', 'project.views.add_task_filter'),
+    url(r'^projects/addprojectfilter/(?P<tag_id>\d+)/$', 'project.views.add_project_filter'),
+    url(r'^projects/addtagfilter/(?P<tag_id>\d+)/$', 'project.views.add_filter'),
+
+    url(r'^projects/rmtaskfilter/(?P<tag_id>\d+)/$', 'project.views.remove_task_filter'),
+    url(r'^projects/rmprojectfilter/(?P<tag_id>\d+)/$', 'project.views.remove_project_filter'),
+
+    #url(r'^projects/rmtagfilter/(?P<tag_id>\d+)/$', 'project.views.rm_filter'),
+    url(r'^projects/resetfilter/$', 'project.views.reset_filter'),
+
+    url(r'^projects/filter/addprojecttag/$', 'project.views.select_project_filter'),
+    url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 'project.views.select_project_filter'),
+
+    url(r'^projects/filter/addtasktag/$', 'project.views.select_task_filter'),
+    url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 'project.views.select_task_filter'),
+
 
 
 )
