@@ -50,8 +50,8 @@ class EditWorklogForm(forms.ModelForm):
 	"""
 	summary = forms.CharField(widget=forms.TextInput(attrs={"required":True, "max_length":140, "placeholder":"Work Summary", 'class':'form-control'}),label=(""))
 	description = forms.CharField(widget=forms.Textarea(attrs={"required":False, "max_length":300, "placeholder":"Work Description", 'class':'form-control'}), label=(""))
-	hours = forms.DecimalField(widget=forms.NumberInput(attrs={"required":True, "max_length":5, "placeholder":"Hours Spent", 'class':'form-control'}), label=(""))
-	minutes = forms.DecimalField(widget=forms.NumberInput(attrs={"required":True, "max_length":5, "placeholder":"Minutes Spent", 'class':'form-control'}), label=(""))
+	hours = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Hours Spent", 'class':'form-control'}), label=(""))
+	minutes = forms.DecimalField(widget=forms.TextInput(attrs={"required":True, "max_length":5, "placeholder":"Minutes Spent", 'class':'form-control'}), label=(""))
 
 
 
