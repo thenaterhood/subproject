@@ -174,4 +174,4 @@ def set_filter_message( request ):
 
 			messages.info( request, tagmessage, extra_tags='safe')
 	except:
-		reset_filter( request )
+		noreturn = reset_filter( request )
