@@ -144,8 +144,11 @@ def reset_filter( request ):
 	request.session['filter']['keywords'] = []		
 	request.session['filter_update'] = "yes"
 
+	try:
 
-	return HttpResponseRedirect( request.META['HTTP_REFERER'] )
+		return HttpResponseRedirect( request.META['HTTP_REFERER'] )
+	except:
+		return HttpResponseRedirect('/projects')
 
 
 
