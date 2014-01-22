@@ -150,25 +150,28 @@ def reset_filter( request ):
 
 
 def set_filter_message( request ):
-	if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
-		projecttags = Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
-		tasktags = Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
-		tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
-		tagmessage += "Project Tags: "
-		for t in projecttags:
-			tagmessage += "\n \
-			<a href='/projects/rmprojectfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-			<img src='/static/img/delete.png' width='16px' alt='X'/>\
-			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
+	try:
+		if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
+			projecttags = Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
+			tasktags = Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+			tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
+			tagmessage += "Project Tags: "
+			for t in projecttags:
+				tagmessage += "\n \
+				<a href='/projects/rmprojectfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
+				<img src='/static/img/delete.png' width='16px' alt='X'/>\
+				</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
 
-		tagmessage += "<a href='/projects/filter/addprojecttag/'>(Add Another)</a>\n<br />\nTask Tags:"
-		for t in tasktags:
-			tagmessage += "\n \
-			<a href='/projects/rmtaskfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-			<img src='/static/img/delete.png' width='16px' alt='X'/>\
-			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
+			tagmessage += "<a href='/projects/filter/addprojecttag/'>(Add Another)</a>\n<br />\nTask Tags:"
+			for t in tasktags:
+				tagmessage += "\n \
+				<a href='/projects/rmtaskfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
+				<img src='/static/img/delete.png' width='16px' alt='X'/>\
+				</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
 
-		tagmessage += "<a href='/projects/filter/addtasktag/'>(Add Another)</a>"
+			tagmessage += "<a href='/projects/filter/addtasktag/'>(Add Another)</a>"
 
 
-		messages.info( request, tagmessage, extra_tags='safe')
+			messages.info( request, tagmessage, extra_tags='safe')
+	except:
+		reset_filter( request )
