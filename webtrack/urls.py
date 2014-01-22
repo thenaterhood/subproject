@@ -112,21 +112,21 @@ urlpatterns = patterns('',
     url(r'^projects/task/(?P<task_id>\d+)/addtag/new', 'project.views.add_tag'),
 
     # Filter stuff
-    url(r'^projects/addtaskfilter/(?P<tag_id>\d+)/$', 'project.views.add_task_filter'),
-    url(r'^projects/addprojectfilter/(?P<tag_id>\d+)/$', 'project.views.add_project_filter'),
-    url(r'^projects/addtagfilter/(?P<tag_id>\d+)/$', 'project.views.add_filter'),
+    url(r'^projects/addtaskfilter/(?P<tag_id>\d+)/$', 'project.filters.add_task_filter'),
+    url(r'^projects/addprojectfilter/(?P<tag_id>\d+)/$', 'project.filters.add_project_filter'),
+    url(r'^projects/addtagfilter/(?P<tag_id>\d+)/$', 'project.filters.add_filter'),
 
-    url(r'^projects/rmtaskfilter/(?P<tag_id>\d+)/$', 'project.views.remove_task_filter'),
-    url(r'^projects/rmprojectfilter/(?P<tag_id>\d+)/$', 'project.views.remove_project_filter'),
+    url(r'^projects/rmtaskfilter/(?P<tag_id>\d+)/$', 'project.filters.remove_task_filter'),
+    url(r'^projects/rmprojectfilter/(?P<tag_id>\d+)/$', 'project.filters.remove_project_filter'),
 
     #url(r'^projects/rmtagfilter/(?P<tag_id>\d+)/$', 'project.views.rm_filter'),
-    url(r'^projects/resetfilter/$', 'project.views.reset_filter'),
+    url(r'^projects/resetfilter/$', 'project.filters.reset_filter'),
 
-    url(r'^projects/filter/addprojecttag/$', 'project.views.select_project_filter'),
-    url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 'project.views.select_project_filter'),
+    url(r'^projects/filter/addprojecttag/$', 'project.filters.select_project_filter'),
+    url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 'project.filters.select_project_filter'),
 
-    url(r'^projects/filter/addtasktag/$', 'project.views.select_task_filter'),
-    url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 'project.views.select_task_filter'),
+    url(r'^projects/filter/addtasktag/$', 'project.filters.select_task_filter'),
+    url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 'project.filters.select_task_filter'),
 
 
 

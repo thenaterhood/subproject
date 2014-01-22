@@ -14,6 +14,8 @@ from copy import deepcopy
 
 from project.models import *
 from project.forms import *
+from project.filters import reset_filter, apply_task_filter, apply_project_filter, set_filter_message
+
 import project.thenaterhood.histogram as histogram
 
 def ensure_userstat_exists( user ):
@@ -73,7 +75,8 @@ def user_all_tasks(request):
 	logged in user
 	"""
 
-	tasks = ProjectTask.objects.filter( creator=request.user )
+	tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
+	set_filter_message( request )
 
 	args = {}
 	args['user'] = request.user
@@ -96,7 +99,8 @@ def list_projects(request):
 
 	ensure_userstat_exists( request.user )
 
-	projects = Project.objects.filter(members=request.user)
+	projects = apply_project_filter(request, Project.objects.filter(members=request.user) )
+	set_filter_message( request )
 	managedProjects = Project.objects.filter(manager=request.user)
 
 	args = {}
@@ -1208,7 +1212,9 @@ def my_todo( request ):
 	Displays the My Todo page with the list of active 
 	tasks the user has assigned to them.
 	"""
-	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
+	tasks = apply_task_filter( request, 
+		ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user) )
+	set_filter_message( request )
 
 	args = {}
 	args['user'] = request.user
@@ -1485,174 +1491,4 @@ def show_browser( request, open_project=False ):
 		pageData['work'] = Worklog.objects.filter( project=selected )
 
 	return render_to_response( 'project_browser.html', RequestContext(request, pageData) )
-
-def apply_project_filter( request, projects ):
-	if ( 'filter' in request.session ):
-		tags = request.session['filter']['projecttags']
-		keywords = request.session['filter']['keywords']
-
-	else:
-		request.session['filter'] = {}
-		request.session['filter']['projecttags'] = []
-		request.session['filter']['keywords'] = []
-
-		tags = []
-
-	tags = Tag.objects.filter( id__in=tags )
-
-	for t in tags:
-		projects = projects.filter( tags=t )
-
-	return projects
-
-
-def apply_task_filter( request ):
-	if ( 'filter' in request.session ):
-		tags = request.session['filter']['tasktags']
-		keywords = request.session['filter']['keywords']
-
-	else:
-		reset_filter( request )
-	
-		tags = []
-
-	tasks = ProjectTask.objects.all()
-
-	tags = Tag.objects.filter( id__in=tags )
-	
-	for t in tags:
-		tasks = tasks.filter( tags=t )
-
-	return tasks
-
-def add_task_filter( request, tag_id=False ):
-
-	if ( 'filter' in request.session ):
-		tag = Tag.objects.get( id=tag_id )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['tasktags'].append( tag_id )
-
-	else:
-		reset_filter( request )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['tasktags'].append( tag_id )
-
-	print( request.session['filter'] )
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
-
-def add_filter( request, tag_id ):
-	if ( 'filter' in request.session ):
-		tag = Tag.objects.get( id=tag_id )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['projecttags'].append( tag_id )
-		request.session['filter']['tasktags'].append(tag_id)
-
-	else:
-		reset_filter( request )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['projecttags'].append( tag_id )
-		request.session['filter']['tasktags'].append(tag_id)
-
-
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
-
-
-def select_project_filter( request, tag_id=False ):
-	if ( not tag_id ):
-		request.session['returnUrl'] = request.META['HTTP_REFERER']
-		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
-		pageData = { 'tags':tags }
-		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
-
-	else:
-		addTag = add_project_filter( request, tag_id )
-		return HttpResponseRedirect( request.session['returnUrl'] )
-
-def select_tag_filter( request, tag_id=False ):
-	if ( not tag_id ):
-		request.session['returnUrl'] = request.META['HTTP_REFERER']
-		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
-		pageData = { 'tags':tags }
-		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
-
-	else:
-		addTag = add_tag_filter( request, tag_id )
-		return HttpResponseRedirect( request.session['returnUrl'] )
-
-
-
-def add_project_filter( request, tag_id=False ):
-	if ( 'filter' in request.session ):
-		tag = Tag.objects.get( id=tag_id )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['projecttags'].append( tag_id )
-
-	else:
-		reset_filter( request )
-		request.session['filter_update'] = "yes"
-		request.session['filter']['projecttags'].append( tag_id )
-
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
-
-def remove_project_filter( request, tag_id ):
-	if ( 'filter' not in request.session ):
-		reset_filter( request )
-	else:
-		if ( tag_id in request.session['filter']['projecttags'] ):
-			request.session['filter']['projecttags'].remove( tag_id )
-			request.session['filter_update'] = "yes"
-
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
-
-def remove_task_filter( request, tag_id ):
-	if ( 'filter' not in request.session ):
-		reset_filter( request )
-	else:
-		if ( tag_id in request.session['filter']['tasktags'] ):
-			request.session['filter']['tasktags'].remove( tag_id )
-			request.session['filter_update'] = "yes"
-
-
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
-
-
-
-def reset_filter( request ):
-
-	request.session['filter'] = {}
-	request.session['filter']['projecttags'] = []
-	request.session['filter']['tasktags'] = []
-
-	request.session['filter']['keywords'] = []		
-	request.session['filter_update'] = "yes"
-
-
-	return HttpResponseRedirect( request.META['HTTP_REFERER'] )
-
-
-
-def set_filter_message( request ):
-	if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
-		projecttags = Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
-		tasktags = Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
-		tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
-		tagmessage += "Project Tags: "
-		for t in projecttags:
-			tagmessage += "\n \
-			<a href='/projects/rmprojectfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-			<img src='/static/img/delete.png' width='16px' alt='X'/>\
-			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
-
-		tagmessage += "<a href='/projects/filter/addprojecttag/'>(Add Another)</a>\n<br />\nTask Tags:"
-		for t in tasktags:
-			tagmessage += "\n \
-			<a href='/projects/rmtaskfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-			<img src='/static/img/delete.png' width='16px' alt='X'/>\
-			</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
-
-		tagmessage += "<a href='/projects/filter/addtasktag/'>(Add Another)</a>"
-
-
-		messages.info( request, tagmessage, extra_tags='safe')
-
 
