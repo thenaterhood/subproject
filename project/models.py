@@ -42,42 +42,6 @@ class Worklog(models.Model):
 		return self.project.__str__() +" log (" +str(self.datestamp)+" )"
 
 
-class ProjectStatistic(models.Model):
-	"""
-	Contains a cache of certain statistics for 
-	a Project in the project tracking app.
-	"""
-	project 	= models.ForeignKey(Project)
-	loggedTime 	= models.IntegerField(default=0)
-	worklogs 	= models.IntegerField(default=0)
-	startDate 	= models.DateTimeField(auto_now=False, auto_now_add=True)
-	endDate 	= models.DateTimeField(auto_now=True, auto_now_add=True)
-	avgTaskTime	= models.IntegerField(default=0)
-	issues		= models.IntegerField(default=0)
-	solvedIssues= models.IntegerField(default=0)
-
-
-	def __str__(self):
-		return self.project.__str__() + " statistics"
-
-class UserStatistic(models.Model):
-	"""
-	Contains a cache of certain statistics for a 
-	User of the project tracking app.
-	"""
-	user 		= models.ForeignKey(User)
-	loggedTime 	= models.IntegerField(default=0)
-	worklogs 	= models.IntegerField(default=0)
-	startDate 	= models.DateTimeField(auto_now=False, auto_now_add=True)
-	endDate 	= models.DateTimeField(auto_now=True, auto_now_add=True)
-	avgTaskTime	= models.IntegerField(default=0)
-	issues		= models.IntegerField(default=0)
-	solvedIssues= models.IntegerField(default=0)
-
-
-	def __str__(self):
-		return self.user.__str__() + " statistics"
-
 class ProjectTask(models.Model):
 	"""
 	Defines a task (which may or may not be associated 

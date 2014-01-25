@@ -9,6 +9,7 @@ from django.db.models import F
 from django.db.models import Q
 from django.db.models import Count
 from django.contrib import messages
+from django.db.models import Sum
 
 from copy import deepcopy
 
@@ -18,22 +19,6 @@ from project.filters import reset_filter, apply_task_filter, apply_project_filte
 
 import project.thenaterhood.histogram as histogram
 
-def ensure_userstat_exists( user ):
-	"""
-	Ensures that a user has an existing 
-	userstatistic object.
-	"""
-
-	try:
-		UserStatistic.objects.get(user=user)
-	except:
-		
-		userStat = UserStatistic()
-		userStat.user = user
-
-		userStat.save()
-
-
 @login_required
 def project_welcome(request):
 	"""
@@ -41,30 +26,35 @@ def project_welcome(request):
 	basic user statistics.
 	"""
 
-	ensure_userstat_exists( request.user )
-
 	# Assemble a collection of statistics to render to the template
 	args = {}
-	messages.warning( request, "This app is in what could be considered alpha stage. Don't store anything \
-		important on it as it will not be up reliably and the database may be cleared periodically as more \
-		development goes on. Right now it supports logging tasks completed on projects and adding/removing \
-		project collaborators. There's more to come and the UI is not final. ")
-	userStats = UserStatistic.objects.get( user=request.user )
-	args['total_projects'] = len( Project.objects.filter(members=request.user) )
-	args['managed_projects'] = len( Project.objects.filter(manager=request.user) )
-	args['total_worklogs'] = userStats.worklogs
+
+	messages.warning( request, "This application is currently under heavy development, and is hosted \
+		on a private server. Reliability and security cannot be guaranteed at this point in development.")
+
+	args['total_projects'] = Project.objects.filter(members=request.user).count()
+	args['managed_projects'] = Project.objects.filter(manager=request.user).count()
+
+	args['total_worklogs'] = Worklog.objects.filter( owner=request.user ).count()
+
 	args['total_tasks'] = ProjectTask.objects.filter( creator=request.user ).count()
 	args['active_tasks'] = ProjectTask.objects.filter( creator=request.user ).filter( inProgress=True ).count()
 	tasks = Worklog.objects.filter(owner=request.user).reverse()
-	args['total_time'] = str( userStats.loggedTime / 60 )
-	args['start_date'] = userStats.startDate
-	args['end_date'] = userStats.endDate
-	args['tasks'] = tasks[:5]
-	args['numTasks'] = len(	ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).all())
+
+	args['total_time'] = ( (Worklog.objects.filter( owner=request.user ).aggregate(Sum('minutes'))['minutes__sum'] or 0) / 60 ) + \
+		( Worklog.objects.filter( owner=request.user ).aggregate(Sum('hours'))['hours__sum'] or 0 ) 
+	args['start_date'] = request.user.date_joined
+
+	try:
+		args['end_date'] = Worklog.objects.filter( owner=request.user ).order_by('-datestamp')[0].datestamp
+	except:
+		args['end_date'] = "No recent logs."
+
+	args['numTasks'] = ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).count()
 
 	args['avg_task_time'] = 0
-	if ( userStats.worklogs > 0 ):
-		args['avg_task_time'] = str( (userStats.loggedTime/60) / userStats.worklogs )
+	if ( args['total_worklogs'] > 0 ):
+		args['avg_task_time'] = str( args['total_time'] / args['total_worklogs'] )
 
 	return render_to_response('project_welcome.html', RequestContext( request, args) )
 
@@ -97,8 +87,6 @@ def list_projects(request):
 	is associated with.
 	"""
 
-	ensure_userstat_exists( request.user )
-
 	projects = apply_project_filter(request, Project.objects.filter(members=request.user) )
 	set_filter_message( request )
 	managedProjects = Project.objects.filter(manager=request.user)
@@ -126,7 +114,6 @@ def create_project(request, parent=False):
 			redirTo = request.POST['returnUrl']
 
 		newProj = Project()
-		newStat = ProjectStatistic()
 		form = EditProjectForm(request.POST)
 		if form.is_valid() and not "useexisting" in request.POST:
 
@@ -139,8 +126,6 @@ def create_project(request, parent=False):
 				newProj.parents.add(parentProject)
 				parentProject.subprojects.add(newProj)
 				parentProject.save()
-
-			newStat.save()
 
 			newProj.save()
 
@@ -592,13 +577,6 @@ def add_worklog( request, proj_id ):
 
 			workLog = form.save( owner=request.user, project=project )
 
-			# Update the ProjectStatistic assoc with the project
-			ProjectStatistic.objects.filter(project=project).update(worklogs=F("worklogs") + 1)
-			ProjectStatistic.objects.filter(project=project).update(loggedTime=F("loggedTime") + (workLog.minutes + (workLog.hours * 60) ) )
-
-			UserStatistic.objects.filter(user=request.user).update(worklogs=F("worklogs") + 1 )
-			UserStatistic.objects.filter(user=request.user).update(loggedTime=F("loggedTime") + (workLog.minutes + (workLog.hours * 60) ) )
-
 			messages.info( request, "Worklog saved successfully.")
 
 			return HttpResponseRedirect('/projects/work/view/'+str(workLog.id)+"/")
@@ -654,7 +632,6 @@ def edit_worklog( request, log_id ):
 	to be edited and saved.
 	"""
 	worklog = Worklog.objects.get(id=log_id)
-	projStat = ProjectStatistic.objects.get( project=worklog.project )
 
 	if ( request.method == "POST" and worklog.owner == request.user ):
 		form = EditWorklogForm( request.POST, instance=worklog )
@@ -667,10 +644,6 @@ def edit_worklog( request, log_id ):
 			newTime = worklog.minutes + (worklog.hours * 60)
 
 			logTimeChange = newTime - oldTime
-
-			# Update the ProjectStatistic for the new time
-			UserStatistic.objects.filter(user=worklog.owner).update(loggedTime=F("loggedTime") + logTimeChange )
-			ProjectStatistic.objects.filter(project=worklog.project).update(loggedTime=F("loggedTime") + logTimeChange)
 
 			messages.info( request, "Worklog updated.")
 
@@ -850,17 +823,12 @@ def add_task( request, proj_id=False ):
 
 			projTask = form.save( owner=request.user )
 
-			# Update the ProjectStatistic assoc with the project
-
-			UserStatistic.objects.filter(user=request.user).update(issues=F("issues") + 1 )
-
 			projTask.assigned.add( request.user )
 
 			if proj_id != False:
 				project = Project.objects.get(id=proj_id)
 
 				if request.user in project.members.all():
-					ProjectStatistic.objects.filter(project=project).update(issues=F("issues") + 1)
 					projTask.openOn.add( project )
 					projTask.save()
 				else:
