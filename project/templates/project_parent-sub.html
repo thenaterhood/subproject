@@ -4,6 +4,8 @@
 
 {% block content %}
 
+{% include 'template_messages.html' %}
+
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}

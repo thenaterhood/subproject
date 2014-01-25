@@ -4,25 +4,7 @@
 
 {% block content %}
 
-  {% if messages %}
-      {% for message in messages %}
-      {% if message.tags == 'error' %}
-          <div class="alert alert-danger">
-      {% elif message.tags == 'warning' %}
-        <div class="alert alert-warning">
-      {% else %}
-        <div class="alert alert-info">
-      {% endif %}
-              
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        {% if 'safe' in message.tags %}
-        {{message|safe}}
-        {% else %}
-          {{ message }}
-          {% endif %}
-        </div>
-      {% endfor %}
-  {% endif %}
+{% include 'template_messages.html' %}
 
 	<h1><img src="/static/img/outline.png" />Outline View</h1>
 

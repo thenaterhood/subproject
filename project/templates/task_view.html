@@ -8,21 +8,8 @@
 <p class="error">Sorry, that's not a valid username/password</p>
 {% endif %}
 
-{% if messages %}
-{% for message in messages %}
-{% if message.tags == 'error' %}
-<div class="alert alert-danger">
-	{% elif message.tags == 'warning' %}
-	<div class="alert alert-warning">
-		{% else %}
-		<div class="alert alert-info">
-			{% endif %}
+{% include 'template_messages.html' %}
 
-			<button type="button" class="close" data-dismiss="alert">&times;</button>
-			{{ message }}
-		</div>
-		{% endfor %}
-		{% endif %}
 		<h2><img src="/static/img/task.png" />{{task.summary}} {%if task.completed%}(Completed){%endif%} <small>Task View</small></h2>
 		{%if canEdit %}
 		{% if not task.inProgress %}

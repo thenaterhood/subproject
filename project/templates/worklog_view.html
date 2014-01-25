@@ -4,25 +4,7 @@
 
 {% block content %}
 
-	{% if form.errors %}
-		<p class="error">Sorry, that's not a valid username/password</p>
-	{% endif %}
-
-	{% if messages %}
-    	{% for message in messages %}
-			{% if message.tags == 'error' %}
-    			<div class="alert alert-danger">
-			{% elif message.tags == 'warning' %}
-				<div class="alert alert-warning">
-			{% else %}
-				<div class="alert alert-info">
-			{% endif %}
-							
-    		<button type="button" class="close" data-dismiss="alert">&times;</button>
-    			{{ message }}
-    		</div>
-    	{% endfor %}
-	{% endif %}
+{% include 'template_messages.html' %}
 	<h2><img src="/static/img/work.png" />{{worklog.summary}} <small>logged by {{worklog.owner}}</small></h2>
 
 	<div class="tabbable">

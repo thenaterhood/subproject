@@ -4,21 +4,7 @@
 
 {% block content %}
 
-	{% if messages %}
-    	{% for message in messages %}
-			{% if message.tags == 'error' %}
-    			<div class="alert alert-danger">
-			{% elif message.tags == 'warning' %}
-				<div class="alert alert-warning">
-			{% else %}
-				<div class="alert alert-info">
-			{% endif %}
-							
-    		<button type="button" class="close" data-dismiss="alert">&times;</button>
-    			{{ message }}
-    		</div>
-    	{% endfor %}
-	{% endif %}
+{% include 'template_messages.html' %}
 
 	<h3><img src="/static/img/project.png" />Edit a Project</h3>
 	<form id="registerForm" action="/projects/edit/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
