@@ -72,8 +72,6 @@ def user_all_tasks(request, assignee=False ):
 		args['notodo'] = True
 		tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
 	else:
-		args['notodo'] = False
-
 		tasks = apply_task_filter( 
 			request, 
 			ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user) 
@@ -1225,6 +1223,9 @@ def view_tree( request, project_id=False ):
 	return render_to_response( 'project_tree.html', RequestContext( request, pageData ) )
 
 def createTree( project, tasks, depth=0, maxdepth=15 ):
+	"""
+	Creates a project tree view recursively 
+	"""
 
 	if ( depth < maxdepth ):
 
@@ -1240,6 +1241,9 @@ def createTree( project, tasks, depth=0, maxdepth=15 ):
 
 
 def createTreeRow( project, tasks, depth=0 ):
+	"""
+	Creates a row in the project tree view.
+	"""
 
 	spacing = '&nbsp;&nbsp;&nbsp;' * (depth*2)
 	projectRow = '<tr>\
