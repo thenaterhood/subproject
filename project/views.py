@@ -435,6 +435,7 @@ def list_tags( request ):
 	"""
 
 	tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+	set_filter_message( request )
 
 	pageData = {}
 	pageData['tags'] = tags
