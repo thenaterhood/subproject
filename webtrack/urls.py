@@ -85,7 +85,7 @@ urlpatterns = patterns('',
     url(r'^projects/outline/$', 'project.views.show_outline'),
     url(r'^projects/browser/$', 'project.views.show_browser'),
     url(r'^projects/browser/(?P<open_project>\d+)/$', 'project.views.show_browser'),
-    url(r'^projects/todo/', 'project.views.my_todo'),
+    url(r'^projects/todo/', 'project.views.user_all_tasks'),
 
     # Tag management
     url(r'^projects/newtag/$', 'project.views.add_tag'),

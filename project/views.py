@@ -39,43 +39,54 @@ def project_welcome(request):
 
 	args['total_tasks'] = ProjectTask.objects.filter( creator=request.user ).count()
 	args['active_tasks'] = ProjectTask.objects.filter( creator=request.user ).filter( inProgress=True ).count()
-	tasks = Worklog.objects.filter(owner=request.user).reverse()
 
-	args['total_time'] = ( (Worklog.objects.filter( owner=request.user ).aggregate(Sum('minutes'))['minutes__sum'] or 0) / 60 ) + \
-		( Worklog.objects.filter( owner=request.user ).aggregate(Sum('hours'))['hours__sum'] or 0 ) 
+	args['total_time'] = ( 
+		(Worklog.objects.filter( owner=request.user ).aggregate(Sum('minutes'))['minutes__sum'] or 0) / 60 ) + \
+		(Worklog.objects.filter( owner=request.user ).aggregate(Sum('hours'))['hours__sum'] or 0 ) 
+
 	args['start_date'] = request.user.date_joined
-
-	try:
-		args['end_date'] = Worklog.objects.filter( owner=request.user ).order_by('-datestamp')[0].datestamp
-	except:
-		args['end_date'] = "No recent logs."
 
 	args['numTasks'] = ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).count()
 
 	args['avg_task_time'] = 0
+
 	if ( args['total_worklogs'] > 0 ):
 		args['avg_task_time'] = str( args['total_time'] / args['total_worklogs'] )
+		args['end_date'] = Worklog.objects.filter( owner=request.user ).order_by('-datestamp')[0].datestamp
+	else:
+		args['end_date'] = "No recent logs."
+
 
 	return render_to_response('project_welcome.html', RequestContext( request, args) )
 
 @login_required
-def user_all_tasks(request):
+def user_all_tasks(request, assignee=False ):
 	"""
 	Displays all of the tasks created by the 
 	logged in user
 	"""
 
-	tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
+	args = {}
+
+	if ( not assignee ):
+		args['notodo'] = True
+		tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
+	else:
+		args['notodo'] = False
+
+		tasks = apply_task_filter( 
+			request, 
+			ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user) 
+			)
+
 	set_filter_message( request )
 
-	args = {}
 	args['user'] = request.user
 	args['tasks'] = tasks.filter( inProgress=False ).all()
 	args['other_num'] = len( args['tasks'] )
 	args['task_wip'] = tasks.filter( inProgress=True ).all()
 	args['wip_num'] = len( args['task_wip'] )
 	args['num_tasks'] = len(tasks)
-	args['notodo'] = True
 
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
 
@@ -1180,19 +1191,8 @@ def my_todo( request ):
 	Displays the My Todo page with the list of active 
 	tasks the user has assigned to them.
 	"""
-	tasks = apply_task_filter( request, 
-		ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user) )
-	set_filter_message( request )
 
-	args = {}
-	args['user'] = request.user
-	args['tasks'] = tasks.filter( inProgress=False ).all()
-	args['other_num'] = len( args['tasks'] )
-	args['task_wip'] = tasks.filter( inProgress=True ).all()
-	args['wip_num'] = len( args['task_wip'] )
-	args['num_tasks'] = len(tasks)
-
-	return render_to_response( 'user_todo.html', RequestContext(request, args) )
+	return user_all_tasks( request, assignee=request.user )
 
 @login_required
 def view_tree( request, project_id=False ):
