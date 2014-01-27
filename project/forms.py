@@ -134,3 +134,6 @@ class AddTagForm(forms.ModelForm):
 	class Meta:
 		model = Tag
 		fields = ('name', 'description', 'public')
+
+class UploadFileForm(forms.Form):
+    file  = forms.FileField()

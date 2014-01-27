@@ -128,6 +128,10 @@ urlpatterns = patterns('',
     url(r'^projects/filter/addtasktag/$', 'project.filters.select_task_filter'),
     url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 'project.filters.select_task_filter'),
 
+    # Data importing
+    url(r'^projects/importcsv/projects/$', 'project.views.import_project_csv'),
+    url(r'^projects/importcsv/work/$', 'project.views.import_worklog_csv'),
+
 
 
 )

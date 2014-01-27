@@ -11,6 +11,8 @@ from django.db.models import Count
 from django.contrib import messages
 from django.db.models import Sum
 
+import dateutil.parser
+
 from copy import deepcopy
 
 from project.models import *
@@ -18,6 +20,124 @@ from project.forms import *
 from project.filters import reset_filter, apply_task_filter, apply_project_filter, set_filter_message
 
 import project.thenaterhood.histogram as histogram
+import csv
+
+@login_required
+def import_worklog_csv( request ):
+	pageData = {}
+
+	if ( request.method == 'POST' ):
+		form = UploadFileForm( request.POST, request.FILES )
+
+		if form.is_valid() and (request.FILES['file'].size / (1024*1024) ) < 2:
+			reader = csv.DictReader( request.FILES['file'].read().decode().splitlines() )
+			imported = 0
+			failed = 0
+			for row in reader:
+				if ( 'name' in row and 'description' in row ):
+					worklog = Worklog()
+					try:
+						project = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name'])[0]
+
+						worklog.project = project
+						worklog.owner = request.user
+						worklog.description = row['description']
+						worklog.summary = " ".join(worklog.description.split(" ")[0:2]) + "..."
+
+						if ( 'duration' in row ):
+							try:
+								worklog.hours = float( row['duration'].split('.')[0] )
+								if ( '.' in row['duration'] ):
+									worklog.minutes = float( "."+row['duration'].split('.')[1] ) * 60
+								else:
+									worklog.minutes = 0
+
+							except:
+								worklog.hours = 0
+								worklog.minutes = 0
+
+						worklog.save()
+
+						if ( 'datestamp' in row ):
+							try:
+								worklog.datestamp = dateutil.parser.parse( row['datestamp'] )
+								worklog.save()
+							except:
+								pass
+
+						imported += 1
+					except:
+						failed += 1
+			messages.info( request, "Successfully imported " + str(imported) + " worklogs. " + str(failed) + " could not be imported.")
+
+		else:
+			messages.error( request, "Unable to import worklogs from your file." )
+
+		return HttpResponseRedirect( '/projects/')
+
+	else:
+		pageData['form'] = UploadFileForm()
+		pageData['sendback'] = "/projects/importcsv/work/"
+		messages.info( request, "Import worklogs from a CSV file. The file should be well-formed \
+			and should contain at least two columns: the project name in the 'name' column \
+			and the work description in the 'description' column.")
+
+		return render_to_response( 'upload_csv.html', RequestContext(request, pageData))
+
+@login_required
+def import_project_csv( request ):
+	pageData = {}
+	if ( request.method == 'POST' ):
+		form = UploadFileForm( request.POST, request.FILES )
+
+		if form.is_valid() and (request.FILES['file'].size / (1024*1024) ) < 2:
+
+			reader = csv.DictReader( request.FILES['file'].read().decode().splitlines() )
+
+			imported = 0
+
+			for row in reader:
+
+				if ( 'name' in row ):
+
+					project = Project()
+					project.name = row['name']
+
+					if ( 'status' in row ):
+						project.status = row['status']
+					else:
+						project.status = "None"
+
+					if ( 'phase' in row ):
+						project.phase = row['phase']
+					else:
+						project.phase = "None"
+
+					if ( 'description' in row ):
+						project.description = "[Imported Project] " + row['description']
+					else:
+						project.description = "[Imported Project]"
+
+					project.manager = request.user
+					project.save()
+					imported += 1
+					project.members.add( request.user )
+
+			messages.info( request, "Successfully imported " + str(imported) + " projects.")
+		else:
+			messages.error( request, "Unable to import projects.")
+
+		return HttpResponseRedirect( '/projects/' )
+
+
+		
+
+	else:
+		pageData['form'] = UploadFileForm()
+		pageData['sendback'] = '/projects/importcsv/projects/'
+		messages.info( request, "Import projects from a CSV file. The CSV file must be well-formed and must \
+			include at least one column with the header 'name' that contains project names.")
+		return render_to_response( 'upload_csv.html', RequestContext(request, pageData))
 
 @login_required
 def project_welcome(request):
@@ -127,7 +247,6 @@ def create_project(request, parent=False):
 		if form.is_valid() and not "useexisting" in request.POST:
 
 			newProj = form.save( owner=request.user )
-			newStat.project = newProj
 
 			if ( request.POST['parent'] != "False" ):
 				parentProject = Project.objects.get( id=request.POST['parent'] )
