@@ -569,7 +569,7 @@ def view_project(request, proj_id):
 	"""
 
 	project = Project.objects.get(id=proj_id)
-	worklogs = Worklog.objects.filter(project=project).all().reverse()
+	worklogs = Worklog.objects.filter(project=project).all().order_by('-datestamp')
 	tags = project.tags.all()
 
 	if not project.active:
