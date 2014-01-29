@@ -237,7 +237,7 @@ def create_project(request, parent=False):
 
 	if request.method == "POST":
 
-		if ( not request.POST['returnUrl'] ):
+		if ( 'returnUrl' not in request.POST ):
 			redirTo = '/projects/'
 		else:
 			redirTo = request.POST['returnUrl']
@@ -248,7 +248,7 @@ def create_project(request, parent=False):
 
 			newProj = form.save( owner=request.user )
 
-			if ( request.POST['parent'] != "False" ):
+			if ( 'parent' in request.POST and request.POST['parent'] != "False" ):
 				parentProject = Project.objects.get( id=request.POST['parent'] )
 
 				newProj.parents.add(parentProject)
