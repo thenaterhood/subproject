@@ -341,6 +341,27 @@ class TaskActions(TestCase):
 		self.assertTrue( 'tasks' in response.context )
 		self.assertTrue( joeTask in response.context['tasks'] )
 
+	def test_wip_toggle( self ):
+		c = Client()
+		c.login( username='joe', password='pass')
+
+		response = c.get('/projects/task/inprogress/1/')
+
+		joeProject = ProjectTask.objects.get(id=1)
+
+		self.assertTrue( joeProject.inProgress )
+
+		response = c.get('/projects/task/inprogress/1/')
+
+		joeProject = ProjectTask.objects.get(id=1)
+
+		self.assertFalse( joeProject.inProgress )
+
+
+
+
+
+
 class TagActions(TestCase):
 
 	def setUp(self):
