@@ -13,7 +13,7 @@ from project.views import *
 from django.test.client import Client
 from django.contrib.auth import get_user_model
 
-class ProjectViewUpdate(TestCase):
+class ProjectView_Update(TestCase):
 
 	def setUp(self):
 		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
@@ -202,6 +202,190 @@ class ProjectViewUpdate(TestCase):
 
 		self.assertFalse( project2 in project1.subprojects.all() )
 		self.assertFalse( project1 in project2.parents.all() )
+
+	def test_create_project( self ):
+
+		pdata = {}
+		pdata['name'] = "My New Project"
+		pdata['status'] = "My Status"
+		pdata['phase'] = "My Phase"
+		pdata['description'] = "My description"
+
+		c = Client()
+
+		response = c.post('/projects/create/', pdata )
+
+		self.assertEqual( Project.objects.filter(name="My New Project").count(), 0 )
+
+		c.login( username='joe', password='pass')
+		response = c.post('/projects/create/', pdata )
+
+		self.assertEqual( Project.objects.filter(name="My New Project").count(), 1 )
+		p = Project.objects.get( name="My New Project" )
+
+		self.assertEqual( p.name, "My New Project" )
+		self.assertEqual( p.status, "My Status" )
+		self.assertEqual( p.phase, "My Phase" )
+		self.assertEqual( p.description, "My description" )
+
+	def test_list_projects(self):
+		c = Client()
+		c.login( username='joe', password='pass')
+
+		response = c.get('/projects/')
+
+		self.assertTrue( 'owned' in response.context )
+		self.assertEqual( len(response.context['owned']), 1 )
+
+class TaskActions(TestCase):
+
+	def setUp(self):
+		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
+		bob= get_user_model().objects.create_user(username="bob", first_name="Bob", last_name="Herp", email="bob@joe.joe", password="pass")
+		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
+		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
+		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
+		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
+
+
+	def test_create_task( self ):
+
+		tdata = {}
+		tdata['summary'] = "My Task"
+		tdata['description'] = "Just Mine"
+
+		c = Client()
+		response = c.post('/projects/addtask/', tdata)
+
+		self.assertEqual( ProjectTask.objects.filter(summary="Just Mine").count(), 0 )
+
+		c.login( username='joe', password='pass')
+
+		t = ProjectTask.objects.get(id=1)
+
+		response = c.post('/projects/addtask/', tdata)
+		self.assertEqual( ProjectTask.objects.filter(summary="My Task").count(), 1 )
+
+		t = ProjectTask.objects.get( summary="My Task" )
+
+		self.assertEqual( t.summary, "My Task" )
+		self.assertEqual( t.description, "Just Mine" )
+
+	def test_edit_task( self ):
+
+		tdata = {}
+		tdata['summary'] = "My Task"
+		tdata['description'] = "Just Mine"
+
+		c = Client()
+		response = c.post('/projects/task/edit/1/', tdata )
+
+		t = ProjectTask.objects.get( id=1 )
+
+		self.assertEqual( t.summary, "Joe's Task" )
+
+		c.login( username='joe', password='pass' )
+
+		response = c.post('/projects/task/edit/1/', tdata )
+
+		t = ProjectTask.objects.get( id=1 )
+
+		self.assertEqual( t.summary, "My Task" )
+
+
+	def test_create_task_and_assign( self ):
+
+		tdata = {}
+		tdata['summary'] = "My Task"
+		tdata['description'] = "Just Mine"
+
+		c = Client()
+		c.login( username='joe', password='pass')
+
+		t = ProjectTask.objects.get(id=1)
+
+		response = c.post('/projects/addtask/1/', tdata)
+		self.assertEqual( ProjectTask.objects.filter(summary="My Task").count(), 1 )
+
+		t = ProjectTask.objects.get( summary="My Task" )
+
+		self.assertEqual( t.summary, "My Task" )
+		self.assertEqual( t.description, "Just Mine" )
+
+		p = Project.objects.get( id=1 )
+
+		self.assertTrue( p in t.openOn.all() )
+
+	def test_user_task_show( self ):
+
+		c = Client()
+		c.login( username='joe', password='pass')
+
+		bobTask = ProjectTask.objects.get(id=2)
+		joeTask = ProjectTask.objects.get(id=1)
+
+		joe = User.objects.get( username='joe' )
+		bobProject = Project.objects.get( id=2 )
+
+		bobTask.assigned.add( joe )
+		bobTask.openOn.add( bobProject )
+		bobTask.save()
+
+		response = c.get('/projects/todo/')
+
+		self.assertTrue( 'tasks' in response.context )
+		self.assertTrue( bobTask in response.context['tasks'] )
+
+		response = c.get('/projects/usertasks/')
+
+		self.assertTrue( 'tasks' in response.context )
+		self.assertTrue( joeTask in response.context['tasks'] )
+
+class TagActions(TestCase):
+
+	def setUp(self):
+		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
+		bob= get_user_model().objects.create_user(username="bob", first_name="Bob", last_name="Herp", email="bob@joe.joe", password="pass")
+		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
+		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
+		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
+		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
+
+	def test_create_private_tag(self):
+		c = Client()
+		c.login( username='joe', password='pass' )
+
+		tagData = {}
+		tagData['name'] = 'joetag'
+		tagData['description'] = "Joe's Tag"
+
+		response = c.post('/projects/newtag/', tagData)
+
+		tag = Tag.objects.filter( name='joetag' )
+
+		self.assertEqual( tag.count(), 1 )
+		self.assertFalse( tag[0].public )
+
+	def test_create_public_tag( self ):
+		c = Client()
+		c.login( username='joe', password='pass' )
+
+		tagData = {}
+		tagData['name'] = 'joetag'
+		tagData['description'] = "Joe's Tag"
+		tagData['public'] = True
+
+		response = c.post('/projects/newtag/', tagData)
+
+		tag = Tag.objects.filter( name='joetag' )
+
+		self.assertEqual( tag.count(), 1 )
+		self.assertTrue( tag[0].public )
+
+
+
+
+
 
 
 
