@@ -950,14 +950,20 @@ def add_task( request, proj_id=False ):
 		form = EditTaskForm(request.POST)
 		if form.is_valid():
 
-			projTask = form.save( owner=request.user )
+			projTask = ProjectTask()
+			projTask.summary = form.cleaned_data['summary']
+			projTask.description = form.cleaned_data['description']
+			projTask.creator = request.user
+
+			projTask.save()
 
 			projTask.assigned.add( request.user )
+			projTask.save()
 
 			if proj_id != False:
 				project = Project.objects.get(id=proj_id)
 
-				if request.user in project.members.all():
+				if request.user in project.members.all() or request.user == project.manager :
 					projTask.openOn.add( project )
 					projTask.save()
 				else:
@@ -968,7 +974,7 @@ def add_task( request, proj_id=False ):
 			if ( "saveandassign" in request.POST ):
 				return HttpResponseRedirect('/projects/addtotask/'+str(projTask.id)+"/" )
 			else:
-				if ( request.POST['returnUrl'] == '' ):
+				if ( 'returnUrl' not in request.POST or request.POST['returnUrl'] == '' ):
 					return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
 				else:
 					return HttpResponseRedirect(request.POST['returnUrl'])

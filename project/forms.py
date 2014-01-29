@@ -107,7 +107,7 @@ class EditTaskForm(forms.ModelForm):
 		fields = ('summary', 'description')
 
 	def save(self, owner=False, commit=True):
-		newTask = super( AddTaskForm, self ).save(commit=False)
+		newTask = super( EditTaskForm, self ).save(commit=False)
 
 		if newTask.creator is None:
 			if owner:
