@@ -618,7 +618,10 @@ def task_progress_toggle( request, task_id ):
 
 		messages.info( request, "Task Updated.")
 
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+	if ( 'HTTP_REFERER' in request.META ):
+		return HttpResponseRedirect(request.META['HTTP_REFERER'])
+	else:
+		return HttpResponseRedirect('/projects/task/view/'+str(task_id))
 
 @login_required
 def unassign_task_from_project( request, task_id, project_id ):
