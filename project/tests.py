@@ -21,6 +21,9 @@ class ProjectView_Update(TestCase):
 		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
 		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
 
+		self.client = Client()
+		self.client.login( username="joe", password="pass" )
+
 
 	def test_login_success(self):
 
@@ -31,10 +34,7 @@ class ProjectView_Update(TestCase):
 
 
 	def test_project_home(self):
-		c = Client()
-		self.assertTrue( c.login(username='joe', password='pass') ) 
-
-		response = c.get('/')
+		response = self.client.get('/')
 
 		self.assertTrue( response.status_code in [301,200,302] )
 
@@ -51,10 +51,8 @@ class ProjectView_Update(TestCase):
 		self.assertTrue( 'end_date' in response.context )
 
 	def test_project_view(self):
-		c = Client()
-		c.login( username='joe', password='pass' )
 
-		response = c.get('/projects/view/1/')
+		response = self.client.get('/projects/view/1/')
 
 		self.assertTrue( response.status_code in [301,200] )
 
@@ -65,13 +63,11 @@ class ProjectView_Update(TestCase):
 
 
 	def test_project_update( self ):
-		c = Client()
-		c.login( username="joe", password='pass' )
 
-		response = c.post('/projects/edit/1/', {'name':'A Project', 'phase':"phased", 'status':'statused',
+		response = self.client.post('/projects/edit/1/', {'name':'A Project', 'phase':"phased", 'status':'statused',
 			'description':'changed'} )
 
-		response = c.get('/projects/view/1/')
+		response = self.client.get('/projects/view/1/')
 
 		self.assertEqual( response.context['project'].name, "A Project")
 		self.assertEqual( response.context['project'].phase, 'phased')
@@ -79,12 +75,11 @@ class ProjectView_Update(TestCase):
 		self.assertEqual( response.context['project'].description, 'changed' )
 
 	def test_project_update_bad_data( self ):
-		c = Client()
-		c.login( username='joe', password='pass' )
-		response = c.post('/projects/edit/1/', {'name':'A Project', 'status':'statused',
+
+		response = self.client.post('/projects/edit/1/', {'name':'A Project', 'status':'statused',
 			'description':'changed'} )
 
-		response = c.get('/projects/view/1/')
+		response = self.client.get('/projects/view/1/')
 
 		self.assertEqual( response.context['project'].name, "Joe's Project")
 
@@ -122,10 +117,8 @@ class ProjectView_Update(TestCase):
 		self.assertTrue( project.active )
 
 	def test_project_add_member( self ):
-		c = Client()
-		c.login( username="joe", password="pass" )
 
-		response = c.post('/projects/addmember/1/', {'username':'bob'} )
+		response = self.client.post('/projects/addmember/1/', {'username':'bob'} )
 
 		project = Project.objects.get( id=1 )
 		bob = User.objects.get( username="bob" )
@@ -144,26 +137,22 @@ class ProjectView_Update(TestCase):
 		self.assertFalse( bob in project.members.all() )
 
 	def test_project_remove_member( self ):
-		c = Client()
-		c.login( username="joe", password="pass" )
 
-		response = c.post('/projects/addmember/1/', {'username':'bob'} )
+		response = self.client.post('/projects/addmember/1/', {'username':'bob'} )
 
 		project = Project.objects.get( id=1 )
 		bob = User.objects.get( username="bob" )
 
 		self.assertTrue( bob in project.members.all() )
 
-		response = c.post('/projects/removemember/1/2/')
+		response = self.client.post('/projects/removemember/1/2/')
 
 		self.assertFalse( bob in project.members.all() )
 
 	def test_project_remove_member_bad_user( self ):
-		c = Client()
-		c.login( username="joe", password="pass" )
 
-		response = c.post('/projects/addmember/1/', {'username':'bob'} )
-		response = c.post('/projects/addmember/1/', {'username':'joe'} )
+		response = self.client.post('/projects/addmember/1/', {'username':'bob'} )
+		response = self.client.post('/projects/addmember/1/', {'username':'joe'} )
 
 		project = Project.objects.get( id=1 )
 		bob = User.objects.get( username="bob" )
@@ -172,10 +161,10 @@ class ProjectView_Update(TestCase):
 
 		self.assertTrue( bob in project.members.all() )
 
-		c.logout()
-		c.login( username="bob", password="pass" )
+		self.client.logout()
+		self.client.login( username="bob", password="pass" )
 
-		response = c.post('/projects/removemember/1/1/')
+		response = self.client.post('/projects/removemember/1/1/')
 
 		project = Project.objects.get( id=1 )
 
@@ -247,8 +236,11 @@ class TaskActions(TestCase):
 		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
 		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
 
+		self.client = Client()
+		self.client.login( username="joe", password="pass" )
 
-	def test_create_task( self ):
+
+	def test_create_delete_task( self ):
 
 		tdata = {}
 		tdata['summary'] = "My Task"
@@ -267,9 +259,14 @@ class TaskActions(TestCase):
 		self.assertEqual( ProjectTask.objects.filter(summary="My Task").count(), 1 )
 
 		t = ProjectTask.objects.get( summary="My Task" )
+		tid = t.id
 
 		self.assertEqual( t.summary, "My Task" )
 		self.assertEqual( t.description, "Just Mine" )
+
+		response = c.get('/projects/task/delete/' + str(tid) + '/')
+
+		self.assertEqual( ProjectTask.objects.filter(summary="My Task").count(), 0 )
 
 	def test_edit_task( self ):
 
@@ -284,9 +281,7 @@ class TaskActions(TestCase):
 
 		self.assertEqual( t.summary, "Joe's Task" )
 
-		c.login( username='joe', password='pass' )
-
-		response = c.post('/projects/task/edit/1/', tdata )
+		response = self.client.post('/projects/task/edit/1/', tdata )
 
 		t = ProjectTask.objects.get( id=1 )
 
@@ -299,12 +294,9 @@ class TaskActions(TestCase):
 		tdata['summary'] = "My Task"
 		tdata['description'] = "Just Mine"
 
-		c = Client()
-		c.login( username='joe', password='pass')
-
 		t = ProjectTask.objects.get(id=1)
 
-		response = c.post('/projects/addtask/1/', tdata)
+		response = self.client.post('/projects/addtask/1/', tdata)
 		self.assertEqual( ProjectTask.objects.filter(summary="My Task").count(), 1 )
 
 		t = ProjectTask.objects.get( summary="My Task" )
@@ -318,9 +310,6 @@ class TaskActions(TestCase):
 
 	def test_user_task_show( self ):
 
-		c = Client()
-		c.login( username='joe', password='pass')
-
 		bobTask = ProjectTask.objects.get(id=2)
 		joeTask = ProjectTask.objects.get(id=1)
 
@@ -331,31 +320,48 @@ class TaskActions(TestCase):
 		bobTask.openOn.add( bobProject )
 		bobTask.save()
 
-		response = c.get('/projects/todo/')
+		response = self.client.get('/projects/todo/')
 
 		self.assertTrue( 'tasks' in response.context )
 		self.assertTrue( bobTask in response.context['tasks'] )
 
-		response = c.get('/projects/usertasks/')
+		response = self.client.get('/projects/usertasks/')
 
 		self.assertTrue( 'tasks' in response.context )
 		self.assertTrue( joeTask in response.context['tasks'] )
 
-	def test_wip_toggle( self ):
-		c = Client()
-		c.login( username='joe', password='pass')
+	def test_task_view( self ):
 
-		response = c.get('/projects/task/inprogress/1/')
+		task = ProjectTask.objects.get( id=1 )
+
+		response = self.client.get('/projects/task/view/1/' )
+
+		self.assertTrue( 'task' in response.context )
+		self.assertEqual( response.context['task'], task )
+
+	def test_wip_toggle( self ):
+
+		response = self.client.get('/projects/task/inprogress/1/')
 
 		joeProject = ProjectTask.objects.get(id=1)
 
 		self.assertTrue( joeProject.inProgress )
 
-		response = c.get('/projects/task/inprogress/1/')
+		response = self.client.get('/projects/task/inprogress/1/')
 
 		joeProject = ProjectTask.objects.get(id=1)
 
 		self.assertFalse( joeProject.inProgress )
+
+	def test_add_remove_assignee( self ):
+
+		bob = User.objects.get( username="bob" )
+
+		response = self.client.post('/projects/task/addmember/1/', {'username':'bob'})
+		self.assertTrue( bob in ProjectTask.objects.get(id=1).assigned.all() )
+
+		response = self.client.get('/projects/task/removemember/1/2/')
+		self.assertFalse( bob in ProjectTask.objects.get(id=1).assigned.all() )
 
 
 
@@ -372,15 +378,18 @@ class TagActions(TestCase):
 		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
 		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
 
+		joeTag = Tag.objects.create(name="Joe's Tag", description="Joe's", owner=joe)
+
+		self.client = Client()
+		self.client.login( username="joe", password="pass" )
+
 	def test_create_private_tag(self):
-		c = Client()
-		c.login( username='joe', password='pass' )
 
 		tagData = {}
 		tagData['name'] = 'joetag'
 		tagData['description'] = "Joe's Tag"
 
-		response = c.post('/projects/newtag/', tagData)
+		response = self.client.post('/projects/newtag/', tagData)
 
 		tag = Tag.objects.filter( name='joetag' )
 
@@ -388,32 +397,121 @@ class TagActions(TestCase):
 		self.assertFalse( tag[0].public )
 
 	def test_create_public_tag( self ):
-		c = Client()
-		c.login( username='joe', password='pass' )
 
 		tagData = {}
 		tagData['name'] = 'joetag'
 		tagData['description'] = "Joe's Tag"
 		tagData['public'] = True
 
-		response = c.post('/projects/newtag/', tagData)
+		response = self.client.post('/projects/newtag/', tagData)
 
 		tag = Tag.objects.filter( name='joetag' )
 
 		self.assertEqual( tag.count(), 1 )
 		self.assertTrue( tag[0].public )
 
+	def test_delete_tag( self ):
+
+		response = self.client.get('/projects/tag/delete/1/')
+
+		tags = Tag.objects.filter( name="Joe's Tag" )
+
+		self.assertEqual( tags.count(), 0 )
 
 
+	def test_add_remove_viewer( self ):
+
+		bob = User.objects.get( username='bob' )
+
+		response = Client().post('/projects/tag/addviewer/1/', {'username':'bob'})
+
+		self.assertFalse( bob in Tag.objects.get( id=1 ).viewers.all() )
+
+		response = self.client.post('/projects/tag/addviewer/1/', {'username':'bob'} )
+		self.assertTrue( bob in Tag.objects.get(id=1).viewers.all() )
+
+		response = self.client.get('/projects/tag/1/revokeviewer/2/')
+		self.assertFalse( bob in Tag.objects.get( id=1).viewers.all() )
+
+	def test_add_remove_user( self ):
+
+		bob = User.objects.get( username='bob' )
+
+		response = Client().post('/projects/tag/adduser/1/', {'username':'bob'})
+
+		self.assertFalse( bob in Tag.objects.get( id=1 ).users.all() )
+
+		response = self.client.post('/projects/tag/adduser/1/', {'username':'bob'} )
+		self.assertTrue( bob in Tag.objects.get(id=1).users.all() )
+
+		response = self.client.get('/projects/tag/1/revokeuser/2/')
+		self.assertFalse( bob in Tag.objects.get( id=1).users.all() )
+
+	def test_view_tag( self ):
+
+		response = self.client.get('/projects/tags/1/')
+
+		self.assertTrue( 'tag' in response.context )
+		tag = Tag.objects.get( id=1 )
+
+		self.assertEqual( response.context['tag'], tag )
+
+	def test_list_tags( self ):
+
+		response = self.client.get('/projects/tags/')
+
+		self.assertTrue( 'tags' in response.context )
+		self.assertTrue( len(response.context['tags']) > 0 )
 
 
+class WorklogActions(TestCase):
 
+	def setUp(self):
+		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
+		bob= get_user_model().objects.create_user(username="bob", first_name="Bob", last_name="Herp", email="bob@joe.joe", password="pass")
+		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
+		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
 
+		self.client = Client()
+		self.client.login( username="joe", password="pass" )
 
+	def test_add_edit_worklog( self ):
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+		worklog = {}
+		worklog['summary'] = "Joe's Work"
+		worklog['description'] = "Joe's"
+		worklog['minutes'] = 0
+		worklog['hours'] = 1
+
+		response = self.client.post( '/projects/addwork/1/', worklog )
+
+		logs = Worklog.objects.filter( summary="Joe's Work" )
+		self.assertTrue( logs.count() > 0 )
+
+		log = logs[0]
+
+		self.assertEqual( log.summary, "Joe's Work" )
+		self.assertEqual( log.description, "Joe's")
+		self.assertEqual( log.hours, 1 )
+
+		worklog['summary'] = "Just Joe"
+
+		response = self.client.post('/projects/work/edit/1/', worklog )
+		logs = Worklog.objects.filter( summary="Just Joe" )
+		self.assertTrue( logs.count() > 0 )
+
+	def test_view_worklog( self ):
+
+		worklog = {}
+		worklog['summary'] = "Joe's Work"
+		worklog['description'] = "Joe's"
+		worklog['minutes'] = 0
+		worklog['hours'] = 1
+
+		response = self.client.post( '/projects/addwork/1/', worklog )
+		response = self.client.get('/projects/work/view/1/')
+
+		log = Worklog.objects.get( summary="Joe's Work" )
+
+		self.assertTrue( 'worklog' in response.context )
+		self.assertEqual( log, response.context['worklog'] )
