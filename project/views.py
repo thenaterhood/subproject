@@ -34,40 +34,46 @@ def import_worklog_csv( request ):
 			imported = 0
 			failed = 0
 			for row in reader:
-				if ( 'name' in row and 'description' in row ):
-					worklog = Worklog()
-					try:
-						project = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name'])[0]
+				if ( 'name' in row ):
 
-						worklog.project = project
-						worklog.owner = request.user
-						worklog.description = row['description']
-						worklog.summary = " ".join(worklog.description.split(" ")[0:2]) + "..."
+					matchingProjects = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name']).count()
+
+					if ( matchingProjects > 0 ):
+						project = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name'])[0]
 
 						if ( 'duration' in row ):
 							try:
-								worklog.hours = float( row['duration'].split('.')[0] )
-								if ( '.' in row['duration'] ):
-									worklog.minutes = float( "."+row['duration'].split('.')[1] ) * 60
-								else:
-									worklog.minutes = 0
-
+								row['hours'] = float(row['duration'].split('.')[0] )
 							except:
-								worklog.hours = 0
-								worklog.minutes = 0
+								row['hours'] = 0
 
-						worklog.save()
+							try:
+								if ( '.' in row['duration'] ):
+									row['minutes'] = float("."+row['duration'].split('.'[1] ) ) * 60
+								else:
+									row['minutes'] = 0
+							except:
+								row['minutes'] = 0
 
 						if ( 'datestamp' in row ):
 							try:
-								worklog.datestamp = dateutil.parser.parse( row['datestamp'] )
-								worklog.save()
+								row['datestamp'] = dateutil.parser.parse( row['datestamp'] )
 							except:
 								pass
 
-						imported += 1
-					except:
-						failed += 1
+						if ( 'description' in row ):
+							row['summary'] = " ".join( row['description'].split()[0:3] )
+
+						addWorklog = EditWorklogForm( row )
+						if ( addWorklog.is_valid() ):
+							log = addWorklog.save( owner=request.user, project=project )
+							if( 'datestamp' in row ):
+								log.datestamp = row['datestamp']
+								log.save()
+
+							imported += 1
+
+
 			messages.info( request, "Successfully imported " + str(imported) + " worklogs. " + str(failed) + " could not be imported.")
 
 		else:
@@ -110,7 +116,7 @@ def import_project_csv( request ):
 					row['description'] = "[Imported Project] " + row['description']
 
 				addForm = EditProjectForm( row )
-				
+
 				if( addForm.is_valid() ):
 					addForm.save( owner=request.user )
 
