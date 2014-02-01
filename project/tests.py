@@ -12,6 +12,7 @@ from project.views import *
 
 from django.test.client import Client
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 class ProjectView_Update(TestCase):
 
@@ -23,6 +24,33 @@ class ProjectView_Update(TestCase):
 
 		self.client = Client()
 		self.client.login( username="joe", password="pass" )
+
+
+	def test_show_browser( self ):
+		response = self.client.get('/projects/browser/')
+
+		self.assertTrue( 'projects' in response.context )
+
+		response = self.client.get('/projects/browser/1/')
+
+		self.assertTrue( 'projects' in response.context )
+		self.assertTrue( 'selected' in response.context )
+		self.assertEqual( response.context['selected'], Project.objects.get(id=1) )
+
+	def test_show_panels( self ):
+		response = self.client.get('/projects/outline/')
+
+		self.assertTrue( 'panel1' in response.context )
+
+		response = self.client.get('/projects/outline/?pos=1')
+		self.assertTrue( 'panel1' in response.context )
+		self.assertTrue( 'panel2' in response.context )
+
+		response = self.client.get('/projects/outline/?pos=1,1')
+		self.assertTrue( 'panel1' in response.context )
+		self.assertTrue( 'panel2' in response.context )
+		self.assertTrue( 'panel3' in response.context )
+
 
 
 	def test_login_success(self):
@@ -182,6 +210,12 @@ class ProjectView_Update(TestCase):
 		self.assertTrue( project2 in project1.subprojects.all() )
 		self.assertTrue( project1 in project2.parents.all() )
 
+		response = c.post('/projects/children/1/')
+		self.assertTrue( project2 in response.context['projects'] )
+
+		response = c.post('/projects/parents/2/')
+		self.assertTrue( project1 in response.context['projects'] )
+
 		c.logout()
 		c.login( username="bob", password="pass")
 		response = c.post('/projects/totop/2/')
@@ -236,8 +270,57 @@ class TaskActions(TestCase):
 		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
 		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
 
+		joeTask.openOn.add( joeProject )
+		joeTask.save()
+
+		joeProject.members.add( joe )
+
+
 		self.client = Client()
 		self.client.login( username="joe", password="pass" )
+
+
+	def test_remove_add_project_task( self ):
+		self.client.get('/projects/1/unassigntask/1/')
+
+		task = ProjectTask.objects.get(id=1)
+		project = Project.objects.get(id=1)
+
+		self.assertFalse( project in task.openOn.all() )
+		self.assertFalse( project in task.closedOn.all() )
+
+		self.client.get('/projects/1/assigntask/1/')
+
+		task = ProjectTask.objects.get(id=1)
+
+		self.assertTrue( project in task.openOn.all() )
+		self.client.get('/projects/1/unassigntask/1/')
+
+
+		# This tests the reverse - the previous tests 
+		# the path of choosing a task, starting at the 
+		# project view page. Below starts at the task 
+		# page and allows a project to be selected instead
+		# to assign the task to.
+
+		self.client.get('/projects/addtotask/1/1/')
+		task = ProjectTask.objects.get( id=1 )
+
+		self.assertTrue( project in task.openOn.all() )
+
+	def test_task_to_subproject( self ):
+		self.client.get('/projects/task/tosubproject/1/')
+
+		task = ProjectTask.objects.filter(summary="Joe's Task")
+		self.assertEqual( task.count(), 0 )
+
+		project = Project.objects.filter( name="Joe's Task" )
+		parentProject = Project.objects.get( name="Joe's Project" )
+
+		self.assertTrue( project.count() > 0 )
+		self.assertEqual( project[0].description, "Joe's")
+		self.assertTrue( parentProject in project[0].parents.all() )
+		self.assertTrue( project[0] in parentProject.subprojects.all() )
 
 
 	def test_create_delete_task( self ):
@@ -339,6 +422,21 @@ class TaskActions(TestCase):
 		self.assertTrue( 'task' in response.context )
 		self.assertEqual( response.context['task'], task )
 
+	def test_open_close_task( self ):
+		response = self.client.get('/projects/1/closetask/1/')
+
+		task = ProjectTask.objects.get( id=1 )
+		project = Project.objects.get( id=1 )
+
+		self.assertTrue( project in task.closedOn.all() )
+		self.assertFalse( project in task.openOn.all() )
+
+		response = self.client.get('/projects/1/opentask/1/')
+
+		task = ProjectTask.objects.get( id=1 )
+		self.assertTrue( project in task.openOn.all() )
+		self.assertFalse( project in task.closedOn.all() )
+
 	def test_wip_toggle( self ):
 
 		response = self.client.get('/projects/task/inprogress/1/')
@@ -382,6 +480,34 @@ class TagActions(TestCase):
 
 		self.client = Client()
 		self.client.login( username="joe", password="pass" )
+
+	def test_tag_untag_task( self ):
+		self.client.get('/projects/task/1/addtag/1/')
+
+		tag = Tag.objects.get(id=1)
+		task = ProjectTask.objects.get(id=1)
+
+		self.assertTrue( tag in task.tags.all() )
+
+		self.client.get('/projects/task/1/untag/1/')
+		task = ProjectTask.objects.get(id=1)
+
+		self.assertFalse( tag in task.tags.all() )
+
+	def test_tag_untag_project( self ):
+		self.client.get('/projects/1/addtag/1/')
+
+		tag = Tag.objects.get(id=1)
+		project = Project.objects.get(id=1)
+
+		self.assertTrue( tag in project.tags.all() )
+
+		self.client.get('/projects/1/untag/1/')
+		project = Project.objects.get(id=1)
+
+		self.assertFalse( tag in project.tags.all() )
+
+
 
 	def test_create_private_tag(self):
 
@@ -515,3 +641,59 @@ class WorklogActions(TestCase):
 
 		self.assertTrue( 'worklog' in response.context )
 		self.assertEqual( log, response.context['worklog'] )
+
+class DataImport(TestCase):
+
+	def setUp(self):
+		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
+		bob= get_user_model().objects.create_user(username="bob", first_name="Bob", last_name="Herp", email="bob@joe.joe", password="pass")
+		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
+		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
+
+		self.client = Client()
+		self.client.login( username="joe", password="pass" )
+
+	def test_clean_project_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		initialNum = Project.objects.filter( manager=joe ).count()
+		# Clean file contains 11 items
+		with open('test_files/clean_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Project.objects.filter( manager=joe ).count()
+
+		self.assertEqual( afterNum - 11, initialNum )
+
+		imports = Project.objects.filter( manager=joe ).filter( status='imported' )
+
+		for i in imports:
+			self.assertEqual( i.phase, "Development" )
+			self.assertTrue( '[Imported Project]' in i.description )
+
+	def test_clean_worklog_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		with open('test_files/clean_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		initialNum = Worklog.objects.filter( owner=joe ).count()
+
+		with open('test_files/clean_worklogs.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/work/',
+								{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Worklog.objects.filter( owner=joe ).count()
+		imports = Worklog.objects.filter( owner=joe )
+
+		self.assertEqual( afterNum - 11, initialNum )
+
+		for i in imports:
+			self.assertEqual( i.hours, 1 )
+			self.assertEqual( i.description, "some added work" )
+
+
+
+
