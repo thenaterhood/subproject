@@ -98,30 +98,23 @@ def import_project_csv( request ):
 
 			for row in reader:
 
-				if ( 'name' in row ):
+				if ( 'status' not in row ):
+					row['status'] = "None"
 
-					project = Project()
-					project.name = row['name']
+				if ( 'phase' not in row ):
+					row['phase'] = "None"
 
-					if ( 'status' in row ):
-						project.status = row['status']
-					else:
-						project.status = "None"
+				if ( 'description' not in row ):
+					row['description'] = "[Imported Project]"
+				else:
+					row['description'] = "[Imported Project] " + row['description']
 
-					if ( 'phase' in row ):
-						project.phase = row['phase']
-					else:
-						project.phase = "None"
+				addForm = EditProjectForm( row )
+				
+				if( addForm.is_valid() ):
+					addForm.save( owner=request.user )
 
-					if ( 'description' in row ):
-						project.description = "[Imported Project] " + row['description']
-					else:
-						project.description = "[Imported Project]"
-
-					project.manager = request.user
-					project.save()
 					imported += 1
-					project.members.add( request.user )
 
 			messages.info( request, "Successfully imported " + str(imported) + " projects.")
 		else:
@@ -823,6 +816,50 @@ def line_stats(request):
 	return render_to_response('project_stats_lines.html', args)
 
 @login_required
+def add_existing_task_to_project( request, task_id, project_id=False ):
+	"""
+	Associates an existing task with an additional project as 
+	an open task on that project. Renders the project 
+	selection template and accepts the project and task as GET 
+	variables.
+
+	Arguments:
+		task_id - integer task id 
+		project_id - integer project id: false for rendering 
+			the initial selection page and true when the page returns 
+			a selection from the user.
+
+	Returns:
+		the project selection page initially, then the project 
+		view page after, if the user has permission to see it.
+	"""
+
+	task = ProjectTask.objects.get(id=task_id)
+
+	if ( project_id != False ):
+		project = Project.objects.get( id=project_id )
+
+		if ( (request.user == task.creator and request.user == project.manager)
+			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
+
+			task.openOn.add( project )
+			task.save()
+
+			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
+
+		else:
+			return HttpResponseRedirect( '/projects/welcome' )
+
+	else:
+
+		args = {}
+		args['task'] = task
+
+		args['projects'] = Project.objects.filter( members=request.user )
+
+		return render_to_response( 'project_select.html', args )
+
+@login_required
 def assign_task( request, proj_id, task_id=False ):
 	"""
 	Assigns a task to a project
@@ -1131,57 +1168,6 @@ def toggle_project_task_status( request, project_id, task_id ):
 		return HttpResponseRedirect( request.META['HTTP_REFERER'] )
 	except:
 		return HttpResponseRedirect( '/projects/view/' + str(project_id) +'/' )
-
-
-
-	
-
-
-@login_required
-def add_existing_task_to_project( request, task_id, project_id=False ):
-	"""
-	Associates an existing task with an additional project as 
-	an open task on that project. Renders the project 
-	selection template and accepts the project and task as GET 
-	variables.
-
-	Arguments:
-		task_id - integer task id 
-		project_id - integer project id: false for rendering 
-			the initial selection page and true when the page returns 
-			a selection from the user.
-
-	Returns:
-		the project selection page initially, then the project 
-		view page after, if the user has permission to see it.
-	"""
-
-	task = ProjectTask.objects.get(id=task_id)
-
-	if ( project_id != False ):
-		project = Project.objects.get( id=project_id )
-
-		if ( (request.user == task.creator and request.user == project.manager)
-			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
-
-			task.openOn.add( project )
-			task.save()
-
-			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
-
-		else:
-			return HttpResponseRedirect( '/projects/welcome' )
-
-	else:
-
-		args = {}
-		args['task'] = task
-
-		args['projects'] = Project.objects.filter( members=request.user )
-
-		return render_to_response( 'project_select.html', args )
-
-
 
 
 @login_required
