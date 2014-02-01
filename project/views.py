@@ -643,7 +643,10 @@ def unassign_task_from_project( request, task_id, project_id ):
 		task.closedOn.remove( project )
 		task.save()
 
-	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+	if ( 'HTTP_REFERER' in request.META ):
+		return HttpResponseRedirect(request.META['HTTP_REFERER'])
+	else:
+		return HttpResponseRedirect('/projects/view/' + str(project_id) )
 
 @login_required
 def add_member(request, proj_id):
