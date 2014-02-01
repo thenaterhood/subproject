@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} webtrack: csv import {% endblock %}
+
+{% block content %}
+
+{% include 'template_messages.html' %}
+<form id="registerForm" action="{{sendback}}" method="post" enctype="multipart/form-data">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+<h3>
+	Import a File
+
+</h3>
+
+
+	{% for field in form %}
+	<fieldset class="form-group">
+		{{field}}
+	</fieldset>
+
+	{% endfor %}
+    <input name="parent" type="hidden" value="{{ parent }}" />
+  <input name="returnUrl" type="hidden" value="{{ returnUrl }}" />
+  <p><strong>After clicking the import button, wait until you are redirected to your project list. Do not 
+  	close or refresh the page or your import will be interrupted.</strong></p>
+
+	<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Import" style="border-radius: 1px;" />
+
+</form> <!--Close the form tag-->
+
+{% endblock %}
