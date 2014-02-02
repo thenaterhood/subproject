@@ -4,9 +4,47 @@
 
 {% block content %}
 
-<h1>User Profile</h1>
-<h2>{{user_profile.username}}</h2>
-<p><em>aka {{user_profile.first_name}} {{user_profile.last_name}}</em></p>
+
+<div class="container">
+
+	{% if nouser %}
+	<h1>Sorry! That user does not exist.</h1>
+	{% else %}
+
+	<div class="row">
+			<div class="col-md-3">
+				<img src="{{gravatar_url}}" title="Profile images are retrieved from Gravatar. Visit gravatar.com to change your profile picture." />  
+			</div>
+
+			<div class="col-md-6">
+				<h1>{{user_profile.first_name}} {{user_profile.last_name}}</h1>
+
+				<span><strong>{{user_profile.username}}</strong></span>
+				<br />
+				<span>Joined on {{user_profile.date_joined}}</span>
+				<br />
+				<br />
+				{% if gravatar_profile %}
+				<span><em>Gravatar Profile Information:</em></span>
+				<br />
+				<span>{{gravatar_profile.entry.0.aboutMe}}</span>
+				<br />
+				{% for l in gravatar_profile.entry.0.urls %}
+
+				<a href="{{l.value}}">{{l.title}}</a>
+
+				{% endfor %}
+
+				{% endif %}
+
+			</div>
+
+	</div>
+
+	{% endif %}
+
+</div>
+
 
 <br />
 <br />

@@ -9,6 +9,9 @@ from django.contrib import messages
 from user.forms import * #all forms
 from user.models import *
 
+import urllib, hashlib
+import json
+
 # Create your views here.
 def register_user(request):
 	"""
@@ -92,14 +95,46 @@ def logout(request):
 	auth.logout(request) #use auth to logout the user
 	return render_to_response('user_login.html', RequestContext(request, c) )
 
+def _build_gravatar_url( user, size=40 ):
+	email = user.email
+	 
+	# construct the url
+	gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(email.lower().encode("UTF-8")).hexdigest() + "?"
+	gravatar_url += urllib.parse.urlencode({'s':str(size)})
+
+	return gravatar_url
+
+def _get_gravatar_profile( user ):
+	email = user.email
+
+	gravatar_url = "http://www.gravatar.com/" + hashlib.md5(email.lower().encode("UTF-8")).hexdigest() +".json"
+
+	try:
+		profileHandle = urllib.request.urlopen(gravatar_url).read().decode("UTF-8")
+
+		profileData = json.loads( profileHandle )
+
+	except:
+		profileData = {}
+
+
+	return profileData
+
 def view_profile(request, username):
+
+	pageData = {}
+
 
 	try:
 		user = User.objects.get( username=username )
+
+		pageData['gravatar_url'] = _build_gravatar_url( user,200 )
+		pageData['gravatar_profile'] = _get_gravatar_profile( user )
 	except:
+		pageData['nouser'] = True
 		user = None
 
-	pageData = {}
 	pageData['user_profile'] = user
+
 
 	return render_to_response('user_profile.html', RequestContext(request, pageData) )
