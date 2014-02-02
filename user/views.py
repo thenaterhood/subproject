@@ -110,7 +110,7 @@ def _get_gravatar_profile( user ):
 	gravatar_url = "http://www.gravatar.com/" + hashlib.md5(email.lower().encode("UTF-8")).hexdigest() +".json"
 
 	try:
-		profileHandle = urllib.request.urlopen(gravatar_url).read().decode("UTF-8")
+		profileHandle = urllib.request.urlopen(gravatar_url, timeout=5).read().decode("UTF-8")
 
 		profileData = json.loads( profileHandle )
 
