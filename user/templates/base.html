@@ -62,7 +62,8 @@
                   <ul class="dropdown-menu">
                     <li><a href="/projects/importcsv/projects">Import Projects</a></li>
                     <li><a href="/projects/importcsv/work">Import Worklogs</a></li>
-                    <li><a href="/user/logout">Logout</a></li>  
+                    <li><a href="/user/profile/{{user.username}}/">Profile</a></li>
+                    <li><a href="/user/logout">Logout ({{user.username|truncatechars:17}})</a></li>  
 
                   </ul>
 

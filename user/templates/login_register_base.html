@@ -29,25 +29,28 @@
 	<body>
 		<!--START OF: Login Form-->
 
-		<div class='container text-center'>
+		<div class='container'>
 
 			<div class='content'>
 				<div class='row'>
 					<br />
 					<br />
 					<br />
-					<div id="loginRegisterBase" style="font-family: 'Dosis'; color: #33332D; margin-top: 5%;">
-						<h1 style="font-size: 5em; font-weight: 300; margin-bottom: 3%;">Web Project Tracking</h1>
-					</div>
+					<div class="well">
 
-					{% block content %}
+						<div id="loginRegisterBase">
+							<h1>Subproject </h1>
+							<p>Subproject knows that your projects and tasks grow and evolve. With Subproject, your tasks can become projects, and your projects can contain other projects. Keep track of your projects, tasks, and work.</p>
+						</div>
 
-					{% endblock %}
-					<br />
-					<div class="alert alert-info">
-						<button type="button" class="close" data-dismiss="alert">&times;</button>
-							Hey there! This is an experimental app. Security/reliability is not guaranteed.
-					</div>
+
+						{% block content %}
+
+
+
+						{% endblock %}
+
+						</div>
 
 				</div>
 			</div> <!--END OF: Login Form-->

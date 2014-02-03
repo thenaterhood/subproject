@@ -28,12 +28,18 @@ def register_user(request):
 
 		if form.is_valid(): #is the form valid (info is correct)
 			user = form.save(commit=False) #save the form, save the registration information for the new user
-			servUser = ServiceUser()
-			user.save()
-			servUser.auth = user
 
-			servUser.save()
-			return HttpResponseRedirect('/user/login/')
+			if ( User.objects.filter( username=user.username ).count() < 1 ):
+
+				servUser = ServiceUser()
+				user.save()
+				servUser.auth = user
+				servUser.save()
+				return HttpResponseRedirect('/user/login/')
+
+			else:
+				messages.error( request, "Sorry, that username is already taken." )
+				args['form'] = UserRegistrationForm(request.POST)
 
 		else:
 			args['form'] = UserRegistrationForm(request.POST)
@@ -54,7 +60,7 @@ def login_user(request):
 	"""
 
 	c = {}
-	c.update(csrf(request))
+
 	return render_to_response('user_login.html', RequestContext(request, c))
 
 def auth_user(request):
@@ -123,7 +129,9 @@ def _get_gravatar_profile( user ):
 def view_profile(request, username):
 
 	pageData = {}
+	pageData['request_user'] = request.user
 
+	pageData['anonymous'] = ( request.user.__class__.__name__ == "AnonymousUser" )
 
 	try:
 		user = User.objects.get( username=username )
@@ -136,5 +144,59 @@ def view_profile(request, username):
 
 	pageData['user_profile'] = user
 
-
 	return render_to_response('user_profile.html', RequestContext(request, pageData) )
+
+@login_required
+def change_password( request ):
+	pageData = {}
+
+	if ( request.method == 'POST' ):
+		form = PasswordForm( request.POST )
+
+		if ( form.is_valid() and request.user.check_password( form.cleaned_data['password0'] ) ):
+
+			request.user.set_password( form.cleaned_data['password1'] )
+			request.user.save()
+
+			messages.info( request, "Password updated successfully!" )
+			return HttpResponseRedirect('/user/profile/' + request.user.username )
+
+		else:
+
+			messages.error( request, "Sorry, one of your inputs wasn't quite right. Give it another go.")
+
+	pageData['form'] = PasswordForm()
+
+	return render_to_response('user_password.html', RequestContext(request, pageData))
+
+
+
+@login_required
+def edit_profile( request ):
+
+	pageData = {}
+
+	if ( request.method == 'POST' ):
+		form = EditUserForm( request.POST, instance=request.user )
+
+		if form.is_valid():
+			form.save()
+
+			messages.info(request, "Your profile was updated.")
+
+			return HttpResponseRedirect('/user/profile/' + request.user.username )
+
+		else:
+
+			messages.error(request, "Something wasn't quite right, give it another go.")
+
+			pageData['form'] = EditUserForm( request.POST )
+
+			return HttpResponseRedirect('/user/profile/' + request.user.username )
+		
+
+	else:
+		pageData['form'] = EditUserForm( instance=request.user )
+
+	return render_to_response('user_edit.html', RequestContext(request, pageData) )
+
