@@ -9,8 +9,6 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Stats</a></p>
-
 	<h3><img src="/static/img/project.png" />Project Statistics</h3>
 	<div class="well">
 		<p>You are involved with <strong>{{total_projects}} project(s)</strong>, where you <strong>manage {{managed_projects}}</strong>.</p>
@@ -35,12 +33,11 @@
 	<div class="well">
 		<p>You've created <strong>{{total_worklogs}} worklogs</strong>.</p>
 		<p>In total, you've logged <strong>{{total_time}} hours of work</strong> on projects, averaging <strong>{{avg_task_time}} hours per task</strong>.</p>
-		<p>You joined on {{start_date}} and your most recent contribution was on {{end_date}}.</p>
 
 			{%if total_worklogs > 0 %}
 			<ul>Latest Work Logged
 
-				{%for t in tasks%}
+				{%for t in logs%}
 				<li><a href="/projects/work/view/{{t.id}}/">{{t.summary}}</a> on {{t.project}}</li>
 				{%endfor%}
 			</ul>

@@ -148,13 +148,16 @@ def project_welcome(request):
 	# Assemble a collection of statistics to render to the template
 	args = {}
 
-	messages.warning( request, "This application is currently under heavy development, and is hosted \
-		on a private server. Reliability and security cannot be guaranteed at this point in development.")
+	messages.warning( request, "This application is currently under heavy development and is not \
+		hosted in an environment capable of handling 'real-world' usage. Reliability and \
+		security cannot be guaranteed at this point in development. Please use this service only as \
+		a preview of what's to come.")
 
 	args['total_projects'] = Project.objects.filter(members=request.user).count()
 	args['managed_projects'] = Project.objects.filter(manager=request.user).count()
 
 	args['total_worklogs'] = Worklog.objects.filter( owner=request.user ).count()
+	args['logs'] = Worklog.objects.filter( owner=request.user ).order_by('-datestamp')[0:3]
 
 	args['total_tasks'] = ProjectTask.objects.filter( creator=request.user ).count()
 	args['active_tasks'] = ProjectTask.objects.filter( creator=request.user ).filter( inProgress=True ).count()
