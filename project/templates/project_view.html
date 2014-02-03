@@ -7,17 +7,7 @@
 
 {% include 'template_messages.html' %}
 
-		<h3><img src="/static/img/project.png" />{{project.name}} <small>Project View</small></h3>
-		<p>
-			{%if canEdit %} 
-			{% if project.active %}
-			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
-			{% else %}
-			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Re-open Project</a>
-			{% endif %}
-			{% endif %} 
-
-		</p>
+		<h3><img src="/static/img/project.png" />{{project.name}} <small>{{project.description}}</small></h3>
 
 		<div class="tabbable">
 			<ul class="nav nav-tabs">
@@ -40,11 +30,9 @@
 
 
 						<ul class="list-unstyled">
-							<li>Manager: {{project.manager}}</li>
 							<li>Status: {{project.status}}</li>
 							<li>Phase: {{project.phase}}</li>
-							<li>Lines: {{project.lines}}</li>
-							<li>Description: {{project.description}}</li>
+
 							<li><img src="/static/img/work.png" width="32px" /> {{num_worklogs}} work items logged</li>
 							<li><img src="/static/img/task.png" width="32px" /> {{num_tasks}} tasks created</li>
 							<li><img src="/static/img/members.png" width="32px" /> {{num_members}} members</li>
@@ -206,7 +194,7 @@
 				{% for u in members %}
 
 				<tr>
-					<td>{{u}}</td>
+					<td><a href="/user/profile/{{u}}">{{u}}</a></td>
 					<td> {%if canEdit and u != project.manager %} <a class="btn btn-danger" href="/projects/removemember/{{project.id}}/{{u.id}}/">Unassign</a> {%endif%}
 
 						{% if u == project.manager %}

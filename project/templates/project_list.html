@@ -28,7 +28,7 @@
 			{% endif %}
 			<tr>
 				<td><a href="/projects/view/{{project.id}}">{{ project.name }}</a>{% if not project.active %} <em>(Closed)</em>{% endif %}</td>
-				<td>{{project.manager}}</td>
+				<td><a href="/user/profile/{{project.manager}}">{{project.manager}}</a></td>
 				<td>{{project.status}}</td>
 				<!--<li>Description: {{project.description}}</li>-->
 				<td>
