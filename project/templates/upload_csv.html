@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: csv import {% endblock %}
+{% block title %} Import CSV {% endblock %}
 
 {% block content %}
 
 {% include 'template_messages.html' %}
 <form id="registerForm" action="{{sendback}}" method="post" enctype="multipart/form-data">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 <h3>
-	Import a File
+	<img src="/static/img/import.png" /> Import a File
 
 </h3>
 

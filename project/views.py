@@ -23,6 +23,10 @@ import project.thenaterhood.histogram as histogram
 import csv
 
 @login_required
+def show_import_page( request ):
+	return render_to_response( 'project_import.html', RequestContext(request, {}) )
+
+@login_required
 def import_worklog_csv( request ):
 	pageData = {}
 
@@ -180,6 +184,7 @@ def project_welcome(request):
 
 
 	return render_to_response('project_welcome.html', RequestContext( request, args) )
+
 
 @login_required
 def user_all_tasks(request, assignee=False ):

@@ -12,13 +12,32 @@ Description:
 """
 class Csv:
 
-	__slots__ = ('delimeter', 'headers', 'dataMatrix', 'numCols' )
+	__slots__ = ( 'delimeter', 'headers', 'dataMatrix', 'numCols', 'current_row' )
 
 	def __init__( self, delimeter="," ):
 
 		self.delimeter = delimeter
 		self.headers = None
 		self.dataMatrix = []
+		self.current_row = 0
+
+	def get_next_row( self ):
+
+		try:
+			row = self.dataMatrix[self.current_row]
+			self.current_row += 1
+
+			rowdict = {}
+			for i in range(0, len(self.headers) ):
+				rowdict[ self.headers[i] ] = row[ i ]
+
+			return rowdict
+		except:
+			return None
+
+	def reset_row_pos( self ):
+		self.current_row = 0
+
 
 	def setMatrix( self, dataArray ):
 		"""
@@ -149,8 +168,18 @@ class Csv:
 		return data
 
 
+	def readCSV( self, csvLines, header=False ):
+		for line in csvLines:
 
-	def readCSV( self, filename, header=False ):
+			self.dataMatrix.append( self.readCSVLine( line ) )
+
+		if ( header ):
+			self.headers = self.dataMatrix[0]
+			self.dataMatrix = self.dataMatrix[1:]
+
+
+
+	def readCSVFile( self, filename, header=False ):
 		"""
 		Reads a csv file into the data array
 

@@ -4,13 +4,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>Subproject |{% block title %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
 
     <!-- CSS -->
-    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-lumen.css' %}" rel="stylesheet">
     <link href="{% static 'css/bootstrap-responsive.css' %}" rel="stylesheet">
     <link href="{% static 'css/contextmenu.css' %}" rel="stylesheet">
     <link href="{% static 'css/badger.css' %}" rel="stylesheet">
@@ -58,13 +58,16 @@
                 <li><a href="/projects/">My Projects</a></li>
                 <li><a href="/projects/tags/">My Tags</a></li>
                 <li><a href="/projects/todo/">My Todo</a></li>
-                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Account<b class="caret"></b></a>
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Account and Tools<b class="caret"></b></a>
 
                   <ul class="dropdown-menu">
-                    <li><a href="/projects/importcsv/projects">Import Projects</a></li>
-                    <li><a href="/projects/importcsv/work">Import Worklogs</a></li>
+                    <li><a href="/projects/import">Import Data</a></li>
+                    {% if user.username %}
                     <li><a href="/user/profile/{{user.username}}/">Profile</a></li>
-                    <li><a href="/user/logout">Logout ({{user.username|truncatechars:17}})</a></li>  
+                    <li><a href="/user/logout">Logout ({{user.username|truncatechars:17}})</a></li>
+                    {% else %}
+                    <li><a href="/user/login">Sign In</a></li>
+                    {% endif %}
 
                   </ul>
 
@@ -87,10 +90,11 @@
 
       <div id="push"></div>
     </div>
-
+    <br />
+    <hr />
     <div id="footer">
       <div class="container">
-        <p class="muted credit">Template based on <a href="http://getbootstrap.com">Bootstrap</a>. Copyright 2012-2013 Nate Levesque (TheNaterhood).</p>
+        <p class="muted credit">Template: Bootstrap 3 with Lumen theme</a>. Copyright 2012-2013 Nate Levesque (TheNaterhood).</p>
       </div>
     </div>
 

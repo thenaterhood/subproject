@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: My Todo {% endblock %}
+{% block title %} My Todo {% endblock %}
 
 {% block content %}
 
@@ -18,7 +18,10 @@
 	{% else %}
 	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
 	{% endif %}
-	<p><a href="/projects/addtask">Add a Task</a></p>
+	<p>
+		<a class="btn btn-success" href="/projects/addtask">Add a Task</a>
+		<a class="btn btn-info" href="/projects/filter/addtasktag/">Filter Tasks</a>
+	</p>
 
 	{% if num_tasks == 0 %}
 		<p class="error">Hey! Looks like you don't have any tasks!</p>
@@ -26,7 +29,9 @@
 
 	{% if wip_num %}
 
-	<h3><img src="/static/img/task.png" />Tasks In Progress</h3>
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks In Progress</h4></div>
+	<div class="panel-content">
 	<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
@@ -47,12 +52,15 @@
 
 
 	</table>
+</div>
+</div>
 	{% endif %}
 
 
 	{% if other_num > 0 %}
-
-	<h3><img src="/static/img/task.png" />Tasks not in progress</h3>
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks not in progress</h4></div>
+	<div class="panel-content">
 	<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
@@ -72,6 +80,7 @@
 	{% endfor %}
 
 	</table>
-
+</div>
+</div>
 	{% endif %}
 {% endblock %}

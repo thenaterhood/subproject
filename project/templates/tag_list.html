@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: Tags {% endblock %}
+{% block title %} Tags {% endblock %}
 
 {% block content %}
 
@@ -11,7 +11,7 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-	<p><a href="/projects/newtag/">Create a Tag</a></p>
+	<p><a class="btn btn-success" href="/projects/newtag/">Create a Tag</a></p>
 
 	<table class="table table-striped">
 		<tr>

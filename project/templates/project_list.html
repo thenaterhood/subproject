@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: projects {% endblock %}
+{% block title %} Project List {% endblock %}
 
 {% block content %}
 
@@ -11,7 +11,11 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-	<p><a href="/projects/create/">Create a Project</a> &nbsp;&nbsp;<a href="/projects/stats/lines/">Line Statistics</a></p>
+	<p>
+		<a class="btn btn-success" href="/projects/create/">Create a Project</a>
+		<a class="btn btn-info" href="/projects/filter/addprojecttag/">Filter Projects</a>
+
+	</p>
 
 	<table class="table table-striped">
 		<tr>

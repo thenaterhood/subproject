@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} webtrack: projects {% endblock %}
+{% block title %} Home {% endblock %}
 
 {% block content %}
 {% include 'template_messages.html' %}
@@ -9,7 +9,9 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-<div class="badger-left badger-inverse" data-badger="Project Overview">
+<div class="panel panel-default">
+	<div class="panel-heading">Project Overview</div>
+	<div class="panel-body">
 	<img style="float:right;"src="/static/img/project.png" />
 			<p>You are involved with <strong>{{total_projects}} project(s)</strong>, where you <strong>manage {{managed_projects}}</strong>.</p>
 		<ul>
@@ -18,10 +20,14 @@
 			<li><a href="/projects/create/">Create a new project</a></li>
 		</ul>
 
+	</div>
+
 
 </div>
 
-<div class="badger-left badger-inverse" data-badger="Task Overview">
+<div class="panel panel-default">
+	<div class="panel-heading">Task Overview</div>
+	<div class="panel-body">
 
 	<img style="float:right" src="/static/img/task.png" />
 
@@ -29,9 +35,13 @@
 
 		<p>You have <strong>{{numTasks}} todo items</strong>. <a href="/projects/todo/">Check out your workload</a></p>
 
+	</div>
+
 </div>
 
-<div class="badger-left badger-inverse" data-badger="Work Overview">
+<div class="panel panel-default">
+	<div class="panel-heading">Work Overview</div>
+	<div class="panel-body">
 
 
 	<img style="float:right;" src="/static/img/work.png" />
@@ -47,6 +57,7 @@
 			</ul>
 
 			{%endif%}
+		</div>
 </div>
 
 

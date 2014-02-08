@@ -75,6 +75,7 @@ class Tag(models.Model):
 	public		= models.BooleanField(default=False)
 	users 		= models.ManyToManyField(User, related_name="Tag users")
 	viewers		= models.ManyToManyField(User, related_name="Tag viewers")
+	usage 		= models.CharField(max_length=100)
 
 	def __str__(self):
 		return "Tag " + self.name + ": " + str(self.owner)
