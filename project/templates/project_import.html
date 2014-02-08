@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %} Import Data {% endblock %}
+
+{% block content %}
+
+{% include 'template_messages.html' %}
+
+	<h1><img src="/static/img/import.png" />Import Data</h1>
+	<p>This page allows you to import projects, tasks, and work in a variety of formats.</p>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">Import CSV Files</div>
+		<div class="panel-body">
+			<ul>
+				<li><a href="/projects/importcsv/projects">Import Projects from CSV</a></li>
+				<p>All CSV data must be well-formed and contain column headers. At least one column must be defined in the csv file called "name" with the name of each project. Additional fields can be "description", "phase", and "status". Other fields will be ignored.</p>
+				<li><a href="/projects/importcsv/work">Import Work from CSV</a></li>
+				<p>All CSV data must be well-formed and must contain column headers. A minimum of two columns are required, one called 'name' which contains the name of the project a worklog is associated with, and another called 'description' with a description of the work. Optional fields are 'datestamp' and 'duration' (in hours). Any extra fields will be ignored.</p>
+			</ul>
+		</div>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading">Import a List of Projects</div>
+		<div class="panel-body">
+			<ul>
+				<li><a href="/projects/importcsv/projects">Import Projects</a></li>
+				<p>This option allows you to import a simple list of projects. The first line in your list of projects should say "name" and each project name should be on a new line. If a project name has spaces, it should be in quotes. Example:</p>
+				<pre>name
+"My First Project"
+"My Second Project"
+				</pre>
+			</ul>
+		</div>
+	</div>
+
+{% endblock %}
