@@ -114,7 +114,7 @@
 
 						<div class="panel-body">
 
-							{% if num_parents < 1 %}
+					{% if num_parents < 1 %}
 					<p>This is a top level project and has no parents.</p>
 					{% else %}
 					{% if canEdit %}
@@ -156,14 +156,22 @@
 					
 
 				<div class="panel panel-default">
-					<div class="panel-heading">	<h4><img src="/static/img/tree.jpg" width="64px" />Subprojects</h4>
+					<div class="panel-heading">	
+						<h4>
+							<img src="/static/img/tree.jpg" width="64px" />Subprojects
+							{% if canEdit %}
+
+							<a style="float:right;" class="btn btn-success" href="/projects/newsub/{{project.id}}">Create New Subproject</a>
+							{% endif %}
+
+
+						</h4>
+
+
 					</div>
 
 					<div class="panel-body">
 
-						{% if canEdit %}
-				<p><a class="btn btn-success" href="/projects/newsub/{{project.id}}">Create New Subproject</a></p>
-				{% endif %}
 
 				{% if num_children < 1 %}
 				<p>This project has no subproject associated with it.</p>

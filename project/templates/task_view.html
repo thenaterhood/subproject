@@ -45,7 +45,9 @@
 			<div id="overview" class="tab-pane active">
 				<h4>Task Details</h4>
 
-					<p>Your Tags <a href="/projects/task/{{task.id}}/addtag">(add)</a>: {% for t in yourTags %} <a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endfor %}</p>
+					<p>Your Tags <a href="/projects/task/{{task.id}}/addtag">(add)</a>: {% for t in yourTags %} 
+						{% if t.visible %}
+						<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
 				<div class="well">
 					<p><em>Opened by {{task.creator}} </em>
@@ -55,12 +57,16 @@
 				</div>
 				<div id="tags" class="tab-pane">
 					<h4><img src="/static/img/tag.png" />Your Tags 	<a href="/projects/task/{{task.id}}/addtag">(Add a Tag)</a></h4>
-						<p>{% for t in yourTags %} <a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endfor %}</p>
+						<p>{% for t in yourTags %} 
+							{% if t.visible %}
+							<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
+
 
 					<br />
 					<hr />
 					<h4><img src="/static/img/tag.png" />All Tags Visible to You</h4>
-						<p>{% for t in tags %} <a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endfor %}</p>
+						<p>{% for t in tags %} 
+							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
 				</div>
 				<div id="projects" class="tab-pane">

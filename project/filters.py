@@ -78,9 +78,9 @@ def add_filter( request, tag_id ):
 def select_project_filter( request, tag_id=False ):
 	if ( not tag_id ):
 		request.session['returnUrl'] = request.META['HTTP_REFERER']
-		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).filter(visible=True)
 		pageData = { 'tags':tags }
-		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+		return render_to_response( 'filter_select.html', RequestContext(request, pageData) )
 
 	else:
 		addTag = add_project_filter( request, tag_id )
@@ -91,7 +91,7 @@ def select_task_filter( request, tag_id=False ):
 		request.session['returnUrl'] = request.META['HTTP_REFERER']
 		tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
 		pageData = { 'tags':tags }
-		return render_to_response( 'tag_select.html', RequestContext(request, pageData) )
+		return render_to_response( 'filter_select.html', RequestContext(request, pageData) )
 
 	else:
 		addTag = add_task_filter( request, tag_id )

@@ -264,6 +264,8 @@ def create_project(request, parent=False):
 
 			newProj.save()
 
+			_create_associated_project_tag( newProj )
+
 			return HttpResponseRedirect(redirTo)
 
 		elif "useexisting" in request.POST:
@@ -332,6 +334,34 @@ def assign_child( request, parent_id, child_id=False ):
 		pageData['projects'] = Project.objects.filter( manager=request.user ).exclude( id=parent_id ).exclude( parents=parentProj )
 		return render_to_response( 'project_select.html', RequestContext( request, pageData ) )
 
+def _create_associated_project_tag( project ):
+
+	tag = Tag()
+	tag.owner = project.manager
+	tag.name = "Associated with Project "+project.name
+	tag.system = "subproject:pid:"+str(project.id)
+	tag.description = ""
+	tag.public = False
+	tag.visible = False
+
+	tag.save()
+
+	return tag
+
+def _get_associated_project_tag( project ):
+
+	tags = Tag.objects.filter(owner=project.manager,
+		system="subproject:pid:"+str(project.id))
+
+	if ( tags.count() < 1 ):
+		tag = _create_associated_project_tag(project)
+	else:
+		tag = tags[0]
+
+	return tag
+	
+
+
 @login_required
 def edit_project(request, proj_id):
 	"""
@@ -341,11 +371,16 @@ def edit_project(request, proj_id):
 	"""
 
 	project = Project.objects.get(id=proj_id)
+	projectName = project.name
 
 	if ( request.method == "POST" and project.manager == request.user ):
 		form = EditProjectForm( request.POST, instance=project )
 		if form.is_valid():
-			form.save()
+			updatedProject = form.save()
+
+			associated_tag = _get_associated_project_tag(project)
+			associated_tag.name = "Associated with Project " + project.name
+			associated_tag.save()
 
 			return HttpResponseRedirect( '/projects/view/' + str(project.id) +"/" )
 
@@ -560,7 +595,7 @@ def list_tags( request ):
 	Displays a list of the user's tags
 	"""
 
-	tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) )
+	tags = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).filter( visible=True )
 	set_filter_message( request )
 
 	pageData = {}
@@ -596,7 +631,7 @@ def view_project(request, proj_id):
 	args['num_worklogs'] = worklogs.count()
 	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()
 	args['num_tasks'] = args['tasks'].count()
-	args['tags'] = project.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) )
+	args['tags'] = project.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) ).filter(visible=True)
 	args['yourTags'] = args['tags'].filter(Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user))
 
 
@@ -648,6 +683,7 @@ def unassign_task_from_project( request, task_id, project_id ):
 	if ( request.user in project.members.all() or request.user == task.creator ):
 		task.openOn.remove( project )
 		task.closedOn.remove( project )
+		task.tags.remove( _get_associated_project_tag(project) )
 		task.save()
 
 	if ( 'HTTP_REFERER' in request.META ):
@@ -857,6 +893,7 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
 
 			task.openOn.add( project )
+			task.tags.add( _get_associated_project_tag(project) )
 			task.save()
 
 			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
@@ -923,7 +960,7 @@ def assign_project_tag( request, proj_id, tag_id=False ):
 	returnUrl = '/projects/view/' + str(proj_id)
 
 	if not tag_id:
-		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) )
+		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) ).filter( visible=True )
 		project = Project.objects.get( id=proj_id )
 
 		pageData = {}
@@ -968,7 +1005,7 @@ def assign_task_tag( request, task_id, tag_id=False ):
 	returnUrl = '/projects/task/view/' + str(task_id)
 
 	if not tag_id:
-		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) )
+		tags = Tag.objects.filter( Q(owner=request.user) | Q(users=request.user) ).filter( visible=True )
 		task = ProjectTask.objects.get( id=task_id )
 
 		pageData = {}
