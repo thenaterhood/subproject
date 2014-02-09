@@ -106,8 +106,15 @@
 					{% endif %}
 				</div>
 				<div id="tree" class="tab-pane">
-					<h3><img src="/static/img/tree.jpg" width="64px" />Parents</h3>
-					{% if num_parents < 1 %}
+					<br />
+
+					<div class="panel panel-default">
+						<div class="panel-heading"><h4><img src="/static/img/tree.jpg" width="64px" />Parents</h4>
+						</div>
+
+						<div class="panel-body">
+
+							{% if num_parents < 1 %}
 					<p>This is a top level project and has no parents.</p>
 					{% else %}
 					{% if canEdit %}
@@ -143,9 +150,18 @@
 
 				{% endif %}
 
+						</div>
 
-				<h3><img src="/static/img/tree.jpg" width="64px" />Subprojects</h3>
-				{% if canEdit %}
+					</div>
+					
+
+				<div class="panel panel-default">
+					<div class="panel-heading">	<h4><img src="/static/img/tree.jpg" width="64px" />Subprojects</h4>
+					</div>
+
+					<div class="panel-body">
+
+						{% if canEdit %}
 				<p><a class="btn btn-success" href="/projects/newsub/{{project.id}}">Create New Subproject</a></p>
 				{% endif %}
 
@@ -180,6 +196,10 @@
 
 			</table> 
 			{% endif %}   
+					</div>
+
+				</div>
+				
 		</div>
 		<div id="members" class="tab-pane">
 			<h4><img src="/static/img/members.png" />Project Members</h4>
