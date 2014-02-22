@@ -17,7 +17,7 @@ from copy import deepcopy
 
 from project.models import *
 from project.forms import *
-from project.filters import reset_filter, apply_task_filter, apply_project_filter, set_filter_message
+from project.filters import *
 
 import project.thenaterhood.histogram as histogram
 import csv
@@ -194,6 +194,8 @@ def user_all_tasks(request, assignee=False ):
 	"""
 
 	args = {}
+	args['tags'] = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).order_by("name")
+
 
 	if ( not assignee ):
 		args['notodo'] = True
@@ -212,6 +214,8 @@ def user_all_tasks(request, assignee=False ):
 	args['task_wip'] = tasks.filter( inProgress=True ).all()
 	args['wip_num'] = len( args['task_wip'] )
 	args['num_tasks'] = len(tasks)
+	args['filters'] = get_task_filters( request )
+
 
 	return render_to_response( 'user_todo.html', RequestContext(request, args) )
 
@@ -231,6 +235,9 @@ def list_projects(request):
 	args['projects'] = projects
 	args['owned'] = managedProjects
 	args['num_projects'] = len(projects)
+	args['tags'] = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).order_by("name")
+	args['filters'] = get_project_filters( request )
+
 
 	return render_to_response('project_list.html', RequestContext( request, args) )
 

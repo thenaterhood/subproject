@@ -18,16 +18,56 @@
 	{% else %}
 	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
 	{% endif %}
-	<p>
+	<p class="pull-right">
 		<a class="btn btn-success" href="/projects/addtask">Add a Task</a>
 		<a class="btn btn-info" href="/projects/filter/addtasktag/">Filter Tasks</a>
 	</p>
 
+
+	<div class="clearfix"></div>
+
+	<div class="row">
+		<div class='col-md-3 hidden-sm hidden-xs side-filters' style="margin-top:-30px;">
+			<br />
+			<br />
+			<fieldset>
+				<legend>Filters</legend>
+				<ul class='nav nav-pills nav-stacked'>
+					<p class="small">Click filters to turn them on and off</p>
+					{% for t in tags %}
+
+					<li class="{% if t in filters%}active{%endif%}">
+
+						<a href=
+						{% if t in filters %}
+						"/projects/rmtaskfilter/{{t.id}}/"
+						{% else %}
+						"/projects/filter/addtasktag/{{t.id}}/"
+						{% endif %}
+
+						>{{t.name}}</a>
+
+					</li>
+
+					{% endfor %}
+					
+		</ul>
+	</fieldset>
+</div>
+
+
+
+<div class='col-md-9'>
+
 	{% if num_tasks == 0 %}
-		<p class="error">Hey! Looks like you don't have any tasks!</p>
+		<div class="panel panel-inverse">
+			<div class="panel-heading"><h4>No tasks found. Try adjusting your filter settings or if you're new, <a href="/projects/addtask">create a task</a></h4></div>
+
+		</div>
 	{% endif %}
 
-	{% if wip_num %}
+{% if wip_num %}
+
 
 <div class="panel panel-inverse">
 	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks In Progress</h4></div>
@@ -83,4 +123,6 @@
 </div>
 </div>
 	{% endif %}
+
+</div>
 {% endblock %}

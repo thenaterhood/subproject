@@ -55,7 +55,6 @@ def add_task_filter( request, tag_id=False ):
 		request.session['filter_update'] = "yes"
 		request.session['filter']['tasktags'].append( tag_id )
 
-	print( request.session['filter'] )
 	return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 def add_filter( request, tag_id ):
@@ -83,8 +82,7 @@ def select_project_filter( request, tag_id=False ):
 		return render_to_response( 'filter_select.html', RequestContext(request, pageData) )
 
 	else:
-		addTag = add_project_filter( request, tag_id )
-		return HttpResponseRedirect( request.session['returnUrl'] )
+		return add_project_filter( request, tag_id )
 
 def select_task_filter( request, tag_id=False ):
 	if ( not tag_id ):
@@ -94,8 +92,7 @@ def select_task_filter( request, tag_id=False ):
 		return render_to_response( 'filter_select.html', RequestContext(request, pageData) )
 
 	else:
-		addTag = add_task_filter( request, tag_id )
-		return HttpResponseRedirect( request.session['returnUrl'] )
+		return add_task_filter( request, tag_id )
 
 
 
@@ -151,12 +148,26 @@ def reset_filter( request ):
 		return HttpResponseRedirect('/projects')
 
 
+def get_project_filters( request ):
+	try:
+		return Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
+	except:
+		reset_filter( request )
+		return []
+
+
+def get_task_filters( request ):
+	try:
+		return Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+	except:
+		reset_filter( request )
+		return []
 
 def set_filter_message( request ):
 	try:
 		if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
-			projecttags = Tag.objects.filter( id__in=request.session['filter']['projecttags'] )
-			tasktags = Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+			projecttags = get_project_filters( request )
+			tasktags = get_task_filters( request )
 			tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
 			tagmessage += "Project Tags: "
 			for t in projecttags:
