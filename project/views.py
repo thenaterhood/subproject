@@ -929,6 +929,7 @@ def assign_task( request, proj_id, task_id=False ):
 		task = ProjectTask.objects.get( id=task_id )
 
 		task.openOn.add( project )
+		task.tags.add( _get_associated_project_tag(project) )
 		task.save()
 
 		if ( 'returnUrl' in request.session ):
