@@ -5,12 +5,14 @@
 {% block content %}
 
 {% include 'template_messages.html' %}
-
-	{% if notodo %}
-	<h1>Tasks You've Created</h1>
-	{% else %}
-	<h1>My Todo</h1>
+	<h1>
+		<img src="/static/img/task.png" />
+		{% if notodo %}
+		Tasks You've Created
+		{% else %}
+		My Todo
 	{% endif %}
+	</h1>
 
 
 	{%if notodo %}
