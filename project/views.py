@@ -1089,15 +1089,6 @@ def add_task( request, proj_id=False ):
 			pageData['form'] = EditTaskForm( request.POST )
 			return render_to_response( 'task_create.html', RequestContext( request, pageData))
 
-	elif "useexisting" in request.POST:
-
-		if "returnUrl" in request.POST:
-			request.session['returnUrl'] = request.POST['returnUrl']
-		else:
-			request.session['returnUrl'] = '/projects/view/'+str(proj_id)
-
-		return HttpResponseRedirect('/projects/'+str(proj_id)+'/assigntask' )
-
 	else:
 
 		args = {}

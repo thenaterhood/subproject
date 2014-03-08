@@ -8,7 +8,7 @@
 
 <form id="registerForm" action="/projects/addtask/{% if project %}{{project.id}}/{% endif %}" method="post">{% csrf_token %}
 
-<h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} &nbsp;&nbsp;&nbsp; <input name="useexisting" class="btn btn-success" type="submit" value="Choose an existing task instead" />{% endif %}</h3>
+<h3><img src="/static/img/task.png" />Add a task {% if project %} for {{project.name}} &nbsp;&nbsp;&nbsp; <a class="btn btn-success" href="/projects/{{project.id}}/assigntask">Choose an existing task instead</a>{% endif %}</h3>
 
 		{% for field in form %}
 		<fieldset class="form-group">
