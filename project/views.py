@@ -20,7 +20,6 @@ from project.models import *
 from project.forms import *
 from project.filters import *
 
-import project.thenaterhood.histogram as histogram
 import csv
 
 def sort_bydatestamp( a, b ):
