@@ -179,10 +179,9 @@ def project_welcome(request):
 
 	args['avg_task_time'] = 0
 
-	project_members = Project.objects.filter( members=request.user ).values_list('members', flat=False)
 
 	timelineItems = []
-	timelineItems += TimelineEvent.objects.filter( member__in=project_members ).order_by('-datestamp')
+	timelineItems += TimelineEvent.objects.filter( Q(member=request.user)|Q(viewers=request.user) ).order_by('-datestamp')
 
 	print( timelineItems)
 
@@ -275,22 +274,34 @@ def create_project(request, parent=False):
 
 			newProj = form.save( owner=request.user )
 
+			event = TimelineEvent()
+			event.member = request.user
+			event.viewers = newProj.members()
+			event.title  = "created the project " + newProj.name
+			event.description = newProj.description
+			event.category = "project"
+			event.related_key = newProj.id
+
+			event.save()
+
+
 			if ( 'parent' in request.POST and request.POST['parent'] != "False" ):
 				parentProject = Project.objects.get( id=request.POST['parent'] )
 
+				event.title = "created the subproject '" + newProj.name + "' under " + parentProject.name
+				event.viewers = parentProject.members.all()
 				newProj.parents.add(parentProject)
 				parentProject.subprojects.add(newProj)
 				parentProject.save()
+
+
+				event.save()
 
 			newProj.save()
 
 			_create_associated_project_tag( newProj )
 
 			return HttpResponseRedirect(redirTo)
-
-		elif "useexisting" in request.POST:
-			request.session['returnUrl'] = request.POST['returnUrl']
-			return HttpResponseRedirect('/projects/'+str(request.POST['parent'])+'/assignchild')
 
 		else:
 
@@ -351,6 +362,7 @@ def assign_child( request, parent_id, child_id=False ):
 	else:
 		pageData = {}
 		parentProj = Project.objects.get( id=parent_id )
+
 		pageData['projects'] = Project.objects.filter( manager=request.user ).exclude( id=parent_id ).exclude( parents=parentProj )
 		return render_to_response( 'project_select.html', RequestContext( request, pageData ) )
 
@@ -774,6 +786,7 @@ def add_worklog( request, proj_id ):
 		if form.is_valid():
 
 			workLog = form.save( owner=request.user, project=project )
+
 			event = TimelineEvent()
 			event.member = request.user
 			event.title  = "added a new worklog to " + project.name
@@ -781,6 +794,9 @@ def add_worklog( request, proj_id ):
 			event.category = "work"
 			event.related_key = workLog.id
 			event.save()
+
+			event.viewers = project.members.all()
+
 
 			messages.info( request, "Worklog saved successfully.")
 

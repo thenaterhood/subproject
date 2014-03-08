@@ -11,6 +11,7 @@ class TimelineEvent(models.Model):
 	category	= models.CharField(max_length=100)
 	link		= models.CharField(max_length=255)
 	related_key	= models.IntegerField()
+	viewers		= models.ManyToManyField(User, related_name="allowed viewers")
 
 	def __str__( self ):
 		return str(self.datestamp) + " " + self.member.username + " " + self.title
