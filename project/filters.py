@@ -204,27 +204,13 @@ def get_task_filters( request ):
 
 def set_filter_message( request ):
 	try:
-		if ( 'filter' in request.session and ( len(request.session['filter']['projecttags']) > 0 or len(request.session['filter']['tasktags']) > 0 ) ):
-			projecttags = get_project_filters( request )
-			tasktags = get_task_filters( request )
-			tagmessage = "This view is being filtered by tags you selected. <a href='/projects/resetfilter'>Remove This Filter</a><br />"
-			tagmessage += "Project Tags: "
-			for t in projecttags:
-				tagmessage += "\n \
-				<a href='/projects/rmprojectfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-				<img src='/static/img/delete.png' width='16px' alt='X'/>\
-				</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
-
-			tagmessage += "<a href='/projects/filter/addprojecttag/'>(Add Another)</a>\n<br />\nTask Tags:"
-			for t in tasktags:
-				tagmessage += "\n \
-				<a href='/projects/rmtaskfilter/"+str(t.id)+"/' title='Remove Filter Tag'>\
-				<img src='/static/img/delete.png' width='16px' alt='X'/>\
-				</a><a href='/projects/tags/" + str( t.id ) + "/'>" + t.name + "</a>&nbsp;&nbsp;&nbsp;"
-
-			tagmessage += "<a href='/projects/filter/addtasktag/'>(Add Another)</a>"
+		if ( 'filter' in request.session 
+			and ( len(request.session['filter']['projecttags']) > 0 
+				or len(request.session['filter']['tasktags']) > 0 
+				or len(request.session['filter']['taskprojects']) > 0) 
+			):
 
 
-			messages.info( request, tagmessage, extra_tags='safe')
+			messages.info( request, "You have filters applied to this view. <a href='/projects/resetfilter/'>Reset</a>", extra_tags='safe')
 	except:
 		noreturn = reset_filter( request )
