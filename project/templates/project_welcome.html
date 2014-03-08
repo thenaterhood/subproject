@@ -9,56 +9,88 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
+<!--
 <div class="panel panel-default">
-	<div class="panel-heading">Project Overview</div>
+	<div class="panel-heading">Quick Actions</div>
 	<div class="panel-body">
 	<img style="float:right;"src="/static/img/project.png" />
 			<p>You are involved with <strong>{{total_projects}} project(s)</strong>, where you <strong>manage {{managed_projects}}</strong>.</p>
 		<ul>
 			<li><a href="/projects/">Manage your projects</a></li>
-			<li><a href="/projects/browser">Browse your projects and subprojects</a></li>
-			<li><a href="/projects/create/">Create a new project</a></li>
+			<li><a href="/projects/todo/">Check out your workload</a> <strong>({{numTasks}} tasks)</strong></li>
+			<li><a href="/projects/usertasks">Manage tasks you've created</a> <strong>({{active_tasks}} tasks)</strong></li>
 		</ul>
 
-	</div>
-
-
-</div>
-
-<div class="panel panel-default">
-	<div class="panel-heading">Task Overview</div>
-	<div class="panel-body">
-
-	<img style="float:right" src="/static/img/task.png" />
-
-			<p>In total, you've created <strong>{{total_tasks}}</strong> tasks, where <strong>{{active_tasks}} are in progress</strong>. <a href="/projects/usertasks">Manage tasks you've created</a></p>
-
-		<p>You have <strong>{{numTasks}} todo items</strong>. <a href="/projects/todo/">Check out your workload</a></p>
-
-	</div>
-
-</div>
-
-<div class="panel panel-default">
-	<div class="panel-heading">Work Overview</div>
-	<div class="panel-body">
-
-
-	<img style="float:right;" src="/static/img/work.png" />
 		<p>You've created <strong>{{total_worklogs}} worklogs</strong>.</p>
 		<p>In total, you've logged <strong>{{total_time}} hours of work</strong> on projects, averaging <strong>{{avg_task_time}} hours per task</strong>.</p>
 
-			{%if total_worklogs > 0 %}
-			<ul>Latest Work Logged
+	</div>
 
-				{%for t in logs%}
-				<li><a href="/projects/work/view/{{t.id}}/">{{t.summary}}</a> on {{t.project}}</li>
-				{%endfor%}
-			</ul>
 
-			{%endif%}
-		</div>
 </div>
+
+-->
+
+<ul class="timeline">
+
+		<li>
+          <div class="timeline-badge default"><img src="/static/img/project.png" width="32px" /></div>
+          <div class="timeline-panel">
+            <div class="timeline-heading">
+              <h4 class="timeline-title">
+              	Your current standing
+              </h4>
+            </div>
+            <div class="timeline-body">
+			<p>You are involved with <strong>{{total_projects}} project(s)</strong>, where you <strong>manage {{managed_projects}}</strong>.</p>
+		<ul>
+			<li><a href="/projects/">Manage your projects</a></li>
+			<li><a href="/projects/todo/">Check out your workload</a> <strong>({{numTasks}} tasks)</strong></li>
+			<li><a href="/projects/usertasks">Manage tasks you've created</a> <strong>({{active_tasks}} tasks)</strong></li>
+		</ul>
+
+		<p>You've created <strong>{{total_worklogs}} worklogs</strong>.</p>
+		<p>In total, you've logged <strong>{{total_time}} hours of work</strong> on projects, averaging <strong>{{avg_task_time}} hours per task</strong>.</p>            </div>
+          </div>
+        </li>
+{% for t in timeline %}
+
+	    <li>
+          <div class="timeline-badge info"><img src="/static/img/{{t.category}}.png" width="32px" /></div>
+          <div class="timeline-panel">
+            <div class="timeline-heading">
+              <h4 class="timeline-title">
+
+              	<a href="/user/profile/{{t.member.username}}">
+              		{{t.member.username}}</a>
+
+              		{{t.title}}
+
+              	<div style="float: right;">
+              	<a href="
+              	{% if t.category == "project" %}
+              	/projects/view/{{t.related_key}}
+              	{% elif t.category == "work" %}
+              	/projects/work/view/{{t.related_key}}
+              	{% elif t.category == "task" %}
+              	/projects/task/view/{{t.related_key}}
+              	{% endif %}
+
+              	">View</a></div>
+              </h4>
+              <p><small class="text-muted"> {{t.datestamp}}</small></p>
+            </div>
+            <div class="timeline-body">
+              <p>{{t.description}}</p>
+            </div>
+          </div>
+        </li>
+
+
+	{% endfor %}
+</ul>
+
+	
 
 
 {% endblock %}

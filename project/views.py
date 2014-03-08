@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.db.models import Sum
 
 import dateutil.parser
+import operator
 
 from copy import deepcopy
 
@@ -21,6 +22,9 @@ from project.filters import *
 
 import project.thenaterhood.histogram as histogram
 import csv
+
+def sort_bydatestamp( a, b ):
+	return cmp( a.get_tdate(), b.get_tdate() )
 
 @login_required
 def show_import_page( request ):
@@ -161,7 +165,6 @@ def project_welcome(request):
 	args['managed_projects'] = Project.objects.filter(manager=request.user).count()
 
 	args['total_worklogs'] = Worklog.objects.filter( owner=request.user ).count()
-	args['logs'] = Worklog.objects.filter( owner=request.user ).order_by('-datestamp')[0:3]
 
 	args['total_tasks'] = ProjectTask.objects.filter( creator=request.user ).count()
 	args['active_tasks'] = ProjectTask.objects.filter( creator=request.user ).filter( inProgress=True ).count()
@@ -175,6 +178,16 @@ def project_welcome(request):
 	args['numTasks'] = ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).count()
 
 	args['avg_task_time'] = 0
+
+	project_members = Project.objects.filter( members=request.user ).values_list('members', flat=False)
+
+	timelineItems = []
+	timelineItems += TimelineEvent.objects.filter( member__in=project_members ).order_by('-datestamp')
+
+	print( timelineItems)
+
+	args['timeline'] = timelineItems[0:50]
+
 
 	if ( args['total_worklogs'] > 0 ):
 		args['avg_task_time'] = str( args['total_time'] / args['total_worklogs'] )
@@ -761,6 +774,13 @@ def add_worklog( request, proj_id ):
 		if form.is_valid():
 
 			workLog = form.save( owner=request.user, project=project )
+			event = TimelineEvent()
+			event.member = request.user
+			event.title  = "added a new worklog to " + project.name
+			event.description = workLog.description
+			event.category = "work"
+			event.related_key = workLog.id
+			event.save()
 
 			messages.info( request, "Worklog saved successfully.")
 
