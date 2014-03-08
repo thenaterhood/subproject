@@ -277,7 +277,6 @@ def create_project(request, parent=False):
 
 			event = TimelineEvent()
 			event.member = request.user
-			event.viewers = newProj.members()
 			event.title  = "created the project " + newProj.name
 			event.description = newProj.description
 			event.category = "project"
@@ -285,6 +284,7 @@ def create_project(request, parent=False):
 
 			event.save()
 
+			event.viewers = newProj.members.all()
 
 			if ( 'parent' in request.POST and request.POST['parent'] != "False" ):
 				parentProject = Project.objects.get( id=request.POST['parent'] )

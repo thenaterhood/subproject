@@ -35,8 +35,8 @@ def apply_task_filter( request, tasks ):
 
 	else:
 		reset_filter( request )
-	
 		tags = []
+		projects = []
 
 	tags = Tag.objects.filter( id__in=tags )
 	projects = Project.objects.filter( id__in=projects )
