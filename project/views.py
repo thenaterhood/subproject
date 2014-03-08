@@ -22,9 +22,6 @@ from project.filters import *
 
 import csv
 
-def sort_bydatestamp( a, b ):
-	return cmp( a.get_tdate(), b.get_tdate() )
-
 @login_required
 def show_import_page( request ):
 	return render_to_response( 'project_import.html', RequestContext(request, {}) )
@@ -179,10 +176,7 @@ def project_welcome(request):
 	args['avg_task_time'] = 0
 
 
-	timelineItems = []
-	timelineItems += TimelineEvent.objects.filter( Q(member=request.user)|Q(viewers=request.user) ).order_by('-datestamp')
-
-	print( timelineItems)
+	timelineItems = TimelineEvent.objects.filter( Q(member=request.user)|Q(viewers=request.user) ).order_by('-datestamp')
 
 	args['timeline'] = timelineItems[0:50]
 
