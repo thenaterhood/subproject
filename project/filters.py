@@ -27,8 +27,10 @@ def apply_project_filter( request, projects ):
 
 
 def apply_task_filter( request, tasks ):
+
 	if ( 'filter' in request.session ):
 		tags = request.session['filter']['tasktags']
+		projects = request.session['filter']['taskprojects']
 		keywords = request.session['filter']['keywords']
 
 	else:
@@ -37,9 +39,13 @@ def apply_task_filter( request, tasks ):
 		tags = []
 
 	tags = Tag.objects.filter( id__in=tags )
+	projects = Project.objects.filter( id__in=projects )
 	
 	for t in tags:
 		tasks = tasks.filter( tags=t )
+
+	for p in projects:
+		tasks = tasks.filter( Q(openOn=p)|Q(closedOn=p) )
 
 	return tasks
 
@@ -56,6 +62,34 @@ def add_task_filter( request, tag_id=False ):
 		request.session['filter']['tasktags'].append( tag_id )
 
 	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+def add_task_project_filter( request, project_id ):
+	if ( 'filter' in request.session ):
+		project = Project.objects.get( id=project_id )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['taskprojects'].append(project_id)
+
+	else:
+		reset_filter( request )
+		request.session['filter_update'] = "yes"
+		request.session['filter']['projecttags'].append( tag_id )
+		request.session['filter']['tasktags'].append(tag_id)
+
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+def rm_task_project_filter( request, project_id ):
+
+	if ( 'filter' in request.session ):
+		request.session['filter_update'] = "yes"
+		request.session['filter']['taskprojects'].remove(project_id)
+
+	else:
+		reset_filter( request )
+
+	return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
 
 def add_filter( request, tag_id ):
 	if ( 'filter' in request.session ):
@@ -137,6 +171,7 @@ def reset_filter( request ):
 	request.session['filter'] = {}
 	request.session['filter']['projecttags'] = []
 	request.session['filter']['tasktags'] = []
+	request.session['filter']['taskprojects'] = []
 
 	request.session['filter']['keywords'] = []		
 	request.session['filter_update'] = "yes"
@@ -157,11 +192,15 @@ def get_project_filters( request ):
 
 
 def get_task_filters( request ):
+	filters = []
 	try:
-		return Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+		filters += Tag.objects.filter( id__in=request.session['filter']['tasktags'] )
+		filters += Project.objects.filter( id__in=request.session['filter']['taskprojects'] )
+		return filters
 	except:
 		reset_filter( request )
 		return []
+
 
 def set_filter_message( request ):
 	try:

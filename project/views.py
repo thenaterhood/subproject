@@ -221,6 +221,7 @@ def user_all_tasks(request, assignee=False ):
 	set_filter_message( request )
 
 	args['user'] = request.user
+	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
 	args['tasks'] = tasks.filter( inProgress=False ).all()
 	args['other_num'] = len( args['tasks'] )
 	args['task_wip'] = tasks.filter( inProgress=True ).all()
@@ -299,8 +300,6 @@ def create_project(request, parent=False):
 
 			newProj.save()
 
-			_create_associated_project_tag( newProj )
-
 			return HttpResponseRedirect(redirTo)
 
 		else:
@@ -366,33 +365,6 @@ def assign_child( request, parent_id, child_id=False ):
 		pageData['projects'] = Project.objects.filter( manager=request.user ).exclude( id=parent_id ).exclude( parents=parentProj )
 		return render_to_response( 'project_select.html', RequestContext( request, pageData ) )
 
-def _create_associated_project_tag( project ):
-
-	tag = Tag()
-	tag.owner = project.manager
-	tag.name = "Associated with Project "+project.name
-	tag.system = "subproject:pid:"+str(project.id)
-	tag.description = ""
-	tag.public = False
-	tag.visible = False
-
-	tag.save()
-
-	return tag
-
-def _get_associated_project_tag( project ):
-
-	tags = Tag.objects.filter(owner=project.manager,
-		system="subproject:pid:"+str(project.id))
-
-	if ( tags.count() < 1 ):
-		tag = _create_associated_project_tag(project)
-	else:
-		tag = tags[0]
-
-	return tag
-	
-
 
 @login_required
 def edit_project(request, proj_id):
@@ -409,10 +381,6 @@ def edit_project(request, proj_id):
 		form = EditProjectForm( request.POST, instance=project )
 		if form.is_valid():
 			updatedProject = form.save()
-
-			associated_tag = _get_associated_project_tag(project)
-			associated_tag.name = "Associated with Project " + project.name
-			associated_tag.save()
 
 			return HttpResponseRedirect( '/projects/view/' + str(project.id) +"/" )
 
@@ -715,7 +683,6 @@ def unassign_task_from_project( request, task_id, project_id ):
 	if ( request.user in project.members.all() or request.user == task.creator ):
 		task.openOn.remove( project )
 		task.closedOn.remove( project )
-		task.tags.remove( _get_associated_project_tag(project) )
 		task.save()
 
 	if ( 'HTTP_REFERER' in request.META ):
@@ -936,7 +903,6 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
 
 			task.openOn.add( project )
-			task.tags.add( _get_associated_project_tag(project) )
 			task.save()
 
 			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
@@ -972,7 +938,6 @@ def assign_task( request, proj_id, task_id=False ):
 		task = ProjectTask.objects.get( id=task_id )
 
 		task.openOn.add( project )
-		task.tags.add( _get_associated_project_tag(project) )
 		task.save()
 
 		if ( 'returnUrl' in request.session ):

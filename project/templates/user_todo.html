@@ -33,7 +33,7 @@
 			<br />
 			<br />
 			<fieldset>
-				<legend>Filters</legend>
+				<legend>Tags</legend>
 				<ul class='nav nav-pills nav-stacked'>
 					<p class="small">Click filters to turn them on and off</p>
 					{% for t in tags %}
@@ -52,6 +52,26 @@
 					</li>
 
 					{% endfor %}
+
+				<legend>Projects</legend>
+					<ul class='nav nav-pills nav-stacked'>
+					{% for p in projects %}
+
+					<li class="{% if p in filters%}active{%endif%}">
+
+						<a href=
+						{% if p in filters %}
+						"/projects/filter/tasknotbyproject/{{p.id}}/"
+						{% else %}
+						"/projects/filter/taskbyproject/{{p.id}}/"
+						{% endif %}
+
+						>{{p.name}}</a>
+
+					</li>
+
+					{% endfor %}
+
 					
 		</ul>
 	</fieldset>

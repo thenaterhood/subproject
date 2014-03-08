@@ -124,6 +124,10 @@ urlpatterns = patterns('',
     #url(r'^projects/rmtagfilter/(?P<tag_id>\d+)/$', 'project.views.rm_filter'),
     url(r'^projects/resetfilter/$', 'project.filters.reset_filter'),
 
+    url(r'^projects/filter/taskbyproject/(?P<project_id>\d+)/$', 'project.filters.add_task_project_filter'),
+    url(r'^projects/filter/tasknotbyproject/(?P<project_id>\d+)/$', 'project.filters.rm_task_project_filter'),
+
+
     url(r'^projects/filter/addprojecttag/$', 'project.filters.select_project_filter'),
     url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 'project.filters.select_project_filter'),
 
