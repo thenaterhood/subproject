@@ -64,8 +64,9 @@ urlpatterns = patterns('',
 
 
     # Project task management
-    url(r'^projects/(?P<project_id>\d+)/closetask/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
-    url(r'^projects/(?P<project_id>\d+)/opentask/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
+    url(r'^projects/task/close/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
+    url(r'^projects/task/open/(?P<task_id>\d+)/$', 'project.views.toggle_project_task_status'),
+
     url(r'^projects/(?P<project_id>\d+)/unassigntask/(?P<task_id>\d+)/$', 'project.views.unassign_task_from_project'),
     url(r'^projects/task/inprogress/(?P<task_id>\d+)/$', 'project.views.task_progress_toggle'),
     url(r'^projects/addtotask/(?P<task_id>\d+)/$', 'project.views.add_existing_task_to_project'),

@@ -5,6 +5,7 @@
 {% block content %}
 
 	<h1><img src="/static/img/task.png" />Select a Task</h1>
+	<p class="danger"><strong>Tasks that are already associated with a different project will be moved to the current project if you select them.</strong></p>
 
 	{% if num_projects == 0 %}
 		<p class="error">You are not a member of any projects.</p>
@@ -23,7 +24,13 @@
 				<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
 				<td>{% if t.inProgress %}Yes{% else %}No{% endif %}</td>
 				<!--<li>Description: {{project.description}}</li>-->
+				{% if t.project == None %}
 				<td><a class="btn btn-success" href="{{t.id}}/">Select</a></td>
+				{% else %}
+				<td><a class="btn btn-warning" href="{{t.id}}/">Move to this project</a></td>
+				{% endif %}
+
+
 			</tr>
 
 	{% endfor %}

@@ -65,15 +65,16 @@ class ProjectTask(models.Model):
 	"""
 	assigned 	= models.ManyToManyField(User, related_name="Assigned Members")
 	creator 	= models.ForeignKey(User, related_name="Creator")
-	openOn	 	= models.ManyToManyField(Project, related_name="Projects")
-	closedOn	= models.ManyToManyField(Project, related_name="Closed On")
 	summary		= models.CharField(max_length=100)
 	description	= models.CharField(max_length=400)
 	completed	= models.BooleanField(default=False)
 	startDate	= models.DateTimeField(auto_now=False, auto_now_add=True)
 	dueDate		= models.DateTimeField(auto_now=False, auto_now_add=True)
 	inProgress	= models.BooleanField(default=False)
+	completed	= models.BooleanField(default=False)
 	tags		= models.ManyToManyField('Tag', related_name="Task Tags")
+	project 	= models.ForeignKey(Project, related_name="Project", null=True)
+
 
 	def __str__(self):
 		return "Task " + str( self.summary )

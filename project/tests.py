@@ -270,7 +270,7 @@ class TaskActions(TestCase):
 		joeTask = ProjectTask.objects.create(summary="Joe's Task",creator=joe,description="Joe's")
 		bobTask = ProjectTask.objects.create(summary="Bob's Task",creator=bob,description="Bob's")
 
-		joeTask.openOn.add( joeProject )
+		joeTask.project = joeProject
 		joeTask.save()
 
 		joeProject.members.add( joe )
@@ -280,20 +280,20 @@ class TaskActions(TestCase):
 		self.client.login( username="joe", password="pass" )
 
 
+
 	def test_remove_add_project_task( self ):
 		self.client.get('/projects/1/unassigntask/1/')
 
 		task = ProjectTask.objects.get(id=1)
 		project = Project.objects.get(id=1)
 
-		self.assertFalse( project in task.openOn.all() )
-		self.assertFalse( project in task.closedOn.all() )
+		self.assertTrue( task.project == None)
 
 		self.client.get('/projects/1/assigntask/1/')
 
 		task = ProjectTask.objects.get(id=1)
 
-		self.assertTrue( project in task.openOn.all() )
+		self.assertTrue( project == task.project )
 		self.client.get('/projects/1/unassigntask/1/')
 
 
@@ -306,7 +306,7 @@ class TaskActions(TestCase):
 		self.client.get('/projects/addtotask/1/1/')
 		task = ProjectTask.objects.get( id=1 )
 
-		self.assertTrue( project in task.openOn.all() )
+		self.assertTrue( task.project == project )
 
 	def test_task_to_subproject( self ):
 		self.client.get('/projects/task/tosubproject/1/')
@@ -389,7 +389,7 @@ class TaskActions(TestCase):
 
 		p = Project.objects.get( id=1 )
 
-		self.assertTrue( p in t.openOn.all() )
+		self.assertTrue( p == t.project )
 
 	def test_user_task_show( self ):
 
@@ -400,7 +400,7 @@ class TaskActions(TestCase):
 		bobProject = Project.objects.get( id=2 )
 
 		bobTask.assigned.add( joe )
-		bobTask.openOn.add( bobProject )
+		bobTask.project = bobProject
 		bobTask.save()
 
 		response = self.client.get('/projects/todo/')
@@ -423,19 +423,17 @@ class TaskActions(TestCase):
 		self.assertEqual( response.context['task'], task )
 
 	def test_open_close_task( self ):
-		response = self.client.get('/projects/1/closetask/1/')
+		response = self.client.get('/projects/task/close/1/')
 
 		task = ProjectTask.objects.get( id=1 )
 		project = Project.objects.get( id=1 )
 
-		self.assertTrue( project in task.closedOn.all() )
-		self.assertFalse( project in task.openOn.all() )
+		self.assertTrue( task.completed )
 
-		response = self.client.get('/projects/1/opentask/1/')
+		response = self.client.get('/projects/task/open/1/')
 
 		task = ProjectTask.objects.get( id=1 )
-		self.assertTrue( project in task.openOn.all() )
-		self.assertFalse( project in task.closedOn.all() )
+		self.assertFalse( task.completed )
 
 	def test_wip_toggle( self ):
 
@@ -647,8 +645,8 @@ class DataImport(TestCase):
 	def setUp(self):
 		joe= get_user_model().objects.create_user(username='joe', email=None, password='pass')
 		bob= get_user_model().objects.create_user(username="bob", first_name="Bob", last_name="Herp", email="bob@joe.joe", password="pass")
-		joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
-		bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
+		#joeProject=Project.objects.create(name="Joe's Project",manager=joe,description="Belongs to Joe", status="None", phase="None")
+		#bobProject=Project.objects.create(name="Bob's Project",manager=bob,description="Belongs to Joe", status="None", phase="None")
 
 		self.client = Client()
 		self.client.login( username="joe", password="pass" )
@@ -688,11 +686,122 @@ class DataImport(TestCase):
 		afterNum = Worklog.objects.filter( owner=joe ).count()
 		imports = Worklog.objects.filter( owner=joe )
 
-		self.assertEqual( afterNum - 11, initialNum )
+		self.assertEqual( afterNum - 12, initialNum )
 
 		for i in imports:
 			self.assertEqual( i.hours, 1 )
 			self.assertEqual( i.description, "some added work" )
+
+	def test_headless_project_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		initialNum = Project.objects.filter( manager=joe ).count()
+		# Clean file contains 11 items
+		with open('test_files/headless_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Project.objects.filter( manager=joe ).count()
+
+		self.assertEqual( afterNum, initialNum )
+
+		imports = Project.objects.filter( manager=joe ).filter( status='imported' )
+
+		self.assertEqual( imports.count(), 0 )
+
+	def test_headless_worklog_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		with open('test_files/headless_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		initialNum = Worklog.objects.filter( owner=joe ).count()
+
+		with open('test_files/clean_worklogs.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/work/',
+								{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Worklog.objects.filter( owner=joe ).count()
+		imports = Worklog.objects.filter( owner=joe )
+
+		self.assertEqual( afterNum, initialNum )
+
+	def test_badquote_project_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		initialNum = Project.objects.filter( manager=joe ).count()
+		# Clean file contains 11 items
+		with open('test_files/badquotes_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Project.objects.filter( manager=joe ).count()
+
+		self.assertEqual( afterNum - 11, initialNum )
+
+		imports = Project.objects.filter( manager=joe ).filter( status='imported' )
+
+		# 3 rows are misquoted and cause the status to be 
+		# misread.
+		self.assertEqual( imports.count() - 11 + 3, initialNum )
+
+	def test_badquote_worklog_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		with open('test_files/badquotes_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		initialNum = Worklog.objects.filter( owner=joe ).count()
+
+		with open('test_files/clean_worklogs.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/work/',
+								{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Worklog.objects.filter( owner=joe ).count()
+		imports = Worklog.objects.filter( owner=joe )
+
+		# 3 rows are misquoted, so those rows should fail
+		# We add them back on.
+		self.assertEqual( afterNum - 13 + 3, initialNum )
+
+	def test_fieldsmissing_project_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		initialNum = Project.objects.filter( manager=joe ).count()
+		# Clean file contains 11 items
+		with open('test_files/missingfields_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Project.objects.filter( manager=joe ).count()
+
+		self.assertEqual( afterNum-11, initialNum )
+
+		imports = Project.objects.filter( manager=joe ).filter( status='imported' )
+
+		# The status field is missing on some or 
+		# has been non-catastrophically misinterpreted.
+		self.assertEqual( imports.count()-11 + 3 , 0 )
+
+	def test_fieldsmissing_worklog_csv_import( self ):
+		joe = User.objects.get( username='joe' )
+
+		with open('test_files/missingfields_projects.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/projects/', 
+				{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		initialNum = Worklog.objects.filter( owner=joe ).count()
+
+		with open('test_files/clean_worklogs.csv') as importCsv:
+			response = self.client.post( '/projects/importcsv/work/',
+								{'file':SimpleUploadedFile(importCsv.name, bytes(importCsv.read(),"UTF-8"), content_type='text/csv' ) } )
+
+		afterNum = Worklog.objects.filter( owner=joe ).count()
+		imports = Worklog.objects.filter( owner=joe )
+
+		self.assertEqual( afterNum -10, initialNum )
 
 
 

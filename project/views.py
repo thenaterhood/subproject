@@ -45,7 +45,7 @@ def import_worklog_csv( request ):
 					if ( matchingProjects > 0 ):
 						project = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name'])[0]
 
-						if ( 'duration' in row ):
+						if ( 'duration' in row and row['duration'] != None ):
 							try:
 								row['hours'] = float(row['duration'].split('.')[0] )
 							except:
@@ -59,13 +59,13 @@ def import_worklog_csv( request ):
 							except:
 								row['minutes'] = 0
 
-						if ( 'datestamp' in row ):
+						if ( 'datestamp' in row and row['datestamp'] != None ):
 							try:
 								row['datestamp'] = dateutil.parser.parse( row['datestamp'] )
 							except:
 								pass
 
-						if ( 'description' in row ):
+						if ( 'description' in row and row['description'] != None ):
 							row['summary'] = " ".join( row['description'].split()[0:3] )
 
 						addWorklog = EditWorklogForm( row )
@@ -108,13 +108,13 @@ def import_project_csv( request ):
 
 			for row in reader:
 
-				if ( 'status' not in row ):
+				if ( 'status' not in row or row['status'] == None):
 					row['status'] = "None"
 
-				if ( 'phase' not in row ):
+				if ( 'phase' not in row or row['phase'] == None):
 					row['phase'] = "None"
 
-				if ( 'description' not in row ):
+				if ( 'description' not in row or row['description'] == None ):
 					row['description'] = "[Imported Project]"
 				else:
 					row['description'] = "[Imported Project] " + row['description']
@@ -126,9 +126,14 @@ def import_project_csv( request ):
 
 					imported += 1
 
-			messages.info( request, "Successfully imported " + str(imported) + " projects.")
+			if imported > 0:
+				messages.info( request, "Successfully imported " + str(imported) + " projects.")
+			else:
+				messages.warning( request, "No projects could be imported from your file.")
 		else:
 			messages.error( request, "Unable to import projects.")
+
+
 
 		return HttpResponseRedirect( '/projects/' )
 
@@ -171,15 +176,14 @@ def project_welcome(request):
 
 	args['start_date'] = request.user.date_joined
 
-	args['numTasks'] = ProjectTask.objects.filter( assigned=request.user ).annotate(c=Count('openOn')).filter(c__gt=0).count()
+	args['numTasks'] = ProjectTask.objects.filter( assigned=request.user ).filter(completed=False).count()
 
 	args['avg_task_time'] = 0
 
 
-	timelineItems = TimelineEvent.objects.filter( Q(member=request.user)|Q(viewers=request.user) ).order_by('-datestamp')
+	timelineItems = TimelineEvent.objects.filter( Q(member=request.user)|Q(viewers=request.user) ).distinct().order_by('-datestamp')
 
 	args['timeline'] = timelineItems[0:50]
-
 
 	if ( args['total_worklogs'] > 0 ):
 		args['avg_task_time'] = str( args['total_time'] / args['total_worklogs'] )
@@ -208,7 +212,7 @@ def user_all_tasks(request, assignee=False ):
 	else:
 		tasks = apply_task_filter( 
 			request, 
-			ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user) 
+			ProjectTask.objects.filter( assigned=request.user).filter(completed=False)
 			)
 
 	set_filter_message( request )
@@ -223,7 +227,7 @@ def user_all_tasks(request, assignee=False ):
 	args['filters'] = get_task_filters( request )
 
 
-	return render_to_response( 'user_todo.html', RequestContext(request, args) )
+	return render_to_response( 'task_list.html', RequestContext(request, args) )
 
 
 @login_required
@@ -622,7 +626,7 @@ def view_project(request, proj_id):
 	args['num_members'] = project.members.all().count()
 	args['worklogs'] = worklogs
 	args['num_worklogs'] = worklogs.count()
-	args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project) ).reverse()
+	args['tasks'] = ProjectTask.objects.filter( project=project ).reverse()
 	args['num_tasks'] = args['tasks'].count()
 	args['tags'] = project.tags.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user)|Q(public=True) ).filter(visible=True)
 	args['yourTags'] = args['tags'].filter(Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user))
@@ -674,8 +678,7 @@ def unassign_task_from_project( request, task_id, project_id ):
 	project = Project.objects.get( id=project_id )
 
 	if ( request.user in project.members.all() or request.user == task.creator ):
-		task.openOn.remove( project )
-		task.closedOn.remove( project )
+		task.project = None
 		task.save()
 
 	if ( 'HTTP_REFERER' in request.META ):
@@ -895,7 +898,7 @@ def add_existing_task_to_project( request, task_id, project_id=False ):
 		if ( (request.user == task.creator and request.user == project.manager)
 			or ( request.user in task.assigned.all() and request.user in project.members.all() )):
 
-			task.openOn.add( project )
+			task.project = project
 			task.save()
 
 			return HttpResponseRedirect( '/projects/task/view/'+str(task_id)+"/" )
@@ -930,8 +933,10 @@ def assign_task( request, proj_id, task_id=False ):
 		project = Project.objects.get( id=proj_id )
 		task = ProjectTask.objects.get( id=task_id )
 
-		task.openOn.add( project )
+		task.project = project
 		task.save()
+
+		messages.success(request, "Task added to project successfully.")
 
 		if ( 'returnUrl' in request.session ):
 			return HttpResponseRedirect( request.session['returnUrl'])
@@ -941,7 +946,7 @@ def assign_task( request, proj_id, task_id=False ):
 	else:
 		pageData = {}
 		project = Project.objects.get( id=proj_id )
-		pageData['tasks'] = ProjectTask.objects.filter( creator=request.user ).exclude( openOn=project ).exclude( closedOn=project )
+		pageData['tasks'] = ProjectTask.objects.filter( creator=request.user )
 
 		return render_to_response('task_select.html', pageData)
 
@@ -1060,35 +1065,31 @@ def add_task( request, proj_id=False ):
 				project = Project.objects.get(id=proj_id)
 
 				if request.user in project.members.all() or request.user == project.manager :
-					projTask.openOn.add( project )
+					projTask.project = project
 					projTask.save()
 				else:
 					messages.warning( request, "You do not have the rights to add tasks to " + project.name )
 
 			messages.info( request, "Task Saved." )
 
-			if ( "saveandassign" in request.POST ):
-				return HttpResponseRedirect('/projects/addtotask/'+str(projTask.id)+"/" )
-			else:
-				if ( 'returnUrl' not in request.POST or request.POST['returnUrl'] == '' ):
-					return HttpResponseRedirect('/projects/task/view/'+str(projTask.id)+"/")
-				else:
-					return HttpResponseRedirect(request.POST['returnUrl'])
+			return HttpResponseRedirect('/projects/task/'+str(projTask.id))
+
 
 		else:
 			messages.error( request, "Please fill out both fields." )
 
 			pageData = {}
 			pageData['form'] = EditTaskForm( request.POST )
+
 			return render_to_response( 'task_create.html', RequestContext( request, pageData))
 
 	else:
 
 		args = {}
 		try:
-			args['returnUrl'] = request.META['HTTP_REFERER']
+			request.session['returnUrl'] = request.META['HTTP_REFERER']
 		except:
-			args['returnUrl'] = '/projects/usertasks'
+			request.session['returnUrl'] = '/projects/usertasks'
 
 		if ( proj_id != False ):
 			args['project'] = project = Project.objects.get(id=proj_id)
@@ -1149,7 +1150,6 @@ def view_task(request, task_id):
 	"""
 
 	task = ProjectTask.objects.get(id=task_id)
-	projects = task.openOn.all()
 
 	args = {}
 	initialDict = { 
@@ -1161,8 +1161,7 @@ def view_task(request, task_id):
 	form.initial = initialDict
 
 	args['form'] = form
-	args['openOn'] = task.openOn.all()
-	args['closedOn'] = task.closedOn.all()
+	args['openOn'] = [ task.project ]
 	args['task'] = task
 	args['members'] = task.assigned.all()
 	args['user'] = request.user
@@ -1179,7 +1178,7 @@ def view_task(request, task_id):
 
 
 @login_required
-def toggle_project_task_status( request, project_id, task_id ):
+def toggle_project_task_status( request,task_id ):
 	"""
 	Toggles a task open or closed on a project
 
@@ -1192,26 +1191,18 @@ def toggle_project_task_status( request, project_id, task_id ):
 		the project view page if there isn't a referer 
 	"""
 	task = ProjectTask.objects.get( id=task_id )
-	project = Project.objects.get( id=project_id )
 
-	if ( request.user in task.assigned.all() or request.user == task.creator ) and ( request.user in project.members.all() ):
-		if ( project in task.openOn.all() ):
-			task.openOn.remove( project )
-			task.closedOn.add( project )
+	if ( request.user in task.assigned.all() or request.user == task.creator ):
+		
+		task.completed = not task.completed
+		task.save()
 
-		elif ( project in task.closedOn.all() ):
-			task.openOn.add( project )
-			task.closedOn.remove( project )
-
-		else:
-			task.openOn.add( project )
-
-		messages.info( request, "Updated task on project." )
+		messages.info( request, "Updated task status." )
 
 	try:
 		return HttpResponseRedirect( request.META['HTTP_REFERER'] )
 	except:
-		return HttpResponseRedirect( '/projects/view/' + str(project_id) +'/' )
+		return HttpResponseRedirect( '/projects/task/view/' + str(task_id) +'/' )
 
 
 @login_required
@@ -1318,11 +1309,9 @@ def view_all_task( request, proj_id ):
 	project = Project.objects.get(id=proj_id)
 
 	if request.user in project.members.all():
-		args = {}
-		args['tasks'] = ProjectTask.objects.filter( Q(openOn=project)|Q(closedOn=project)) 
-		args['project'] = project
-		return HttpResponseRedirect( '/projects/view/'+str(proj_id)+'/#tasks')
-		#return render_to_response('task_list.html', args)
+		add_task_project_filter( request, proj_id )
+
+		return HttpResponseRedirect( '/projects/usertasks/')
 
 	else:
 		return HttpResponseRedirect('/projects/')
@@ -1360,7 +1349,7 @@ def view_tree( request, project_id=False ):
 	Displays an outline view of all the user's 
 	projects and tasks.
 	"""
-	tasks = ProjectTask.objects.annotate(c=Count('openOn')).filter(c__gt=0).filter( assigned=request.user)
+	tasks = ProjectTask.objects.filter( assigned=request.user )
 	num_projects = 0
 	pageData = {}
 
@@ -1411,7 +1400,7 @@ def createTreeRow( project, tasks, depth=0 ):
 	projectRow = '<tr>\
 		<td>'+spacing+'<a href="/projects/view/'+str(project.id)+'"><img src="/static/img/project.png" width="24px" />'+project.name+'</a> \
 		<a title="Show Tree" href="/projects/tree/'+str(project.id)+'"><img src="/static/img/tree.jpg" width="24px" alt="Show Tree"/></a></td></tr>\n'
-	applicableTasks = tasks.filter( openOn=project ).all()
+	applicableTasks = tasks.filter( project=project ).all()
 
 	for t in applicableTasks:
 		projectRow += '<tr>\
@@ -1500,7 +1489,7 @@ def convert_task_to_subproject( request, task_id ):
 
 		project.save()
 		project.members = task.assigned.all()
-		project.parents = task.openOn.all()
+		project.parents = [task.project]
 		project.tags = task.tags.all()
 		project.save()
 		task.delete()
@@ -1584,7 +1573,7 @@ def show_outline( request ):
 
 		pageData['selected1'] = Project.objects.get( id=projects[0] )
 		pageData['panel1'] = Project.objects.filter( parents=prevProject )
-		pageData['panel1task'] = ProjectTask.objects.filter( openOn=prevProject )
+		pageData['panel1task'] = ProjectTask.objects.filter( project=prevProject )
 
 	if ( len(projects) >= 1):
 		if ( len(projects) == 1):
@@ -1594,7 +1583,7 @@ def show_outline( request ):
 
 		pageData['panel2'] = Project.objects.filter( parents=pageData['selected1'] )
 
-		pageData['panel2task'] = ProjectTask.objects.filter( openOn=pageData['selected1'] )
+		pageData['panel2task'] = ProjectTask.objects.filter( project=pageData['selected1'] )
 
 	if ( len(projects) >= 2):
 		pageData['panel3pos'] = ",".join(allProjectsInView[0:len(allProjectsInView)])
@@ -1603,7 +1592,7 @@ def show_outline( request ):
 		pageData['selected2'] = Project.objects.get( id=projects[1] )
 		pageData['panel3'] = Project.objects.filter( parents=pageData['selected2'])
 
-		pageData['panel3task'] = ProjectTask.objects.filter( openOn=pageData['selected2'] )
+		pageData['panel3task'] = ProjectTask.objects.filter( project=pageData['selected2'] )
 
 	return render_to_response( 'project_outline.html', RequestContext(request, pageData) )
 
@@ -1621,7 +1610,7 @@ def show_browser( request, open_project=False ):
 		selected = Project.objects.get( id=open_project )
 		pageData['selected'] = selected
 		pageData['projects'] = Project.objects.filter( parents=selected )
-		pageData['tasks'] = ProjectTask.objects.filter( Q(openOn=selected)|Q(closedOn=selected) ).filter( assigned=request.user )
+		pageData['tasks'] = ProjectTask.objects.filter( project=selected ).filter( assigned=request.user )
 		pageData['work'] = Worklog.objects.filter( project=selected )
 
 	return render_to_response( 'project_browser.html', RequestContext(request, pageData) )

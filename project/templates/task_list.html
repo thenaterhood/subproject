@@ -1,21 +1,99 @@
 {% extends "base.html" %}
 
-{% block title %} Project Tasks {% endblock %}
+{% block title %} My Todo {% endblock %}
 
 {% block content %}
 
-	<h1><img src="/static/img/task.png" />Tasks for <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
-
-	{% if num_projects == 0 %}
-		<p class="error">No work logged.</p>
+{% include 'template_messages.html' %}
+	<h1>
+		<img src="/static/img/task.png" />
+		{% if notodo %}
+		Tasks You've Created
+		{% else %}
+		My Todo
 	{% endif %}
+	</h1>
 
-	{% if project.active %}
-	<p><a href="/projects/addtask/{{project.id}}">Add a task</a></p>
+
+	{%if notodo %}
+	<p>Your task list shows all the tasks you've created. <a href="/projects/todo">View your assigned tasks (todo) instead.</a></p>
 	{% else %}
-	<p><em>This project is closed. Tasks cannot be added to closed projects.</em></p>
+	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
+	{% endif %}
+	<p class="pull-right">
+		<a class="btn btn-success" href="/projects/addtask">Add a Task</a>
+		<a class="btn btn-info" href="/projects/filter/addtasktag/">Filter Tasks</a>
+	</p>
+
+
+	<div class="clearfix"></div>
+
+	<div class="row">
+		<div class='col-md-3 hidden-sm hidden-xs side-filters' style="margin-top:-30px;">
+			<br />
+			<br />
+			<fieldset>
+				<legend>Tags</legend>
+				<ul class='nav nav-pills nav-stacked'>
+					<p class="small">Click filters to turn them on and off</p>
+					{% for t in tags %}
+
+					<li class="{% if t in filters%}active{%endif%}">
+
+						<a href=
+						{% if t in filters %}
+						"/projects/rmtaskfilter/{{t.id}}/"
+						{% else %}
+						"/projects/filter/addtasktag/{{t.id}}/"
+						{% endif %}
+
+						>{{t.name}}</a>
+
+					</li>
+
+					{% endfor %}
+
+				<legend>Projects</legend>
+					<ul class='nav nav-pills nav-stacked'>
+					{% for p in projects %}
+
+					<li class="{% if p in filters%}active{%endif%}">
+
+						<a href=
+						{% if p in filters %}
+						"/projects/filter/tasknotbyproject/{{p.id}}/"
+						{% else %}
+						"/projects/filter/taskbyproject/{{p.id}}/"
+						{% endif %}
+
+						>{{p.name}}</a>
+
+					</li>
+
+					{% endfor %}
+
+					
+		</ul>
+	</fieldset>
+</div>
+
+
+
+<div class='col-md-9'>
+
+	{% if num_tasks == 0 %}
+		<div class="panel panel-inverse">
+			<div class="panel-heading"><h4>No tasks found. Try adjusting your filter settings or if you're new, <a href="/projects/addtask">create a task</a></h4></div>
+
+		</div>
 	{% endif %}
 
+{% if wip_num %}
+
+
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks In Progress</h4></div>
+	<div class="panel-content">
 		<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
@@ -25,7 +103,7 @@
 			<th>View</th>
 		</tr>
 
-	{% for t in tasks %}
+	{% for t in task_wip %}
 		<tr>
 			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
 			<td>{{t.startDate}}</td>
@@ -41,5 +119,43 @@
 	{% endfor %}
 
 </table>
+</div>
+</div>
+	{% endif %}
 
+
+	{% if other_num > 0 %}
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />All other tasks</h4></div>
+	<div class="panel-content">
+		<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th>Start Date</th>
+			<th>Opened by</th>
+			<th>Change Status</th>
+			<th>View</th>
+		</tr>
+
+	{% for t in tasks %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td>{{t.startDate}}</td>
+			<td>{{t.creator}}</td>
+			{% if not t.completed %}
+				<td><a class="btn btn-warning" href="/projects/task/close/{{t.id}}/">Mark Completed</a></td>
+			{% else %}
+				<td><a class="btn btn-default" href="/projects/task/open/{{t.id}}/">Mark Unfinished</a></td>
+			{% endif %}
+			<td><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
+		</tr>
+
+	{% endfor %}
+
+</table>
+</div>
+</div>
+	{% endif %}
+
+</div>
 {% endblock %}

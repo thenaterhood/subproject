@@ -45,7 +45,7 @@ def apply_task_filter( request, tasks ):
 		tasks = tasks.filter( tags=t )
 
 	for p in projects:
-		tasks = tasks.filter( Q(openOn=p)|Q(closedOn=p) )
+		tasks = tasks.filter( project=p )
 
 	return tasks
 

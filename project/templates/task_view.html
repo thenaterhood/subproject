@@ -4,36 +4,15 @@
 
 {% block content %}
 
-{% if form.errors %}
-<p class="error">Sorry, that's not a valid username/password</p>
-{% endif %}
-
 {% include 'template_messages.html' %}
 
 		<h2><img src="/static/img/task.png" />{{task.summary}} {%if task.completed%}(Completed){%endif%} <small>Task View</small></h2>
-		{%if canEdit %}
-		{% if not task.inProgress %}
-		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
-		{% else %}
-		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
-		{% endif %}
 
-		<!--
-		{% if task.active %}
-			<a class="btn btn-warning" href="/projects/task/toggle/{{task.id}}/">Mark as In Progress </a>
-			{% else %}
-			<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Re-open Task</a>
-			{% endif %}
-		<a class="btn btn-warning" href="/projects/task/close/{{task.id}}">Close Task</a>
-	-->
-	{%endif%}
-	<br />
 	<br />
 
 	<div class="tabbable">
 		<ul class="nav nav-tabs">
 			<li class="active"><a href="#overview" data-toggle="tab"><img src="/static/img/info.png" width="24px" /> Overview</a></li>
-			<li><a href="#projects" data-toggle="tab"><img src="/static/img/project.png" width="24px" /> Projects</a></li>
 			<li><a href="#assignees" data-toggle="tab"><img src="/static/img/members.png" width="24px" /> Assignees</a></li>
 			<li><a href="#tags" data-toggle="tab"><img src="/static/img/tag.png" width="24px" /> Tags</a></li>
 
@@ -45,9 +24,44 @@
 			<div id="overview" class="tab-pane active">
 				<h4>Task Details</h4>
 
+				<p>This task is currently associated with {% if task.project == None %}no projects{% else %} <a href="/projects/view/{{task.project.id}}/">{{task.project.name}}</a> {% endif %}.</p>
+
+		{% if user in members %}
+		{% if not task.inProgress %}
+		<a class="btn btn-success" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
+		{% else %}
+		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
+		{% endif %}
+		{% endif %}
+
+		{% if user in members %}
+			{% if task.completed %}
+			<a class="btn btn-default" href="/projects/task/open/{{task.id}}/">Mark Task Unfinished</a>
+
+			{% else %}
+			<a class="btn btn-success" href="/projects/task/close/{{task.id}}/">Mark Task Completed</a>
+			{% endif %}
+		{% else %}
+			{% if task.completed %}
+			<p>Completed</p>
+			{% else %}
+			<p>Not finished</p>
+			{% endif %}
+		{% endif %}
+
+		{% if canEdit %}
+			{% if task.project == None %}
+			<a class="btn btn-success" href="/projects/addtotask/{{task.id}}/">Assign to a Project</a>
+			{% else %}
+			<a class="btn btn-warning" href="/projects/addtotask/{{task.id}}/">Move to another project</a>
+			{% endif %}
+		{% endif %}
+
 					<p>Your Tags <a href="/projects/task/{{task.id}}/addtag">(add)</a>: {% for t in yourTags %} 
 						{% if t.visible %}
 						<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
+
+
 
 				<div class="well">
 					<p><em>Opened by {{task.creator}} </em>
@@ -69,73 +83,7 @@
 							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
 				</div>
-				<div id="projects" class="tab-pane">
-					<h4><img src="/static/img/project.png" />Projects this task belongs to</h4>
-
-					<table class="table table-striped">
-						<tr>
-							<th>Project</th>
-							<th>Manager</th>
-							<th>Description</th>
-							<th>Manage</th>
-							<th>Remove</th>
-						</tr>
-
-						{% for p in openOn %}
-
-						<tr>
-							<td>
-								{% if user in p.members.all %}
-								<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
-								{% else %}
-								<p>{{p.name}}</p>
-								{% endif %}
-							</td>
-							<td>{{p.manager}}</td>
-							<td>{{p.description}}</td>
-
-							<td>
-								{% if user in p.members.all %}
-								<a class="btn btn-warning" href="/projects/{{p.id}}/closetask/{{task.id}}/">Mark Task Completed</a>
-								{% else %}
-								<p>Currently Open</p>
-								{% endif %}
-							</td>
-
-							<td>
-								{% if user in p.members.all %}
-								<a class="btn btn-danger" href="/projects/{{p.id}}/unassigntask/{{task.id}}/">Remove</a>
-								{% else %}
-								<p>You are not a project member.</p>
-								{% endif %}
-							</td>
-						</tr>
-
-						{% endfor %}
-
-						{% for p in closedOn %}
-
-						<tr>
-							<td><a href="/projects/view/{{p.id}}/">{{p.name}}</a></td>
-							<td>{{p.manager}}</td>
-							<td>{{p.description}}</td>
-
-							<td>
-								{% if user in p.members.all %}
-								<a class="btn btn-default" href="/projects/{{p.id}}/opentask/{{task.id}}/">Mark Unfinished</a>
-								{% else %}
-								<p>Currently Closed</p>
-								{% endif %}
-							</td>
-						</tr>
-
-						{% endfor %}
-
-						<tr>
-							<td colspan="5"><a href="/projects/addtotask/{{task.id}}/">Assign to Another Project</a></td>
-
-						</table>
-					</div>
+				
 					<div id="assignees" class="tab-pane">
 						<h4><img src="/static/img/members.png" />Task Assignees</h4>
 						<p>Task assignees are users who are assigned to a task. The task will appear in 
@@ -151,7 +99,19 @@
 
 							<tr>
 								<td>{{u}}</td>
-								<td> {%if canEdit %} <a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> {%endif%}</td>
+								<td> {%if canEdit %} 
+
+									{% if u != task.creator %}
+
+									<a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> 
+
+									{% else %}
+									<p>Task Owner</p>
+									{% endif %}
+
+									{%endif%}
+
+								</td>
 							</tr>
 							{% endfor %}
 
