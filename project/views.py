@@ -1072,7 +1072,7 @@ def add_task( request, proj_id=False ):
 
 			messages.info( request, "Task Saved." )
 
-			return HttpResponseRedirect('/projects/task/'+str(projTask.id))
+			return HttpResponseRedirect('/projects/addtotask/'+str(projTask.id))
 
 
 		else:
