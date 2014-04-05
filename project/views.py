@@ -194,6 +194,51 @@ def project_welcome(request):
 
 	return render_to_response('project_welcome.html', RequestContext( request, args) )
 
+@login_required
+def tasks_by_status( request, assignee=False, status='inprogress' ):
+	"""
+	Displays the user's tasks and todo filtered 
+	by the status.
+	"""
+	inprogress = False
+	completed = False
+	name = 'Tasks'
+
+	if ( status == 'inprogress' ):
+		inprogress = True
+		name = 'Tasks in Progress'
+
+	if ( status == 'complete' ):
+		completed = True
+		name = 'Completed Tasks'
+
+	args = {}
+	args['tags'] = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).order_by("name")
+
+
+	if ( not assignee ):
+		args['notodo'] = True
+		tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
+	else:
+		tasks = apply_task_filter( 
+			request, 
+			ProjectTask.objects.filter( assigned=request.user)
+			)
+
+	set_filter_message( request )
+
+	args['user'] = request.user
+	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
+	args['tasks'] = tasks.filter( inProgress=inprogress ).filter(completed=completed).all()[0:5]
+	args['other_num'] = tasks.filter( inProgress=inprogress ).filter(completed=completed).count()
+	args['other_name'] = name
+	args['num_tasks'] = args['other_num']
+	args['other_showmore'] = False
+
+	args['filters'] = get_task_filters( request )
+
+
+	return render_to_response( 'task_list.html', RequestContext(request, args) )
 
 @login_required
 def user_all_tasks(request, assignee=False ):
@@ -212,17 +257,23 @@ def user_all_tasks(request, assignee=False ):
 	else:
 		tasks = apply_task_filter( 
 			request, 
-			ProjectTask.objects.filter( assigned=request.user).filter(completed=False)
+			ProjectTask.objects.filter( assigned=request.user)
 			)
 
 	set_filter_message( request )
 
 	args['user'] = request.user
 	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
-	args['tasks'] = tasks.filter( inProgress=False ).all()
-	args['other_num'] = len( args['tasks'] )
-	args['task_wip'] = tasks.filter( inProgress=True ).all()
-	args['wip_num'] = len( args['task_wip'] )
+	args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()[0:5]
+	args['other_num'] = tasks.filter( inProgress=False ).filter(completed=False).count()
+	args['other_name'] = 'All Other Tasks'
+	args['other_showmore'] = True
+
+	args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()[0:5]
+	args['wip_num'] = tasks.filter( inProgress=True ).filter( completed=False ).count()
+
+	args['done_tasks'] = tasks.filter( completed=True ).all()[0:5]
+	args['done_num'] = tasks.filter( completed=True ).count()
 	args['num_tasks'] = len(tasks)
 	args['filters'] = get_task_filters( request )
 
@@ -1342,6 +1393,10 @@ def my_todo( request ):
 	"""
 
 	return user_all_tasks( request, assignee=request.user )
+
+def todo_by_status( request, status ):
+
+	return tasks_by_status( request, assignee=request.user, status=status )
 
 @login_required
 def view_tree( request, project_id=False ):

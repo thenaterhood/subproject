@@ -53,7 +53,7 @@
 
 					{% endfor %}
 
-				<legend>Projects</legend>
+				<legend>Filter by Project</legend>
 					<ul class='nav nav-pills nav-stacked'>
 					{% for p in projects %}
 
@@ -92,68 +92,110 @@
 
 
 <div class="panel panel-inverse">
-	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks In Progress</h4></div>
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Tasks In Progress ({{wip_num}})</h4>
+	</div>
 	<div class="panel-content">
 		<table class="table table-striped">
 		<tr>
 			<th>Summary</th>
-			<th>Start Date</th>
-			<th>Opened by</th>
+			<th class="hidden-sm hidden-xs">Start Date</th>
+			<th class="hidden-sm hidden-xs">Opened by</th>
 			<th>Change Status</th>
-			<th>View</th>
+			<th class="hidden-sm hidden-xs">View</th>
 		</tr>
 
 	{% for t in task_wip %}
 		<tr>
 			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
-			<td>{{t.startDate}}</td>
-			<td>{{t.creator}}</td>
-			{% if project in t.openOn.all %}
-				<td><a class="btn btn-warning" href="/projects/{{project.id}}/closetask/{{t.id}}/">Mark Completed</a></td>
-			{% else %}
-				<td><a class="btn btn-default" href="/projects/{{project.id}}/opentask/{{t.id}}/">Mark Unfinished</a></td>
-			{% endif %}
-			<td><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
-		</tr>
-
-	{% endfor %}
-
-</table>
-</div>
-</div>
-	{% endif %}
-
-
-	{% if other_num > 0 %}
-<div class="panel panel-inverse">
-	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />All other tasks</h4></div>
-	<div class="panel-content">
-		<table class="table table-striped">
-		<tr>
-			<th>Summary</th>
-			<th>Start Date</th>
-			<th>Opened by</th>
-			<th>Change Status</th>
-			<th>View</th>
-		</tr>
-
-	{% for t in tasks %}
-		<tr>
-			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
-			<td>{{t.startDate}}</td>
-			<td>{{t.creator}}</td>
+			<td class="hidden-sm hidden-xs">{{t.startDate}}</td>
+			<td class="hidden-sm hidden-xs">{{t.creator}}</td>
 			{% if not t.completed %}
 				<td><a class="btn btn-warning" href="/projects/task/close/{{t.id}}/">Mark Completed</a></td>
 			{% else %}
 				<td><a class="btn btn-default" href="/projects/task/open/{{t.id}}/">Mark Unfinished</a></td>
 			{% endif %}
-			<td><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
+			<td class="hidden-sm hidden-xs"><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
 		</tr>
 
 	{% endfor %}
 
 </table>
+
+<p style="text-align:right; margin-right:20px;"><strong><a href="inprogress/">Show All</a></strong></p>
 </div>
+</div>
+	{% endif %}
+
+
+{% if other_num > 0 %}
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />{{other_name}} ({{other_num}})</h4></div>
+	<div class="panel-content">
+		<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th class="hidden-sm hidden-xs">Start Date</th>
+			<th class="hidden-sm hidden-xs">Opened by</th>
+			<th>Change Status</th>
+			<th class="hidden-sm hidden-xs">View</th>
+		</tr>
+
+	{% for t in tasks %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td class="hidden-sm hidden-xs">{{t.startDate}}</td>
+			<td class="hidden-sm hidden-xs">{{t.creator}}</td>
+			{% if not t.completed %}
+				<td><a class="btn btn-warning" href="/projects/task/close/{{t.id}}/">Mark Completed</a></td>
+			{% else %}
+				<td><a class="btn btn-default" href="/projects/task/open/{{t.id}}/">Mark Unfinished</a></td>
+			{% endif %}
+			<td class="hidden-sm hidden-xs"><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
+		</tr>
+
+	{% endfor %}
+
+</table>
+{% if other_showmore %}
+<p style="text-align:right; margin-right:20px;"><strong><a href="other">Show All</a></strong></p>
+{% endif %}
+</div>
+</div>
+	{% endif %}
+
+	{% if done_num > 0 %}
+<div class="panel panel-inverse">
+	<div class="panel-heading"><h4><img width="32px" src="/static/img/task.png" />Finished tasks ({{done_num}})</h4></div>
+	<div class="panel-content">
+		<table class="table table-striped">
+		<tr>
+			<th>Summary</th>
+			<th class="hidden-sm hidden-xs">Start Date</th>
+			<th class="hidden-sm hidden-xs">Opened by</th>
+			<th>Change Status</th>
+			<th class="hidden-sm hidden-xs">View</th>
+		</tr>
+
+	{% for t in done_tasks %}
+		<tr>
+			<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
+			<td class="hidden-sm hidden-xs">{{t.startDate}}</td>
+			<td class="hidden-sm hidden-xs">{{t.creator}}</td>
+			{% if not t.completed %}
+				<td><a class="btn btn-warning" href="/projects/task/close/{{t.id}}/">Mark Completed</a></td>
+			{% else %}
+				<td><a class="btn btn-default" href="/projects/task/open/{{t.id}}/">Mark Unfinished</a></td>
+			{% endif %}
+			<td class="hidden-sm hidden-xs"><a class="btn btn-info" href="/projects/task/view/{{t.id}}/">View</a></td>
+		</tr>
+
+	{% endfor %}
+
+</table>
+<p style="text-align:right; margin-right:20px;"><strong><a href="complete">Show All</a></strong></p>
+
+</div>
+
 </div>
 	{% endif %}
 
