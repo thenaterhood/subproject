@@ -267,7 +267,6 @@ def user_all_tasks(request, assignee=False, userange=True ):
 	args['user'] = request.user
 	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
 
-	args['other_num'] = tasks.filter( inProgress=False ).filter(completed=False).count()
 	args['other_name'] = 'All Other Tasks'
 	args['showmore'] = True
 
@@ -278,9 +277,11 @@ def user_all_tasks(request, assignee=False, userange=True ):
 	else:
 		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()
 		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()
-		args['done_num'] = tasks.filter( completed=True ).count()
-
+	
+	args['done_num'] = tasks.filter( completed=True ).count()
 	args['wip_num'] = tasks.filter( inProgress=True ).filter( completed=False ).count()
+	args['other_num'] = tasks.filter( inProgress=False ).filter(completed=False).count()
+
 
 	args['num_tasks'] = len(tasks)
 	args['filters'] = get_task_filters( request )
