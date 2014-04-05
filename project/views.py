@@ -243,7 +243,7 @@ def tasks_by_status( request, assignee=False, status='inprogress' ):
 	return render_to_response( 'task_list.html', RequestContext(request, args) )
 
 @login_required
-def user_all_tasks(request, assignee=False ):
+def user_all_tasks(request, assignee=False, userange=True ):
 	"""
 	Displays all of the tasks created by the 
 	logged in user
@@ -266,16 +266,22 @@ def user_all_tasks(request, assignee=False ):
 
 	args['user'] = request.user
 	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
-	args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()[0:5]
+
 	args['other_num'] = tasks.filter( inProgress=False ).filter(completed=False).count()
 	args['other_name'] = 'All Other Tasks'
-	args['other_showmore'] = True
+	args['showmore'] = True
 
-	args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()[0:5]
+	if userange:
+		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()[0:5]
+		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()[0:5]
+		args['done_tasks'] = tasks.filter( completed=True ).all()[0:5]
+	else:
+		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()
+		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()
+		args['done_num'] = tasks.filter( completed=True ).count()
+
 	args['wip_num'] = tasks.filter( inProgress=True ).filter( completed=False ).count()
 
-	args['done_tasks'] = tasks.filter( completed=True ).all()[0:5]
-	args['done_num'] = tasks.filter( completed=True ).count()
 	args['num_tasks'] = len(tasks)
 	args['filters'] = get_task_filters( request )
 
