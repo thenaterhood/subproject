@@ -194,6 +194,8 @@ def project_welcome(request):
 
 	return render_to_response('project_welcome.html', RequestContext( request, args) )
 
+
+
 @login_required
 def tasks_by_status( request, assignee=False, status='inprogress' ):
 	"""
@@ -229,7 +231,7 @@ def tasks_by_status( request, assignee=False, status='inprogress' ):
 
 	args['user'] = request.user
 	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
-	args['tasks'] = tasks.filter( inProgress=inprogress ).filter(completed=completed).all()[0:5]
+	args['tasks'] = tasks.filter( inProgress=inprogress ).filter(completed=completed).all()
 	args['other_num'] = tasks.filter( inProgress=inprogress ).filter(completed=completed).count()
 	args['other_name'] = name
 	args['num_tasks'] = args['other_num']
