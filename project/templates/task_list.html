@@ -18,11 +18,13 @@
 
 
 	{%if notodo %}
-	<p>Your task list shows all the tasks you've created. <a href="/projects/todo">View your assigned tasks (todo) instead.</a></p>
+		<p>Your task list shows all the tasks you've created. <a href="/projects/todo">View your assigned tasks (todo)</a> or <a href="/projects/tasks/all">view all the tasks you are associated with</a> instead.</a></p>
+	{% elif alltasks %}
+		<p>This page shows all the tasks you are associated with. Alternatively, <a href="/projects/todo">View your assigned tasks (todo)</a> or <a href="/projects/usertasks">View all Tasks you've created</a> instead.</p>
 	{% else %}
-	<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created instead.</a></p>
+		<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created</a> or <a href="/projects/tasks/all">view all the tasks you are associated with</a> instead.</p>
 	{% endif %}
-	<p>Alternatively, <a href="/projects/tasks/all">view all the tasks you are associated with</a>.</p>
+
 	<p class="pull-right">
 		<a class="btn btn-success" href="/projects/addtask">Add a Task</a>
 		<a class="btn btn-info" href="/projects/filter/addtasktag/">Filter Tasks</a>
@@ -36,7 +38,7 @@
 			<br />
 			<br />
 			<fieldset>
-				<legend>Tags</legend>
+				<legend>Filter by Tag</legend>
 				<ul class='nav nav-pills nav-stacked'>
 					<p class="small">Click filters to turn them on and off</p>
 					{% for t in tags %}
