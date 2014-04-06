@@ -93,6 +93,7 @@ urlpatterns = patterns('',
     url(r'^projects/todo/$', 'project.views.my_todo'),
     url(r'^projects/todo/(?P<status>[a-zA-Z]+)/$', 'project.views.todo_by_status'),
     url(r'^projects/usertasks/(?P<status>[a-zA-Z]+)/$', 'project.views.tasks_by_status'),
+    url(r'^projects/tasks/all/$', 'project.views.all_tasks'),
 
 
 

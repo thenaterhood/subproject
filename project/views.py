@@ -243,6 +243,23 @@ def tasks_by_status( request, assignee=False, status='inprogress' ):
 	return render_to_response( 'task_list.html', RequestContext(request, args) )
 
 @login_required
+def all_tasks( request ):
+
+	args = {}
+	args['tags'] = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).order_by("name")
+	args['tasks'] = tasks = apply_task_filter( request, ProjectTask.objects.filter( Q(creator=request.user)|Q(assigned=request.user) ).distinct() )
+	args['other_name'] = 'All Tasks'
+	args['showmore'] = False
+	args['other_num'] = args['tasks'].count()
+	args['num_tasks'] = args['other_num']
+	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
+
+	args['filters'] = get_task_filters( request )
+
+	return render_to_response( 'task_list.html', RequestContext(request, args) )
+
+
+@login_required
 def user_all_tasks(request, assignee=False, userange=True ):
 	"""
 	Displays all of the tasks created by the 
