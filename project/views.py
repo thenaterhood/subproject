@@ -254,6 +254,7 @@ def all_tasks( request ):
 	args['num_tasks'] = args['other_num']
 	args['projects'] = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).distinct()
 
+	args['alltasks'] = True
 	args['filters'] = get_task_filters( request )
 
 	return render_to_response( 'task_list.html', RequestContext(request, args) )
