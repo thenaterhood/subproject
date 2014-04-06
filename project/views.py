@@ -257,6 +257,9 @@ def all_tasks( request ):
 	args['alltasks'] = True
 	args['filters'] = get_task_filters( request )
 
+	set_filter_message( request )
+
+
 	return render_to_response( 'task_list.html', RequestContext(request, args) )
 
 
