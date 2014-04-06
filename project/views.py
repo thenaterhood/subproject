@@ -220,11 +220,11 @@ def tasks_by_status( request, assignee=False, status='inprogress' ):
 
 	if ( not assignee ):
 		args['notodo'] = True
-		tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ) )
+		tasks = apply_task_filter( request, ProjectTask.objects.filter( creator=request.user ).order_by('-startDate') )
 	else:
 		tasks = apply_task_filter( 
 			request, 
-			ProjectTask.objects.filter( assigned=request.user)
+			ProjectTask.objects.filter( assigned=request.user).order_by('-startDate')
 			)
 
 	set_filter_message( request )
@@ -247,7 +247,7 @@ def all_tasks( request ):
 
 	args = {}
 	args['tags'] = Tag.objects.filter( Q(owner=request.user)|Q(users=request.user)|Q(viewers=request.user) ).order_by("name")
-	args['tasks'] = tasks = apply_task_filter( request, ProjectTask.objects.filter( Q(creator=request.user)|Q(assigned=request.user) ).distinct() )
+	args['tasks'] = apply_task_filter( request, ProjectTask.objects.filter( Q(creator=request.user)|Q(assigned=request.user) ).distinct() ).order_by('-startDate')
 	args['other_name'] = 'All Tasks'
 	args['showmore'] = False
 	args['other_num'] = args['tasks'].count()
@@ -289,12 +289,12 @@ def user_all_tasks(request, assignee=False, userange=True ):
 	args['showmore'] = True
 
 	if userange:
-		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()[0:5]
-		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()[0:5]
-		args['done_tasks'] = tasks.filter( completed=True ).all()[0:5]
+		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).order_by('-startDate').all()[0:5]
+		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).order_by('-startDate').all()[0:5]
+		args['done_tasks'] = tasks.filter( completed=True ).order_by('-startDate').all()[0:5]
 	else:
-		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).all()
-		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).all()
+		args['task_wip'] = tasks.filter( inProgress=True ).filter( completed=False ).order_by('-startDate').all()
+		args['tasks'] = tasks.filter( inProgress=False ).filter(completed=False).order_by('-startDate').all()
 	
 	args['done_num'] = tasks.filter( completed=True ).count()
 	args['wip_num'] = tasks.filter( inProgress=True ).filter( completed=False ).count()
