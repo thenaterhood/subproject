@@ -23,192 +23,202 @@ from project.forms import UploadFileForm
 
 import csv
 
+
 @login_required
-def import_worklog_csv( request ):
-	pageData = {}
+def import_worklog_csv(request):
+    pageData = {}
 
-	if ( request.method == 'POST' ):
-		form = UploadFileForm( request.POST, request.FILES )
+    if (request.method == 'POST'):
+        form = UploadFileForm(request.POST, request.FILES)
 
-		if form.is_valid() and (request.FILES['file'].size / (1024*1024) ) < 2:
-			reader = csv.DictReader( request.FILES['file'].read().decode().splitlines() )
-			imported = 0
-			failed = 0
-			for row in reader:
-				if ( 'name' in row ):
+        if form.is_valid() and (request.FILES['file'].size / (1024 * 1024)) < 2:
+            reader = csv.DictReader(
+                request.FILES['file'].read().decode().splitlines())
+            imported = 0
+            failed = 0
+            for row in reader:
+                if ('name' in row):
 
-					matchingProjects = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name']).count()
+                    matchingProjects = Project.objects.filter(
+                        Q(manager=request.user) | Q(members=request.user)).filter(name=row['name']).count()
 
-					if ( matchingProjects > 0 ):
-						project = Project.objects.filter( Q(manager=request.user)|Q(members=request.user) ).filter(name=row['name'])[0]
+                    if (matchingProjects > 0):
+                        project = Project.objects.filter(
+                            Q(manager=request.user) | Q(members=request.user)).filter(name=row['name'])[0]
 
-						if ( 'duration' in row and row['duration'] != None ):
-							try:
-								row['hours'] = float(row['duration'].split('.')[0] )
-							except:
-								row['hours'] = 0
+                        if ('duration' in row and row['duration'] != None):
+                            try:
+                                row['hours'] = float(
+                                    row['duration'].split('.')[0])
+                            except:
+                                row['hours'] = 0
 
-							try:
-								if ( '.' in row['duration'] ):
-									row['minutes'] = float("."+row['duration'].split('.'[1] ) ) * 60
-								else:
-									row['minutes'] = 0
-							except:
-								row['minutes'] = 0
+                            try:
+                                if ('.' in row['duration']):
+                                    row['minutes'] = float(
+                                        "." + row['duration'].split('.'[1])) * 60
+                                else:
+                                    row['minutes'] = 0
+                            except:
+                                row['minutes'] = 0
 
-						if ( 'datestamp' in row and row['datestamp'] != None ):
-							try:
-								row['datestamp'] = dateutil.parser.parse( row['datestamp'] )
-							except:
-								pass
+                        if ('datestamp' in row and row['datestamp'] != None):
+                            try:
+                                row['datestamp'] = dateutil.parser.parse(
+                                    row['datestamp'])
+                            except:
+                                pass
 
-						if ( 'description' in row and row['description'] != None ):
-							row['summary'] = " ".join( row['description'].split()[0:3] )
+                        if ('description' in row and row['description'] != None):
+                            row['summary'] = " ".join(
+                                row['description'].split()[0:3])
 
-						addWorklog = EditWorklogForm( row )
-						if ( addWorklog.is_valid() ):
-							log = addWorklog.save( owner=request.user, project=project )
-							if( 'datestamp' in row ):
-								log.datestamp = row['datestamp']
-								log.save()
+                        addWorklog = EditWorklogForm(row)
+                        if (addWorklog.is_valid()):
+                            log = addWorklog.save(
+                                owner=request.user, project=project)
+                            if('datestamp' in row):
+                                log.datestamp = row['datestamp']
+                                log.save()
 
-							imported += 1
+                            imported += 1
 
+            messages.info(request, "Successfully imported " + str(imported) +
+                          " worklogs. " + str(failed) + " could not be imported.")
 
-			messages.info( request, "Successfully imported " + str(imported) + " worklogs. " + str(failed) + " could not be imported.")
+        else:
+            messages.error(
+                request, "Unable to import worklogs from your file.")
 
-		else:
-			messages.error( request, "Unable to import worklogs from your file." )
+        return HttpResponseRedirect('/projects/')
 
-		return HttpResponseRedirect( '/projects/')
-
-	else:
-		pageData['form'] = UploadFileForm()
-		pageData['sendback'] = "/projects/importcsv/work/"
-		messages.info( request, "Import worklogs from a CSV file. The file should be well-formed \
+    else:
+        pageData['form'] = UploadFileForm()
+        pageData['sendback'] = "/projects/importcsv/work/"
+        messages.info( request, "Import worklogs from a CSV file. The file should be well-formed \
 			and should contain at least two columns: the project name in the 'name' column \
 			and the work description in the 'description' column.")
 
-		return render_to_response( 'upload_csv.html', RequestContext(request, pageData))
+        return render_to_response('upload_csv.html', RequestContext(request, pageData))
+
 
 @login_required
-def add_worklog( request, proj_id ):
-	"""
-	Provides a blank worklog form and accepts 
-	the data from it.
-	"""
-	project = Project.objects.get(id=proj_id)
-	args = {}
-	args.update(csrf(request))
-	args['project'] = project
-	form = EditWorklogForm()
-	args['form'] = form
+def add_worklog(request, proj_id):
+    """
+    Provides a blank worklog form and accepts 
+    the data from it.
+    """
+    project = Project.objects.get(id=proj_id)
+    args = {}
+    args.update(csrf(request))
+    args['project'] = project
+    form = EditWorklogForm()
+    args['form'] = form
 
-	if (request.method == "POST") and (request.user in project.members.all() or request.user == project.manager):
-		workLog = Worklog()
+    if (request.method == "POST") and (request.user in project.members.all() or request.user == project.manager):
+        workLog = Worklog()
 
-		form = EditWorklogForm(request.POST)
+        form = EditWorklogForm(request.POST)
 
-		if form.is_valid():
+        if form.is_valid():
 
-			workLog = form.save( owner=request.user, project=project )
+            workLog = form.save(owner=request.user, project=project)
 
-			event = TimelineEvent()
-			event.member = request.user
-			event.title  = "added a new worklog to " + project.name
-			event.description = workLog.description
-			event.category = "work"
-			event.related_key = workLog.id
-			event.save()
+            event = TimelineEvent()
+            event.member = request.user
+            event.title = "added a new worklog to " + project.name
+            event.description = workLog.description
+            event.category = "work"
+            event.related_key = workLog.id
+            event.save()
 
-			event.viewers = project.members.all()
+            event.viewers = project.members.all()
 
+            messages.info(request, "Worklog saved successfully.")
 
-			messages.info( request, "Worklog saved successfully.")
+            return HttpResponseRedirect('/projects/work/view/' + str(workLog.id) + "/")
 
-			return HttpResponseRedirect('/projects/work/view/'+str(workLog.id)+"/")
+        else:
 
-		else:
+            messages.error(request, "Form information is incorrect.")
+            args['form'] = EditWorklogForm(request.POST)
 
-			messages.error( request, "Form information is incorrect." )
-			args['form'] = EditWorklogForm( request.POST )
+            return render_to_response('worklog_create.html', RequestContext(request, args))
 
+    else:
 
-			return render_to_response( 'worklog_create.html', RequestContext(request, args) )
+        if request.user in project.members.all():
 
-	else:
+            return render_to_response('worklog_create.html', RequestContext(request, args))
 
+        else:
 
-		if request.user in project.members.all():
+            return HttpResponseRedirect('/projects/')
 
-			return render_to_response('worklog_create.html', RequestContext(request, args) )
-
-		else:
-
-			return HttpResponseRedirect('/projects/')
 
 @login_required
-def view_worklog( request, log_id ):
-	"""
-	Displays the selected workLog
-	"""
-	worklog = Worklog.objects.get(id=log_id)
+def view_worklog(request, log_id):
+    """
+    Displays the selected workLog
+    """
+    worklog = Worklog.objects.get(id=log_id)
 
-	initialDict = { 
-		"summary": worklog.summary, 
-		"minutes": worklog.minutes, 
-		"hours": worklog.hours, 
-		"description": worklog.description,
-		}
+    initialDict = {
+        "summary": worklog.summary,
+        "minutes": worklog.minutes,
+        "hours": worklog.hours,
+        "description": worklog.description,
+    }
 
-	form = EditWorklogForm()
-	form.initial = initialDict
+    form = EditWorklogForm()
+    form.initial = initialDict
 
-	args = {}
-	args['form'] = form
-	args['worklog'] = worklog
-	args['canEdit'] = ( request.user == worklog.owner )
-	args['project'] = worklog.project
+    args = {}
+    args['form'] = form
+    args['worklog'] = worklog
+    args['canEdit'] = (request.user == worklog.owner)
+    args['project'] = worklog.project
 
-	return render_to_response('worklog_view.html', RequestContext(request, args) )
+    return render_to_response('worklog_view.html', RequestContext(request, args))
+
 
 @login_required
-def edit_worklog( request, log_id ):
-	"""
-	Displays a worklog's data and allows for it 
-	to be edited and saved.
-	"""
-	worklog = Worklog.objects.get(id=log_id)
+def edit_worklog(request, log_id):
+    """
+    Displays a worklog's data and allows for it 
+    to be edited and saved.
+    """
+    worklog = Worklog.objects.get(id=log_id)
 
-	if ( request.method == "POST" and worklog.owner == request.user ):
-		form = EditWorklogForm( request.POST, instance=worklog )
-		if form.is_valid():
+    if (request.method == "POST" and worklog.owner == request.user):
+        form = EditWorklogForm(request.POST, instance=worklog)
+        if form.is_valid():
 
-			oldTime = worklog.minutes + (worklog.hours * 60)
+            oldTime = worklog.minutes + (worklog.hours * 60)
 
-			worklog = form.save()
+            worklog = form.save()
 
-			newTime = worklog.minutes + (worklog.hours * 60)
+            newTime = worklog.minutes + (worklog.hours * 60)
 
-			logTimeChange = newTime - oldTime
+            logTimeChange = newTime - oldTime
 
-			messages.info( request, "Worklog updated.")
+            messages.info(request, "Worklog updated.")
 
-			return HttpResponseRedirect( '/projects/work/view/' + str(worklog.id) +"/" )
+            return HttpResponseRedirect('/projects/work/view/' + str(worklog.id) + "/")
 
-		else:
-			messages.error( request, "Invalid form information.")
-			pageData = {}
-			pageData['form'] = EditWorklogForm( request.POST )
+        else:
+            messages.error(request, "Invalid form information.")
+            pageData = {}
+            pageData['form'] = EditWorklogForm(request.POST)
 
-			return render_to_response( 'worklog_edit.html', RequestContext( request, pageData) )
+            return render_to_response('worklog_edit.html', RequestContext(request, pageData))
 
-	else:
+    else:
 
-		form = EditWorklogForm( instance=worklog )
+        form = EditWorklogForm(instance=worklog)
 
-		args = {}
-		args['form'] = form
-		args['worklog'] = worklog
+        args = {}
+        args['form'] = form
+        args['worklog'] = worklog
 
-		return render_to_response('worklog_edit.html', RequestContext( request, args) )
+        return render_to_response('worklog_edit.html', RequestContext(request, args))
