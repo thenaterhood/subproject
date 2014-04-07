@@ -128,6 +128,9 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'user',
     'project',
+    'tasks',
+    'tagging',
+    'worklogs'
 )
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
