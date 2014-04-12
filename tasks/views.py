@@ -13,7 +13,7 @@ from tasks.forms import EditTaskForm
 
 from tagging.models import Tag
 
-from project.filters import apply_task_filter, set_filter_message, get_task_filters
+from filters.views import apply_task_filter, set_filter_message, get_task_filters
 from project.models import Project, TimelineEvent
 
 from user.forms import AddMemberForm

@@ -176,35 +176,35 @@ urlpatterns = patterns('',
 
     # Filter stuff
     url(r'^projects/addtaskfilter/(?P<tag_id>\d+)/$', 
-                                    'project.filters.add_task_filter'),
+                                    'filters.views.add_task_filter'),
     url(r'^projects/addprojectfilter/(?P<tag_id>\d+)/$', 
-                                    'project.filters.add_project_filter'),
+                                    'filters.views.add_project_filter'),
     url(r'^projects/addtagfilter/(?P<tag_id>\d+)/$', 
-                                    'project.filters.add_filter'),
+                                    'filters.views.add_filter'),
 
     url(r'^projects/rmtaskfilter/(?P<tag_id>\d+)/$', 
-                                    'project.filters.remove_task_filter'),
+                                    'filters.views.remove_task_filter'),
     url(r'^projects/rmprojectfilter/(?P<tag_id>\d+)/$', 
-                                    'project.filters.remove_project_filter'),
+                                    'filters.views.remove_project_filter'),
 
     #url(r'^projects/rmtagfilter/(?P<tag_id>\d+)/$', 'project.views.rm_filter'),
-    url(r'^projects/resetfilter/$', 'project.filters.reset_filter'),
+    url(r'^projects/resetfilter/$', 'filters.views.reset_filter'),
 
     url(r'^projects/filter/taskbyproject/(?P<project_id>\d+)/$', 
-                                    'project.filters.add_task_project_filter'),
+                                    'filters.views.add_task_project_filter'),
     url(r'^projects/filter/tasknotbyproject/(?P<project_id>\d+)/$', 
-                                    'project.filters.rm_task_project_filter'),
+                                    'filters.views.rm_task_project_filter'),
 
 
     url(r'^projects/filter/addprojecttag/$', 
-                                    'project.filters.select_project_filter'),
+                                    'filters.select_project_filter'),
     url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 
-                                    'project.filters.select_project_filter'),
+                                    'filters.views.select_project_filter'),
 
     url(r'^projects/filter/addtasktag/$', 
-                                    'project.filters.select_task_filter'),
+                                    'filters.select_task_filter'),
     url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 
-                                    'project.filters.select_task_filter'),
+                                    'filters.views.select_task_filter'),
 
     # Data importing
     url(r'^projects/import/$',      'project.views.show_import_page'),

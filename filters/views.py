@@ -4,8 +4,9 @@ from django.contrib import messages
 from django.db.models import Q
 from django.template import RequestContext
 
-from project.models import *
-
+from project.models import Project
+from tagging.models import Tag
+from tasks.models import ProjectTask
 
 def apply_project_filter(request, projects):
     if ('filter' in request.session):

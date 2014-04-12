@@ -10,9 +10,7 @@ from django.contrib import messages
 from copy import deepcopy
 
 from tagging.models import Tag
-from project.models import Project
-from tasks.models import ProjectTask
-from project.filters import set_filter_message
+from filters.views import set_filter_message
 
 from user.forms import AddMemberForm
 from tagging.forms import AddTagForm
@@ -112,8 +110,6 @@ def view_tag(request, tag_id):
         pageData['tag'] = tag
         pageData['canEdit'] = (
             request.user == tag.owner or request.user in tag.users.all())
-        pageData['taggedProjects'] = Project.objects.filter(tags=tag)
-        pageData['taggedTasks'] = ProjectTask.objects.filter(tags=tag)
         pageData['viewers'] = tag.viewers.all()
         pageData['users'] = tag.users.all()
         pageData['public'] = tag.public

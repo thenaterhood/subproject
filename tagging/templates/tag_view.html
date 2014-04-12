@@ -16,8 +16,6 @@
 	<div class="tabbable">
 		<ul class="nav nav-tabs">
 			<li class="active"><a href="#overview" data-toggle="tab"><img src="/static/img/info.png" width="24px" /> Overview</a></li>
-			<li><a href="#projects" data-toggle="tab"><img src="/static/img/project.png" width="24px" /> Projects</a></li>
-			<li><a href="#tasks" data-toggle="tab"><img src="/static/img/task.png" width="24px" /> Tasks</a></li>
 
 			{% if canEdit %}
 			<li><a href="#assignees" data-toggle="tab"><img src="/static/img/members.png" width="24px" /> Users/Viewers</a></li>
@@ -35,85 +33,9 @@
 						<p>Description: {{tag.description}}</p>
 					</div>
 				</div>
-				<div id="projects" class="tab-pane">
-					<h4><img src="/static/img/project.png" />Projects tagged with {{tag.name}}</h4>
 
-					<table class="table table-striped">
-						<tr>
-							<th>Project</th>
-							<th>Manager</th>
-							<th>Description</th>
-							<th>Untag</th>
-						</tr>
-
-						{% for p in taggedProjects %}
-
-						<tr>
-							<td>
-								{% if user in p.members.all %}
-								<a href="/projects/view/{{p.id}}/">{{p.name}}</a>
-								{% else %}
-								<p>{{p.name}}</p>
-								{% endif %}
-							</td>
-							<td>{{p.manager}}</td>
-							<td>{{p.description}}</td>
-
-							<td>
-								{% if canEdit %}
-								<a class="btn btn-danger" href="/projects/{{p.id}}/untag/{{tag.id}}/">Untag</a>
-								{% else %}
-								<p>You can't change this tag.</p>
-								{% endif %}
-							</td>
-						</tr>
-
-						{% endfor %}
 
 						
-
-
-							</table>
-						</div>
-
-						<div id="tasks" class="tab-pane">
-					<h4><img src="/static/img/task.png" />Tasks tagged with {{tag.name}}</h4>
-
-					<table class="table table-striped">
-						<tr>
-							<th>Summary</th>
-							<th>Opened By</th>
-							<th>Untag</th>
-						</tr>
-
-						{% for p in taggedTasks %}
-
-						<tr>
-							<td>
-								{% if user in p.assigned.all %}
-								<a href="/projects/view/{{p.id}}/">{{p.summary}}</a>
-								{% else %}
-								<p>{{p.summary}}</p>
-								{% endif %}
-							</td>
-							<td>{{p.creator}}</td>
-
-							<td>
-								{% if canEdit %}
-								<a class="btn btn-danger" href="/projects/task/{{p.id}}/untag/{{tag.id}}/">Untag</a>
-								{% else %}
-								<p>You can't change this tag.</p>
-								{% endif %}
-							</td>
-						</tr>
-
-						{% endfor %}
-
-						
-
-
-							</table>
-						</div>
 						{% if canEdit %}
 						<div id="assignees" class="tab-pane">
 

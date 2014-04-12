@@ -18,7 +18,7 @@ from copy import deepcopy
 
 from project.models import *
 from project.forms import *
-from project.filters import *
+from filters.views import *
 
 from tasks.models import ProjectTask
 
