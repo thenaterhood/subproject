@@ -116,10 +116,12 @@ def project_welcome(request):
     args['active_tasks'] = ProjectTask.objects.filter(
         creator=request.user).filter(inProgress=True).count()
 
-    args['total_time'] = (
+    total_time = (
         (Worklog.objects.filter( owner=request.user ).aggregate(Sum('minutes'))['minutes__sum'] or 0) / 60 ) + \
         (Worklog.objects.filter(owner=request.user).aggregate(
             Sum('hours'))['hours__sum'] or 0)
+
+    args['total_time'] = "%0.2f" % total_time
 
     args['start_date'] = request.user.date_joined
 
@@ -134,8 +136,9 @@ def project_welcome(request):
     args['timeline'] = timelineItems[0:50]
 
     if (args['total_worklogs'] > 0):
-        args['avg_task_time'] = str(
-            args['total_time'] / args['total_worklogs'])
+        args['avg_task_time'] = "%0.2f" % (
+            total_time / args['total_worklogs'] )
+
         args['end_date'] = Worklog.objects.filter(
             owner=request.user).order_by('-datestamp')[0].datestamp
     else:
