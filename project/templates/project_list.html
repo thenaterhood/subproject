@@ -71,7 +71,7 @@
 
 
 
-					<h4 class="list-group-item-heading"><a href="/user/profile/{{project.manager}}">{{project.manager}}</a> / <a href="/projects/view/{{project.id}}">{{ project.name }}</a>{% if not project.active %} <em>(Closed)</em>{% endif %}</h4>
+					<h4 class="list-group-item-heading"><a href="/u/{{project.manager}}/projects/{{ project.name }}/">{{project.manager}} / {{project.name}}</a>{% if not project.active %} <em>(Closed)</em>{% endif %}</h4>
 
 					<div class="pull-right">
 						{% if project in owned %}
