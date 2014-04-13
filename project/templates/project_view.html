@@ -56,7 +56,9 @@
 						<tr>
 							<th>Summary</th>
 							<th>Opened by</th>
+							{% if isMember %}
 							<th>Manage</th>
+							{% endif %}
 							<th>View</th>
 						</tr>
 
@@ -64,9 +66,9 @@
 						<tr>
 							<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
 							<td>{{t.creator}}</td>
-							{% if not t.completed %}
+							{% if not t.completed and isMember %}
 							<td><a class="btn btn-warning" href="/projects/task/close/{{t.id}}/">Mark Completed</a></td>
-							{% else %}
+							{% elif isMember %}
 							<td><a class="btn btn-default" href="/projects/task/open/{{t.id}}/">Mark Unfinished</a></td>
 							{% endif %}
 
