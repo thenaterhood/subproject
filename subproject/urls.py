@@ -199,12 +199,12 @@ urlpatterns = patterns('',
 
 
     url(r'^projects/filter/addprojecttag/$', 
-                                    'filters.select_project_filter'),
+                                    'filters.views.select_project_filter'),
     url(r'^projects/filter/addprojecttag/(?P<tag_id>\d+)/$', 
                                     'filters.views.select_project_filter'),
 
     url(r'^projects/filter/addtasktag/$', 
-                                    'filters.select_task_filter'),
+                                    'filters.views.select_task_filter'),
     url(r'^projects/filter/addtasktag/(?P<tag_id>\d+)/$', 
                                     'filters.views.select_task_filter'),
 
