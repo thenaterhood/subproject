@@ -29,7 +29,7 @@
 <p>Displays your projects in a folder-style layout. <img src="/static/img/project.png" width='24px'/> = project, <img src="/static/img/task.png" width='24px'> = task, <img src="/static/img/work.png" width='24px'/> = logged work. Right click on an item for more options.</p>
 <hr />
 {% if selected %}
-<div style="float:left; display:block;">Browsing "<a href="/projects/view/{{selected.id}}">{{selected.name}}</a>"</div>
+<div style="float:left; display:block;">Browsing "<a href="/u/{{selected.manager}}/projects/{{selected.name}}">{{selected.name}}</a>"</div>
 {% endif %}
 
 <div style="float:right; display:block;"> 
