@@ -29,6 +29,7 @@ from worklogs.models import Worklog
 from user.forms import AddMemberForm
 
 import csv
+import re
 
 
 @login_required
@@ -190,9 +191,10 @@ def create_project(request, parent=False):
         if form.is_valid() and not "useexisting" in request.POST:
 
             name = form.cleaned_data['name']
+            nameregex = re.compile("^(a-zA-Z0-9_\s.-)*$")
 
             existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
-            if ( existing == 0 ):
+            if ( existing == 0 and nameregex.match(name)):
 
 
                 newProj = form.save(owner=request.user)
@@ -229,7 +231,7 @@ def create_project(request, parent=False):
                 pageData = {}
                 pageData['form'] = EditProjectForm(request.POST)
                 messages.warning(
-                    request, "You've already used that project name.")
+                    request, "Sorry, you cannot use that name.")
                 return render_to_response('project_create.html', RequestContext(request, pageData))
 
 
@@ -317,14 +319,18 @@ def edit_project(request, proj_id):
             name = form.cleaned_data['name']
             nameConflicts = Project.objects.filter(manager=request.user).filter(name__iexact=name).exclude(name=project.name).count()
 
-            if ( nameConflicts == 0 ):
+            name = form.cleaned_data['name']
+            nameregex = re.compile("^(a-zA-Z0-9_\s.-)*$")
+
+            if ( nameConflicts == 0 and nameregex.match(name)):
                 updatedProject = form.save()
 
                 return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
             else:
                 pageData = {}
                 pageData['form'] = EditProjectForm(request.POST, instance=project)
-                messages.warning(request, 'You already have a project with that name.')
+                pageData['project'] = project
+                messages.warning(request, 'Sorry, you cannot use that name.')
 
                 return render_to_response('project_edit.html', RequestContext(request, pageData))
 
