@@ -348,12 +348,24 @@ def edit_project(request, proj_id):
 
 
 @login_required
-def view_project(request, proj_id):
+def view_project(request, proj_id=False, username=False, projectname=False):
     """
     Displays a project's dashboard
     """
 
-    project = Project.objects.get(id=proj_id)
+    if ( proj_id != False ):
+        project = Project.objects.get(id=proj_id)
+    elif ( username != False and projectname != False ):
+        try:
+            manager = User.objects.get(username=username)
+            project = Project.objects.get(manager=manager, name__iexact=projectname)
+        except:
+            messages.warning(request, "The project you tried to access does not exist.")
+            return HttpResponseRedirect('/projects')
+
+    else:
+        return HttpResponseRedirect('/projects')
+
     worklogs = Worklog.objects.filter(
         project=project).all().order_by('-datestamp')
     tags = project.tags.all()
