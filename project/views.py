@@ -189,34 +189,49 @@ def create_project(request, parent=False):
         form = EditProjectForm(request.POST)
         if form.is_valid() and not "useexisting" in request.POST:
 
-            newProj = form.save(owner=request.user)
+            name = form.cleaned_data['name']
 
-            event = TimelineEvent()
-            event.member = request.user
-            event.title = "created the project " + newProj.name
-            event.description = newProj.description
-            event.category = "project"
-            event.related_key = newProj.id
+            existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
+            if ( existing == 0 ):
 
-            event.save()
 
-            event.viewers = newProj.members.all()
+                newProj = form.save(owner=request.user)
 
-            if ('parent' in request.POST and request.POST['parent'] != "False"):
-                parentProject = Project.objects.get(id=request.POST['parent'])
-
-                event.title = "created the subproject '" + \
-                    newProj.name + "' under " + parentProject.name
-                event.viewers = parentProject.members.all()
-                newProj.parents.add(parentProject)
-                parentProject.subprojects.add(newProj)
-                parentProject.save()
+                event = TimelineEvent()
+                event.member = request.user
+                event.title = "created the project " + newProj.name
+                event.description = newProj.description
+                event.category = "project"
+                event.related_key = newProj.id
 
                 event.save()
 
-            newProj.save()
+                event.viewers = newProj.members.all()
 
-            return HttpResponseRedirect(redirTo)
+                if ('parent' in request.POST and request.POST['parent'] != "False"):
+                    parentProject = Project.objects.get(id=request.POST['parent'])
+
+                    event.title = "created the subproject '" + \
+                        newProj.name + "' under " + parentProject.name
+                    event.viewers = parentProject.members.all()
+                    newProj.parents.add(parentProject)
+                    parentProject.subprojects.add(newProj)
+                    parentProject.save()
+
+                    event.save()
+
+                newProj.save()
+
+                return HttpResponseRedirect(redirTo)
+
+            else:
+
+                pageData = {}
+                pageData['form'] = EditProjectForm(request.POST)
+                messages.warning(
+                    request, "You've already used that project name.")
+                return render_to_response('project_create.html', RequestContext(request, pageData))
+
 
         else:
 
@@ -298,9 +313,20 @@ def edit_project(request, proj_id):
     if (request.method == "POST" and project.manager == request.user):
         form = EditProjectForm(request.POST, instance=project)
         if form.is_valid():
-            updatedProject = form.save()
 
-            return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
+            name = form.cleaned_data['name']
+            nameConflicts = Project.objects.filter(manager=request.user).filter(name__iexact=name).exclude(name=project.name).count()
+
+            if ( nameConflicts == 0 ):
+                updatedProject = form.save()
+
+                return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
+            else:
+                pageData = {}
+                pageData['form'] = EditProjectForm(request.POST, instance=project)
+                messages.warning(request, 'You already have a project with that name.')
+
+                return render_to_response('project_edit.html', RequestContext(request, pageData))
 
         else:
             pageData = {}
