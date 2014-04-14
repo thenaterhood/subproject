@@ -29,7 +29,7 @@ from worklogs.models import Worklog
 from user.forms import AddMemberForm
 
 import csv
-import re
+import string
 
 
 @login_required
@@ -203,10 +203,10 @@ def create_project(request, parent=False):
         if form.is_valid() and not "useexisting" in request.POST:
 
             name = form.cleaned_data['name']
-            nameregex = re.compile("^(a-zA-Z0-9_\s.-)*$")
+            allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
 
             existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
-            if ( existing == 0 and nameregex.match(name)):
+            if ( existing == 0 and set(name) <= set(allowedChars) ):
 
 
                 newProj = form.save(owner=request.user)
@@ -327,14 +327,12 @@ def edit_project(request, proj_id):
     if (request.method == "POST" and project.manager == request.user):
         form = EditProjectForm(request.POST, instance=project)
         if form.is_valid():
-
             name = form.cleaned_data['name']
             nameConflicts = Project.objects.filter(manager=request.user).filter(name__iexact=name).exclude(name=project.name).count()
 
-            name = form.cleaned_data['name']
-            nameregex = re.compile("^(a-zA-Z0-9_\s.-)*$")
+            allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
 
-            if ( nameConflicts == 0 and nameregex.match(name)):
+            if ( nameConflicts == 0 and set(name) <= set(allowedChars) ):
                 updatedProject = form.save()
 
                 return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
