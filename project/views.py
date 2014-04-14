@@ -168,7 +168,7 @@ def list_projects(request, user=False):
 
     else:
         args['title'] = user + "'s Projects"
-        manager = User.objects.get(username=user)
+        manager = User.objects.get(username__iexact=user)
 
         args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
             users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
