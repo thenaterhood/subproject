@@ -18,12 +18,7 @@
 
 			<div style="float:right; display:inline;">
 				{% if canEdit %}
-				<a class="btn btn-success" href="/projects/edit/{{project.id}}/">Edit</a>
-					{% if project.active %}
-					<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
-					{% else %}
-					<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Open Project</a>
-					{% endif %}
+				<a class="btn btn-success" href="/projects/edit/{{project.id}}/">Edit Settings</a>
 				{% endif %}
 
 			</div>
