@@ -149,23 +149,35 @@ def project_welcome(request):
 
 
 @login_required
-def list_projects(request):
+def list_projects(request, user=False):
     """
     Displays a list of all the projects a user 
     is associated with.
     """
-
-    projects = apply_project_filter(
-        request, Project.objects.filter(members=request.user))
-    set_filter_message(request)
-    managedProjects = Project.objects.filter(manager=request.user)
-
     args = {}
+    args['currentUser'] = request.user
+    if ( user == False ):
+        projects = apply_project_filter(
+            request, Project.objects.filter(members=request.user)).order_by("name")
+        set_filter_message(request)
+        managedProjects = Project.objects.filter(manager=request.user)
+        args['owned'] = managedProjects
+        args['title'] = "My Projects"
+        args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
+            users=request.user) | Q(viewers=request.user)).order_by("name")
+
+    else:
+        args['title'] = user + "'s Projects"
+        manager = User.objects.get(username=user)
+
+        args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
+            users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
+
+        projects = apply_project_filter( request, Project.objects.filter(manager=manager) ).order_by("name")
+
     args['projects'] = projects
-    args['owned'] = managedProjects
     args['num_projects'] = len(projects)
-    args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
-        users=request.user) | Q(viewers=request.user)).order_by("name")
+
     args['filters'] = get_project_filters(request)
 
     return render_to_response('project_list.html', RequestContext(request, args))
@@ -398,10 +410,6 @@ def view_project(request, proj_id=False, username=False, projectname=False):
         users=request.user) | Q(viewers=request.user) | Q(public=True)).filter(visible=True)
     args['yourTags'] = args['tags'].filter(
         Q(owner=request.user) | Q(users=request.user) | Q(viewers=request.user))
-
-    form = EditProjectForm(instance=project)
-
-    args['form'] = form
 
     if (project.manager == request.user):
         args['add_member_form'] = AddMemberForm()

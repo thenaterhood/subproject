@@ -7,7 +7,30 @@
 
 {% include 'template_messages.html' %}
 
-		<h3><img src="/static/img/project.png" />{{project.name}} <small>{{project.description}}</small></h3>
+		<div style="display:inline;">
+			<div style="display:table-cell">
+				<img src="/static/img/project.png" style="float: left"/>
+				<h3 style="margin-bottom:0px;margin-top:5px;float:right;">
+					<a href="/u/{{project.manager}}/">{{project.manager}}</a> / <a href="/u/{{project.manager}}/projects/">projects</a> / <strong>{{project.name}}</strong></h3>
+				<h4 style="margin-top:0px;"><small>{{project.description|truncatechars:50}}</small></h4>
+			</div>
+		</div>
+
+			<div style="float:right; display:inline;">
+				{% if canEdit %}
+				<a class="btn btn-success" href="/projects/edit/{{project.id}}/">Edit</a>
+					{% if project.active %}
+					<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Close Project</a>
+					{% else %}
+					<a class="btn btn-warning" href="/projects/toggle/{{project.id}}/">Open Project</a>
+					{% endif %}
+				{% endif %}
+
+			</div>
+
+		<br />
+		<br />
+
 
 		<div class="tabbable">
 			<ul class="nav nav-tabs">
@@ -18,9 +41,6 @@
 				<li><a href="#members" data-toggle="tab"><img src="/static/img/members.png" height="24px" /> Members</a></li>
 				<li><a href="#tags" data-toggle="tab"><img src="/static/img/tag.png" height="24px" /> Tags</a></li>
 
-				{% if canEdit %}
-				<li><a href="#edit" data-toggle="tab"><img src="/static/img/edit.png" height="24px" /> Edit</a></li>
-				{% endif %}
 			</ul>
 			<div class="tab-content">
 				<div id="pane1" class="tab-pane active">
@@ -256,33 +276,7 @@
 
 				</table>
 			</div>
-			{% if canEdit %}
-			<div id="edit" class="tab-pane">
-				<h4><img src="/static/img/edit.png" />Edit Project</h4>
-				<form id="registerForm" action="/projects/edit/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
-
-					{% for field in form %}
-					<fieldset class="form-group">
-						<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-						<input type="text" class="form-control"
-						name="{{ field.name }}"
-						id="id_{{ field.name }}"
-						value="{{ field.value }}" > 
-						<p class="help-text">{{ field.help_text }} </p>
-					</fieldset>
-					{% endfor %}
-
-					<input class="btn btn-success" type="submit" value="Save" style="border-radius: 1px;" />
-					<span><a class="btn btn-danger" href="/u/{{project.manager}}/projects/{{project.name}}/">Cancel</a></span>
-					{% if project.active %}
-					<a class="btn btn-warning" style="float:right;" href="/projects/toggle/{{project.id}}">Close Project</a>
-					{% else %}
-					<a class="btn btn-warning" style="float:right;" href="/projects/toggle/{{project.id}}">Re-open Project</a>
-					{% endif %}
-
-				</form>
-			</div>
-			{% endif %}
+			
 		</div><!-- /.tab-content -->
 	</div><!-- /.tabbable -->
 

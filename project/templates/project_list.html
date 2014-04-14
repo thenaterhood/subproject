@@ -6,7 +6,7 @@
 
 {% include 'template_messages.html' %}
 
-	<h1><img src="/static/img/project.png" />My Projects</h1>
+	<h1><img src="/static/img/project.png" />{{title}}</h1>
 
 
 	<p class="pull-right">
@@ -43,7 +43,11 @@
 		</ul>
 	</fieldset>
 </div>
+
+
 <div class="col-md-9">
+
+	<div class="panel panel-inverse">
 
 
 
@@ -75,7 +79,7 @@
 
 					<div class="pull-right">
 						{% if project in owned %}
-						<a href="/projects/view/{{project.id}}/#edit"><img src="/static/img/edit.png" width="24px"/></a>
+						<a href="/projects/edit/{{project.id}}/"><img src="/static/img/edit.png" width="24px"/></a>
 						{% endif %}
 					</div>
 
@@ -84,10 +88,10 @@
 						<p>{{ project.description }}</p>
 
 						<img src="/static/img/work.png" width="24px" />
-						<a href="/projects/work/viewall/{{project.id}}/">View Worklogs</a>{% if project.active %} / <a href="/projects/addwork/{{project.id}}/">Add worklog</a> {% endif %}
+						<a href="/projects/work/viewall/{{project.id}}/">Worklogs</a>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						<img src="/static/img/task.png" width="24px" />
-						<a href="/projects/view/{{project.id}}/#tasks">View Tasks</a>{% if project.active %} / <a href="/projects/addtask/{{project.id}}/">Add Tasks</a>{% endif %}
+						<a href="/projects/view/{{project.id}}/#tasks">Tasks</a>
 
 					</div>
 
@@ -99,6 +103,7 @@
 
 
 	
+</div>
 </div>
 </div>
 
