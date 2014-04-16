@@ -398,6 +398,8 @@ def view_project(request, proj_id=False, username=False, projectname=False):
         try:
             manager = User.objects.get(username=username)
             project = Project.objects.get(manager=manager, name__iexact=projectname)
+            if ( request.user not in project.members.all() and not project.public ):
+                raise Exception()
         except:
             messages.warning(request, "The project you tried to access does not exist.")
             return HttpResponseRedirect('/projects')
