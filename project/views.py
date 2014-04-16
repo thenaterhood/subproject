@@ -147,7 +147,6 @@ def project_welcome(request):
 
     return render_to_response('project_welcome.html', RequestContext(request, args))
 
-@login_required
 def list_projects(request, user=False):
     """
     Displays a list of all the projects a user 
@@ -155,6 +154,10 @@ def list_projects(request, user=False):
     """
     args = {}
     args['currentUser'] = request.user
+
+    if ( not request.user.is_authenticated() and not user ):
+        return HttpResponseRedirect('/')
+
     if ( user == False ):
         projects = apply_project_filter(
             request, Project.objects.filter(members=request.user)).order_by("name")
@@ -169,10 +172,16 @@ def list_projects(request, user=False):
         args['title'] = user + "'s Projects"
         manager = User.objects.get(username__iexact=user)
 
-        args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
-            users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
+        if ( request.user.is_authenticated() ):
+            args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
+                users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
 
-        projects = apply_project_filter( request, Project.objects.filter(manager=manager).filter( Q(public=True)|Q(members=request.user) ) ).distinct().order_by("name")
+            projects = apply_project_filter( request, Project.objects.filter(manager=manager).filter( Q(public=True)|Q(members=request.user) ) ).distinct().order_by("name")
+        else:
+            args['tags'] = Tag.objects.filter( Q(owner=manager,public=True)).order_by("name")
+
+            projects = apply_project_filter( request, Project.objects.filter(manager=manager).filter( Q(public=True) ) ).distinct().order_by("name")
+
 
     args['projects'] = projects
     args['num_projects'] = len(projects)
@@ -386,7 +395,6 @@ def edit_project(request, proj_id):
         return render_to_response('project_edit.html', args)
 
 
-@login_required
 def view_project(request, proj_id=False, username=False, projectname=False):
     """
     Displays a project's dashboard
@@ -401,7 +409,7 @@ def view_project(request, proj_id=False, username=False, projectname=False):
             if ( request.user not in project.members.all() and not project.public ):
                 raise Exception()
         except:
-            messages.warning(request, "The project you tried to access does not exist.")
+            messages.warning(request, "The project you tried to access does not exist, or you don't have permission to see it.")
             return HttpResponseRedirect('/projects')
 
     else:
@@ -429,10 +437,13 @@ def view_project(request, proj_id=False, username=False, projectname=False):
     args['num_worklogs'] = worklogs.count()
     args['tasks'] = ProjectTask.objects.filter(project=project).reverse()
     args['num_tasks'] = args['tasks'].count()
-    args['tags'] = project.tags.filter(Q(owner=request.user) | Q(
-        users=request.user) | Q(viewers=request.user) | Q(public=True)).filter(visible=True)
-    args['yourTags'] = args['tags'].filter(
-        Q(owner=request.user) | Q(users=request.user) | Q(viewers=request.user))
+    if ( request.user.is_authenticated() ):
+        args['tags'] = project.tags.filter(Q(owner=request.user) | Q(
+            users=request.user) | Q(viewers=request.user) | Q(public=True)).filter(visible=True)
+        args['yourTags'] = args['tags'].filter(
+            Q(owner=request.user) | Q(users=request.user) | Q(viewers=request.user))
+    else:
+        args['tags'] = project.tags.filter(Q(public=True)).filter(visible=True)
 
     if (project.manager == request.user):
         args['add_member_form'] = AddMemberForm()
