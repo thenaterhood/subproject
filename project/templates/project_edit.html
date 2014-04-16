@@ -12,11 +12,8 @@
 		{% for field in form %}
 <fieldset class="form-group">
   <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-      <input type="text" class="form-control"
-        name="{{ field.name }}"
-        id="id_{{ field.name }}"
-        value="{{ field.value }}" > 
-        <p class="help-text">{{ field.help_text }} </p>
+      {{field}}
+      <p>{{field.help_text}}</p>
 </fieldset>
 {% endfor %}
 

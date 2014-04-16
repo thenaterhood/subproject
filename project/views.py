@@ -147,7 +147,6 @@ def project_welcome(request):
 
     return render_to_response('project_welcome.html', RequestContext(request, args))
 
-
 @login_required
 def list_projects(request, user=False):
     """
@@ -173,7 +172,7 @@ def list_projects(request, user=False):
         args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
             users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
 
-        projects = apply_project_filter( request, Project.objects.filter(manager=manager) ).order_by("name")
+        projects = apply_project_filter( request, Project.objects.filter(manager=manager).filter( Q(public=True)|Q(members=request.user) ) ).distinct().order_by("name")
 
     args['projects'] = projects
     args['num_projects'] = len(projects)
@@ -198,8 +197,14 @@ def create_project(request, parent=False):
         else:
             redirTo = request.POST['returnUrl']
 
+        postData = deepcopy(request.POST)
+
+        if ('public' not in request.POST):
+            postData['public'] = 'off'
+
         newProj = Project()
-        form = EditProjectForm(request.POST)
+        form = EditProjectForm(postData)
+
         if form.is_valid() and not "useexisting" in request.POST:
 
             name = form.cleaned_data['name']
@@ -210,6 +215,8 @@ def create_project(request, parent=False):
 
 
                 newProj = form.save(owner=request.user)
+                newProj.public = (postData['public'] != 'off')
+                newProj.save()
 
                 event = TimelineEvent()
                 event.member = request.user
@@ -324,16 +331,30 @@ def edit_project(request, proj_id):
     project = Project.objects.get(id=proj_id)
     projectName = project.name
 
+    newProj = Project()
+
     if (request.method == "POST" and project.manager == request.user):
-        form = EditProjectForm(request.POST, instance=project)
+
+        postData = deepcopy(request.POST)
+
+
+        if ('public' not in request.POST):
+            postData['public'] = 'off'
+
+
+        form = EditProjectForm(postData, instance=project)
+
         if form.is_valid():
             name = form.cleaned_data['name']
+
             nameConflicts = Project.objects.filter(manager=request.user).filter(name__iexact=name).exclude(name=project.name).count()
 
             allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
 
             if ( nameConflicts == 0 and set(name) <= set(allowedChars) ):
                 updatedProject = form.save()
+                updatedProject.public = (postData['public'] != 'off')
+                updatedProject.save()
 
                 return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
             else:
@@ -347,6 +368,7 @@ def edit_project(request, proj_id):
         else:
             pageData = {}
             pageData['form'] = EditProjectForm(request.POST, instance=project)
+            pageData['project'] = project
             messages.error(request, 'Please fill out all the fields.')
 
             return render_to_response('project_edit.html', RequestContext(request, pageData))
@@ -354,6 +376,7 @@ def edit_project(request, proj_id):
     else:
 
         form = EditProjectForm(instance=project)
+        form.initial['public'] = bool(project.public)
 
         args = {}
         args['form'] = form

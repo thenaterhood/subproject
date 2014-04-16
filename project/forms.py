@@ -22,10 +22,12 @@ class EditProjectForm(forms.ModelForm):
         attrs={"required": True, "max_length": 50, "placeholder": "Project Phase", 'class': 'form-control'}), label=(""))
     description = forms.CharField(widget=forms.Textarea(
         attrs={"required": True, "max_length": 140, "placeholder": "Project Description in 140 Characters", 'class': 'form-control'}), label=(""))
+    public = forms.BooleanField(widget=forms.CheckboxInput(
+        attrs={'class': 'form-control', 'title': 'Make this project publicly visible.'}))
 
     class Meta:
         model = Project
-        fields = ('name', 'status', 'phase', 'description')
+        fields = ('name', 'status', 'phase', 'description', 'public')
 
     def save(self, owner=False, commit=True):
         """
