@@ -40,6 +40,7 @@ class Project(models.Model):
     members = models.ManyToManyField(User, related_name="Project Members")
     active = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, related_name="Project Tags")
+    public = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name + " (manager: " + self.manager.__str__() + ")"
