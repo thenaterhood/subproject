@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %} Create Project {% endblock %}
+{% block title %} Edit Project {% endblock %}
 
 {% block content %}
 
@@ -19,10 +19,18 @@
     </div>
   {% endfor %}
 {% endif %}
-<form id="registerForm" action="/projects/create/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+{% if pid < 1 %}
+<form id="registerForm" action="/projects/create/" method="post">{% csrf_token %}
+{% else %}
+<form id="registerForm" action="/projects/edit/{{pid}}/" method="post">{% csrf_token %}
+{% endif %}
+
 <h3>
 	<img src="/static/img/project.png" />
-	Create a Project
+	{% if pid < 1 %}Create a Project
+  {% else %}Edit Project
+  {% endif %}
 
 	{% if parent %}&nbsp;&nbsp;&nbsp;<a class="btn btn-success" href="/projects/{{parent}}/assignchild">Select an Existing Project Instead</a>{% endif %}
 
@@ -39,7 +47,7 @@
     <input name="parent" type="hidden" value="{{ parent }}" />
   <input name="returnUrl" type="hidden" value="{{ returnUrl }}" />
 
-	<input id="registerButton" class="btn btn-success" type="submit" value="Create" style="border-radius: 1px;" />
+	<input id="registerButton" class="btn btn-success" type="submit" value="Save" style="border-radius: 1px;" />
 
 </form> <!--Close the form tag-->
 

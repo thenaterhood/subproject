@@ -192,7 +192,7 @@ def list_projects(request, user=False):
 
 
 @login_required
-def create_project(request, parent=False):
+def create_project(request, parent=False, pid=False):
     """
     Provides a new project form and adds 
     a project to the database after verifying 
@@ -201,18 +201,24 @@ def create_project(request, parent=False):
 
     if request.method == "POST":
 
-        if ('returnUrl' not in request.POST):
-            redirTo = '/projects/'
-        else:
-            redirTo = request.POST['returnUrl']
 
         postData = deepcopy(request.POST)
 
         if ('public' not in request.POST):
             postData['public'] = 'off'
 
-        newProj = Project()
-        form = EditProjectForm(postData)
+
+        if ( pid != False ):
+            project = Project.objects.get(id=pid)
+            form = EditProjectForm(postData, instance=project)
+            pActionName = "updated"
+            if ( request.user != project.manager ):
+                messages.warning( request, "You are not allowed to edit that project.")
+                return HttpResponseRedirect('/projects/')
+        else:
+            project = None
+            form = EditProjectForm(postData)
+            pActionName = "created"
 
         if form.is_valid() and not "useexisting" in request.POST:
 
@@ -229,7 +235,7 @@ def create_project(request, parent=False):
 
                 event = TimelineEvent()
                 event.member = request.user
-                event.title = "created the project " + newProj.name
+                event.title = pActionName + " the project " + newProj.name
                 event.description = newProj.description
                 event.category = "project"
                 event.related_key = newProj.id
@@ -251,6 +257,11 @@ def create_project(request, parent=False):
                     event.save()
 
                 newProj.save()
+
+                if ('returnUrl' not in request.POST):
+                    redirTo = '/u/'+request.user.username+"/projects/"+newProj.name
+                else:
+                    redirTo = request.POST['returnUrl']
 
                 return HttpResponseRedirect(redirTo)
 
@@ -280,7 +291,14 @@ def create_project(request, parent=False):
         except:
             args['returnUrl'] = '/projects/'
         args['addingSub'] = parent
-        args['form'] = EditProjectForm()
+
+        if ( pid != False ):
+            project = Project.objects.get(id=pid)
+            args['form'] = EditProjectForm(instance=project)
+            args['pid'] = project.id
+        else:
+            args['form'] = EditProjectForm()
+            args['pid'] = -1
         args['parent'] = parent
         return render_to_response('project_create.html', args)
 
@@ -327,72 +345,6 @@ def assign_child(request, parent_id, child_id=False):
         pageData['projects'] = Project.objects.filter(
             manager=request.user).exclude(id=parent_id).exclude(parents=parentProj)
         return render_to_response('project_select.html', RequestContext(request, pageData))
-
-
-@login_required
-def edit_project(request, proj_id):
-    """
-    Retrieves a project and provides a populated form 
-    for updating its information, as well as accepting 
-    an updated version of the form.
-    """
-
-    project = Project.objects.get(id=proj_id)
-    projectName = project.name
-
-    newProj = Project()
-
-    if (request.method == "POST" and project.manager == request.user):
-
-        postData = deepcopy(request.POST)
-
-
-        if ('public' not in request.POST):
-            postData['public'] = 'off'
-
-
-        form = EditProjectForm(postData, instance=project)
-
-        if form.is_valid():
-            name = form.cleaned_data['name']
-
-            nameConflicts = Project.objects.filter(manager=request.user).filter(name__iexact=name).exclude(name=project.name).count()
-
-            allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
-
-            if ( nameConflicts == 0 and set(name) <= set(allowedChars) ):
-                updatedProject = form.save()
-                updatedProject.public = (postData['public'] != 'off')
-                updatedProject.save()
-
-                return HttpResponseRedirect('/projects/view/' + str(project.id) + "/")
-            else:
-                pageData = {}
-                pageData['form'] = EditProjectForm(request.POST, instance=project)
-                pageData['project'] = project
-                messages.warning(request, 'Sorry, you cannot use that name.')
-
-                return render_to_response('project_edit.html', RequestContext(request, pageData))
-
-        else:
-            pageData = {}
-            pageData['form'] = EditProjectForm(request.POST, instance=project)
-            pageData['project'] = project
-            messages.error(request, 'Please fill out all the fields.')
-
-            return render_to_response('project_edit.html', RequestContext(request, pageData))
-
-    else:
-
-        form = EditProjectForm(instance=project)
-        form.initial['public'] = bool(project.public)
-
-        args = {}
-        args['form'] = form
-        args.update(csrf(request))
-        args['project'] = project
-
-        return render_to_response('project_edit.html', args)
 
 
 def view_project(request, proj_id=False, username=False, projectname=False):
