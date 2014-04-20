@@ -64,12 +64,26 @@ def import_project_csv(request):
                     row['description'] = "[Imported Project] " + \
                         row['description']
 
+                row['public'] = 'off'
+
                 addForm = EditProjectForm(row)
 
-                if(addForm.is_valid()):
-                    addForm.save(owner=request.user)
 
-                    imported += 1
+                if( addForm.is_valid() ):
+
+                    name = addForm.cleaned_data['name']
+                    allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
+
+                    existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
+
+                    if ( existing == 0 and set(name) <= set(allowedChars) ):
+
+                        p = addForm.save(owner=request.user)
+                        p.public = False
+                        p.save()
+
+                        imported += 1
+
 
             if imported > 0:
                 messages.info(
@@ -188,7 +202,7 @@ def list_projects(request, user=False):
 
     args['filters'] = get_project_filters(request)
 
-    return render_to_response('project_list.html', RequestContext(request, args))
+    return render_to_response('project_list.html', RequestContext(request, args))    
 
 
 @login_required

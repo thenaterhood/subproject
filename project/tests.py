@@ -761,7 +761,7 @@ class DataImport(TestCase):
 
         afterNum = Project.objects.filter(manager=joe).count()
 
-        self.assertEqual(afterNum - 11, initialNum)
+        self.assertEqual(afterNum - 9, initialNum)
 
         imports = Project.objects.filter(manager=joe).filter(status='imported')
 
