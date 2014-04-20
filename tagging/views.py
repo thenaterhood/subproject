@@ -15,6 +15,8 @@ from filters.views import set_filter_message
 from user.forms import AddMemberForm
 from tagging.forms import AddTagForm
 
+from project.models import Project
+
 
 @login_required
 def list_tags(request):
