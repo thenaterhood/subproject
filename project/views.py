@@ -401,7 +401,7 @@ def view_project(request, proj_id=False, username=False, projectname=False):
     args['num_members'] = project.members.all().count()
     args['worklogs'] = worklogs
     args['num_worklogs'] = worklogs.count()
-    args['tasks'] = ProjectTask.objects.filter(project=project).reverse()
+    args['tasks'] = ProjectTask.objects.filter(project=project).order_by('-startDate')
     args['num_tasks'] = args['tasks'].count()
     if ( request.user.is_authenticated() ):
         args['tags'] = project.tags.filter(Q(owner=request.user) | Q(
