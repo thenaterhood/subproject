@@ -77,7 +77,7 @@
 							<th>View</th>
 						</tr>
 
-						{% for t in tasks %}
+						{% for t in tasks.reverse %}
 						<tr>
 							<td><a href="/projects/task/view/{{t.id}}">{{ t.summary }}</a></td>
 							<td>{{t.creator}}</td>
