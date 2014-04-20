@@ -6,8 +6,17 @@
 
 {% include 'template_messages.html' %}
 
-		<h2><img src="/static/img/task.png" />{{task.summary}} {%if task.completed%}(Completed){%endif%} <small>Task View</small></h2>
+<div style="display:inline;">
+	<div style="display:table-cell">
+		<img src="/static/img/task.png" style="float: left"/>
+		<h3 style="margin-bottom:0px;margin-top:5px;float:left;">
+			<a href="/u/{{task.creator}}/">{{task.creator}}</a> / <a href="/u/{{task.creator}}/tasks/">tasks</a> / <strong>{{task.id}}</strong></h3>
+			<br />
+			<h4 style="margin-top:0px;float:left;"><small>{{task.summary|truncatechars:50}}</small></h4>
+		</div>
+	</div>
 
+	<br />
 	<br />
 
 	<div class="tabbable">
@@ -22,159 +31,162 @@
 		</ul>
 		<div class="tab-content">
 			<div id="overview" class="tab-pane active">
-				<h4>Task Details</h4>
+				<h4>{{task.summary}}</h4>
+				<h5>{{task.description}}</h4>
 
 				<p>This task is currently associated with {% if task.project == None %}no projects{% else %} <a href="/projects/view/{{task.project.id}}/">{{task.project.name}}</a> {% endif %}.</p>
 
-		{% if user in members %}
-		{% if not task.inProgress %}
-		<a class="btn btn-success" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
-		{% else %}
-		<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
-		{% endif %}
-		{% endif %}
+				{% if user in members %}
+				<div class="panel panel-default">
+					<div class="panel-heading">Quick Actions</div>
+					<div class="panel-body">
+						{% if user in members %}
+						{% if not task.inProgress %}
+						<a class="btn btn-success" href="/projects/task/inprogress/{{task.id}}">Mark In Progress</a>
+						{% else %}
+						<a class="btn btn-warning" href="/projects/task/inprogress/{{task.id}}">Mark Not In Progress</a>
+						{% endif %}
+						{% endif %}
 
-		{% if user in members %}
-			{% if task.completed %}
-			<a class="btn btn-default" href="/projects/task/open/{{task.id}}/">Mark Task Unfinished</a>
+						{% if user in members %}
+						{% if task.completed %}
+						<a class="btn btn-default" href="/projects/task/open/{{task.id}}/">Mark Task Unfinished</a>
 
-			{% else %}
-			<a class="btn btn-success" href="/projects/task/close/{{task.id}}/">Mark Task Completed</a>
-			{% endif %}
-		{% else %}
-			{% if task.completed %}
-			<p>Completed</p>
-			{% else %}
-			<p>Not finished</p>
-			{% endif %}
-		{% endif %}
+						{% else %}
+						<a class="btn btn-success" href="/projects/task/close/{{task.id}}/">Mark Task Completed</a>
+						{% endif %}
+						{% else %}
+						{% if task.completed %}
+						<p>Completed</p>
+						{% else %}
+						<p>Not finished</p>
+						{% endif %}
+						{% endif %}
 
-		{% if canEdit %}
-			{% if task.project == None %}
-			<a class="btn btn-success" href="/projects/addtotask/{{task.id}}/">Assign to a Project</a>
-			{% else %}
-			<a class="btn btn-warning" href="/projects/addtotask/{{task.id}}/">Move to another project</a>
-			{% endif %}
-		{% endif %}
-
-					<p>Your Tags <a href="/projects/task/{{task.id}}/addtag">(add)</a>: {% for t in yourTags %} 
-						{% if t.visible %}
-						<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
-
-
-
-				<div class="well">
-					<p><em>Opened by {{task.creator}} </em>
-
-						<p>Description: {{task.description}}</p>
+						{% if canEdit %}
+						{% if task.project == None %}
+						<a class="btn btn-success" href="/projects/addtotask/{{task.id}}/">Assign to a Project</a>
+						{% else %}
+						<a class="btn btn-warning" href="/projects/addtotask/{{task.id}}/">Move to another project</a>
+						{% endif %}
+						{% endif %}
 					</div>
 				</div>
-				<div id="tags" class="tab-pane">
-					<h4><img src="/static/img/tag.png" />Your Tags 	<a href="/projects/task/{{task.id}}/addtag">(Add a Tag)</a></h4>
-						<p>{% for t in yourTags %} 
+
+				{% endif %}
+
+
+
+
+
+			</div>
+			<div id="tags" class="tab-pane">
+				<h4><img src="/static/img/tag.png" />Your Tags 	<a href="/projects/task/{{task.id}}/addtag">(Add a Tag)</a></h4>
+				<p>{% for t in yourTags %} 
 							{% if t.visible %}
-							<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
+					<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
 
 					<br />
 					<hr />
 					<h4><img src="/static/img/tag.png" />All Tags Visible to You</h4>
-						<p>{% for t in tags %} 
-							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
-
-				</div>
-				
-					<div id="assignees" class="tab-pane">
-						<h4><img src="/static/img/members.png" />Task Assignees</h4>
-						<p>Task assignees are users who are assigned to a task. The task will appear in 
-							their Todo page and they can mark the task as completed on any project the task 
-							belongs to, provided they are also a member of the project.</p>
-						<table class="table table-striped">
-							<tr>
-								<th>Assignee</th>
-								<th>Manage</th>
-							</tr>
-
-							{% for u in members %}
-
-							<tr>
-								<td>{{u}}</td>
-								<td> {%if canEdit %} 
-
-									{% if u != task.creator %}
-
-									<a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> 
-
-									{% else %}
-									<p>Task Owner</p>
-									{% endif %}
-
-									{%endif%}
-
-								</td>
-							</tr>
-							{% endfor %}
-
-							{% if canEdit %}
-
-							<tr>
-
-								<td>
-
-									<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
-
-										{% for field in add_member_form %}
-
-										{{field}}
-
-										{% endfor %}
-
-									</td>
-									<td><input type="submit" class="btn btn-success" value="Assign">
-									</form>
-
-								</tr>
-								{% endif %}
-
-
-							</table>
-						</div>
-						{% if canEdit %}
-						<div id="edit" class="tab-pane">
-							<h3><img src="/static/img/task.png" />Edit Task</h3>
-							<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
-
-								{% for field in form %}
-								<fieldset class="form-group">
-									<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-									<input type="text" class="form-control"
-									name="{{ field.name }}"
-									id="id_{{ field.name }}"
-									value="{{ field.value }}" > 
-									<p class="help-text">{{ field.help_text }} </p>
-								</fieldset>
-								{% endfor %}
-
-								<input class="btn btn-success" type="submit" value="Save" />
-								<a class="btn btn-warning" href="/projects/task/view/{{task.id}}/">Cancel</a>
-
-								<span style="float:right;">
-									<a class="btn btn-warning" href="/projects/task/tosubproject/{{task.id}}">Convert to Project</a>
-									<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}/">Delete Task</a>
-								</span>
-
-							</form>
-						</div>
-						{% endif %}
-
-					</div><!-- /.tab-content -->
-				</div><!-- /.tabbable -->
-				<br />
-				<br />
-
+					<p>{% for t in tags %} 
+							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}
+					</p>
 
 			</div>
 
+			<div id="assignees" class="tab-pane">
+				<h4><img src="/static/img/members.png" />Task Assignees</h4>
+				<p>Task assignees are users who are assigned to a task. The task will appear in their Todo page and they can mark the task as completed on any project the task belongs to, provided they are also a member of the project.</p>
+				
+				<table class="table table-striped">
+					<tr>
+						<th>Assignee</th>
+						<th>Manage</th>
+					</tr>
+
+					{% for u in members %}
+
+					<tr>
+						<td>{{u}}</td>
+						<td> {%if canEdit %} 
+
+							{% if u != task.creator %}
+
+							<a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> 
+
+							{% else %}
+							<p>Task Owner</p>
+							{% endif %}
+
+							{%endif%}
+
+						</td>
+					</tr>
+					{% endfor %}
+
+					{% if canEdit %}
+
+					<tr>
+
+						<td>
+
+							<form id="addProjectMember" action="/projects/task/addmember/{{task.id}}/" method="POST">{% csrf_token %}
+
+								{% for field in add_member_form %}
+
+								{{field}}
+
+								{% endfor %}
+
+							</td>
+							<td><input type="submit" class="btn btn-success" value="Assign">
+							</form>
+
+						</tr>
+						{% endif %}
 
 
-			{% endblock %}
+				</table>
+			
+			</div>
+				{% if canEdit %}
+				<div id="edit" class="tab-pane">
+					<h3><img src="/static/img/task.png" />Edit Task</h3>
+					<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+						{% for field in form %}
+						<fieldset class="form-group">
+							<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+							<input type="text" class="form-control"
+							name="{{ field.name }}"
+							id="id_{{ field.name }}"
+							value="{{ field.value }}" > 
+							<p class="help-text">{{ field.help_text }} </p>
+						</fieldset>
+						{% endfor %}
+
+						<input class="btn btn-success" type="submit" value="Save" />
+						<a class="btn btn-warning" href="/projects/task/view/{{task.id}}/">Cancel</a>
+
+						<span style="float:right;">
+							<a class="btn btn-warning" href="/projects/task/tosubproject/{{task.id}}">Convert to Project</a>
+							<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}/">Delete Task</a>
+						</span>
+
+					</form>
+				</div>
+				{% endif %}
+
+		</div><!-- /.tab-content -->
+		</div><!-- /.tabbable -->
+		<br />
+		<br />
+
+
+	</div>
+
+
+
+{% endblock %}
