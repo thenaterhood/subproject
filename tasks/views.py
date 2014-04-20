@@ -71,19 +71,52 @@ def tasks_by_status(request, assignee=False, status='inprogress'):
 
 
 @login_required
-def all_tasks(request):
+def all_tasks(request, user=False):
+
+    if ( not request.user.is_authenticated() and not user ):
+        return HttpResponseRedirect('/')
 
     args = {}
-    args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
-        users=request.user) | Q(viewers=request.user)).order_by("name")
-    args['tasks'] = apply_task_filter(request, ProjectTask.objects.filter(
-        Q(creator=request.user) | Q(assigned=request.user)).distinct()).order_by('-startDate')
+
+    if ( user == False and request.user.is_authenticated() ):
+        args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
+            users=request.user) | Q(viewers=request.user)).order_by("name")
+        args['tasks'] = apply_task_filter(request, ProjectTask.objects.filter(
+            Q(creator=request.user) | Q(assigned=request.user)).distinct()).order_by('-startDate')
+        args['projects'] = Project.objects.filter(
+            Q(manager=request.user) | Q(members=request.user)).distinct()
+
+    else:
+
+        manager = User.objects.get(username__iexact=user)
+        args['username'] = user
+        args['usertasks'] = True
+
+        if ( request.user.is_authenticated() ):
+            args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
+                users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
+            
+            args['tasks'] = apply_task_filter(request, ProjectTask.objects.filter(
+                Q(creator=manager) ).filter( Q(assigned=request.user ) ).distinct() ).order_by('-startDate')
+
+            args['projects'] = Project.objects.filter(manager=manager).filter( Q(public=True)|Q(members=request.user) ).distinct().order_by("name")
+
+        else:
+            args['tags'] = Tag.objects.filter( Q(owner=manager,public=True)).order_by("name")
+
+            args['tasks'] = []
+
+            args['projects'] = Project.objects.filter(manager=manager).filter( Q(public=True) ).distinct().order_by("name")
+
+
+
+
+
     args['other_name'] = 'All Tasks'
     args['showmore'] = False
     args['other_num'] = args['tasks'].count()
     args['num_tasks'] = args['other_num']
-    args['projects'] = Project.objects.filter(
-        Q(manager=request.user) | Q(members=request.user)).distinct()
+
 
     args['alltasks'] = True
     args['filters'] = get_task_filters(request)

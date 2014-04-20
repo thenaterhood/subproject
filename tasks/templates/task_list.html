@@ -9,8 +9,10 @@
 		<img src="/static/img/task.png" />
 		{% if notodo %}
 		Tasks You've Created
-		{% elif alltasks %}
+		{% elif alltasks and not usertasks %}
 		All Your Tasks
+		{% elif usertasks %}
+		{{username}}'s Tasks
 		{% else %}
 		My Todo
 	{% endif %}
@@ -22,7 +24,7 @@
 	{% elif alltasks %}
 		<p>This page shows all the tasks you are associated with. Alternatively, <a href="/projects/todo">View your assigned tasks (todo)</a> or <a href="/projects/usertasks">View all Tasks you've created</a> instead.</p>
 	{% else %}
-		<p>Your Todo list contains a list of open tasks for projects that you have had assigned to you. <a href="/projects/usertasks">View all Tasks you've created</a> or <a href="/projects/tasks/all">view all the tasks you are associated with</a> instead.</p>
+		<p>This list contains shows open tasks for projects associated with the user. <a href="/projects/usertasks">View all Tasks you've created</a> or <a href="/projects/tasks/all">view all the tasks you are associated with</a> instead.</p>
 	{% endif %}
 
 	<p class="pull-right">

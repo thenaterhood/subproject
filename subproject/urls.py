@@ -63,6 +63,8 @@ urlpatterns = patterns('',
                                     'project.views.assign_child'),
 
     # Project member management
+    url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/tasks/$', 
+                                    'tasks.views.all_tasks'),
     url(r'^projects/addmember/(?P<proj_id>\d+)/$', 
                                     'project.views.add_member'),
     url(r'^projects/removemember/(?P<proj_id>\d+)/(?P<user_id>\d+)/$', 
