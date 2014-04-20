@@ -5,7 +5,18 @@
 {% block content %}
 
 {% include 'template_messages.html' %}
-	<h2><img src="/static/img/work.png" />{{worklog.summary}} <small>logged by {{worklog.owner}}</small></h2>
+
+    <div style="display:inline;">
+      <div style="display:table-cell">
+        <img src="/static/img/work.png" style="float: left"/>
+        <h3 style="margin-bottom:0px;margin-top:5px;float:right;">
+          <a href="/u/{{worklog.owner}}/">{{worklog.owner}}</a> / <a href="/u/{{worklog.owner}}/work/">work</a> / <strong>{{worklog.summary|truncatechars:50}}</strong></h3>
+        <h4 style="margin-top:0px;"><small>{{worklog.description|truncatechars:100}}</small></h4>
+      </div>
+    </div>
+
+    <br />
+    <br />
 
 	<div class="tabbable">
   <ul class="nav nav-tabs">
@@ -18,13 +29,15 @@
   <div class="tab-content">
     <div id="overview" class="tab-pane active">
 
-	<h3>Work Detail</h3>
-	<div class="well">
-		<p>{{worklog.hours}} hours, {{worklog.minutes}} minutes of work logged on {{worklog.project.name}}.</p>
-		<p>Logged on {{worklog.datestamp}}</p>
-		<p>{{worklog.description}}</p>
-	</div>
+  <h3>{{worklog.summary}}</h3>
+  <p>{{worklog.description}}</p>
 
+        <h3>Day</h3>
+        <h4>{{worklog.datestamp}}</h4>
+        <h3>Duration</h3>
+        <h4>{{worklog.hours}} <small>hours</small> {{worklog.minutes}} <small>minutes</small></h4>
+        <h3>Project</h3>
+        <h4><a href="/u/{{worklog.project.manager}}/projects/{{worklog.project.name}}/">{{worklog.project.name}}</a></h4>
 
     </div>
     {% if canEdit %}
