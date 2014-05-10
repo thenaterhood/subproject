@@ -16,6 +16,7 @@ from user.forms import AddMemberForm
 from tagging.forms import AddTagForm
 
 from project.models import Project
+from tasks.models import ProjectTask
 
 
 @login_required
@@ -38,7 +39,7 @@ def list_tags(request):
 @login_required
 def add_tag(request, tag_id=False, project_id=False, task_id=False):
     """
-    Provides a page where tags can be 
+    Provides a page where tags can be
     created by the user.
     """
     if request.method == 'POST':
@@ -99,7 +100,7 @@ def add_tag(request, tag_id=False, project_id=False, task_id=False):
 @login_required
 def view_tag(request, tag_id):
     """
-    Displays a tag 
+    Displays a tag
     """
     tag = Tag.objects.get(id=tag_id)
 
@@ -151,7 +152,7 @@ def delete_tag(request, tag_id):
 @login_required
 def toggle_tag_user(request, tag_id, user_id=False):
     """
-    Adds or removes a user's tag user rights for a 
+    Adds or removes a user's tag user rights for a
     selected tag.
 
     Arguments:
@@ -188,7 +189,7 @@ def toggle_tag_user(request, tag_id, user_id=False):
 @login_required
 def toggle_tag_viewer(request, tag_id, user_id=False):
     """
-    Adds or removes a user's tag viewing rights for a 
+    Adds or removes a user's tag viewing rights for a
     selected tag.
 
     Arguments:
