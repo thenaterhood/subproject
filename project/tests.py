@@ -6,7 +6,6 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-from user.models import *
 from project.models import *
 from project.views import *
 
