@@ -8,12 +8,37 @@
 
   <div>
 
-  <h3>Manage your Account Settings</h3>
+  <h1>Manage your Account Settings</h1>
   <ul>
     <li><a href="/work/settings/">Worklog Settings</a></li>
+    <p>Update the privacy and preferences of your worklogs.</p>
+
     <li><a href="/user/edit/">Profile Information</a></li>
+    <p>Update your name and email that are shown on your profile and that are used to show your Gravatar.</p>
+
     <li><a href="/user/password/">Update Password</a></li>
+    <p>Change your password.</p>
   </ul>
+
+  <h3>How do I manage what other people can see?</h3>
+  <p><strong>By default, Subproject sets all of your information to private.</strong></p>
+
+  <p>You can change the privacy settings of your worklogs in the Worklog Settings panel. By making
+  your worklogs public, they can be seen by anyone who visits your work page. If a project is managed
+  by someone else, they may be able to see work you have logged on that project even if your worklogs
+  are private.</p>
+
+  <p>The privacy of your tasks and projects can be controlled individually, by going to the edit page of
+    the project or task you would like to change the privacy of. By default (unless you have chosen
+    otherwise), all tasks and projects you create are private. Projects and tasks are always visible to the
+    people you have added as members or assignees.</p>
+
+  <p>Tags you create are private and are not shown on any projects you add them to. You can make
+    a tag public by going to its edit page and checking the "public" checkbox. If you would like to limit
+    who can see your tags, you can add other users as viewers (that is, they are able to see your tag
+    and anything tagged with it that you have also allowed them to see) and set the tag to private. You
+    can also allow other people to use your tags (that is, they are able to see them and add/remove them
+    to more things) by adding them as tag users.</p>
 </div>
 
 {% endblock %}
