@@ -153,7 +153,6 @@ def add_worklog(request, proj_id):
     else:
 
         if request.user in project.members.all():
-
             return render_to_response('worklog_create.html', RequestContext(request, args))
 
         else:
@@ -213,6 +212,7 @@ def edit_settings(request):
 
   pageData = {}
   pageData['form'] = form
+  pageData['user'] = request.user
   return render_to_response('worklog_settings.html', RequestContext(request, pageData) )
 
 

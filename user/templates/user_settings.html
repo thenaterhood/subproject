@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %} Account Settings {% endblock %}
+
+{% block content %}
+
+{% include 'template_messages.html' %}
+
+  <div>
+
+  <h3>Manage your Account Settings</h3>
+  <ul>
+    <li><a href="/work/settings/">Worklog Settings</a></li>
+    <li><a href="/user/edit/">Profile Information</a></li>
+    <li><a href="/user/password/">Update Password</a></li>
+  </ul>
+</div>
+
+{% endblock %}

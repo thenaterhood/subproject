@@ -64,6 +64,7 @@
                   <ul class="dropdown-menu">
                     <li><a href="/projects/import">Import Data</a></li>
                     {% if user.username %}
+                    <li><a href="/user/settings/">Account Settings</a></li>
                     <li><a href="/user/profile/{{user.username}}/">Profile</a></li>
                     <li><a href="/user/logout">Logout ({{user.username|truncatechars:17}})</a></li>
                     {% else %}
@@ -73,7 +74,7 @@
                   </ul>
 
 
-                </li>  
+                </li>
 
             </ul>
           </div><!--/.nav-collapse -->
@@ -119,4 +120,3 @@
 
   </body>
 </html>
-

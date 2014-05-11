@@ -15,6 +15,11 @@ import json
 
 # Create your views here.
 
+@login_required
+def settings_dashboard(request):
+  pageData = {}
+  pageData['user'] = request.user
+  return render_to_response("user_settings.html", pageData)
 
 def register_user(request):
     """

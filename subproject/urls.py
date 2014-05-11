@@ -31,6 +31,7 @@ urlpatterns = patterns('',
                                     'user.views.view_profile'),
     url(r'^user/edit/$',            'user.views.edit_profile'),
     url(r'^user/password/$',        'user.views.change_password'),
+    url(r'^user/settings/$', 'user.views.settings_dashboard'),
 
     # URLs for the project application
     url(r'^projects/welcome/$',     'project.views.project_welcome'),
@@ -125,7 +126,7 @@ urlpatterns = patterns('',
     url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/work/$',
                                     'worklogs.views.list_worklogs'),
     url(r'^work/settings/$', 'worklogs.views.edit_settings'),
-    
+
     # Workload/Project views
     url(r'^projects/usertasks/$',   'tasks.views.user_all_tasks'),
     url(r'^projects/tree/$',        'project.views.view_tree'),
