@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %} Edit Settings {% endblock %}
+
+{% block content %}
+
+{% include 'template_messages.html' %}
+
+	<div>
+
+	<h3>Edit your worklog settings</h3>
+	<form id="registerForm" action="/work/settings/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+
+{% for field in form %}
+<fieldset class="form-group">
+<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+	{{field}}
+	<p>{{field.help_text}}</p>
+</fieldset>
+{% endfor %}
+
+		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
+		<a class="btn btn-danger btn-large" href="/">Cancel</a>
+
+	</form> <!--Close the form tag-->
+
+</div>
+
+{% endblock %}
