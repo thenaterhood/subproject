@@ -4,6 +4,7 @@
 
 {% block content %}
 
+{% if project %}
 	<h1><img src="/static/img/work.png" />Work logged on <a href="/projects/view/{{project.id}}">{{project.name}}</a></h1>
 
 	{% if num_projects == 0 %}
@@ -14,6 +15,10 @@
 	{% else %}
 	<p><em>This project is closed. Work cannot be added to closed projects.</em></p>
 	{% endif %}
+
+	{% else %}
+	<h1><img src="/static/img/work.png" />Worklogs</h1>
+{% endif %}
 
 
 	<table class="table table-striped">
@@ -31,8 +36,8 @@
 	<tr>
 		<td>{{l.owner}}</td>
 		<td>{{l.datestamp}}</td>
-		<td>{{l.summary}}</td>
-		<td><a href="/projects/work/edit/{{l.id}}/">Edit</a> / <a href="/projects/work/view/{{l.id}}/">View</a></td>
+		<td><a href="/projects/work/view/{{l.id}}/">{{l.summary}}</a></td>
+		<td><a class="btn btn-info" href="/projects/work/edit/{{l.id}}/">Edit</a></td>
 
 	</tr>
 

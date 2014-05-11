@@ -107,7 +107,7 @@ def import_project_csv(request):
 @login_required
 def project_welcome(request):
     """
-    Renders the project dashboard with 
+    Renders the project dashboard with
     basic user statistics.
     """
 
@@ -163,7 +163,7 @@ def project_welcome(request):
 
 def list_projects(request, user=False):
     """
-    Displays a list of all the projects a user 
+    Displays a list of all the projects a user
     is associated with.
     """
     args = {}
@@ -202,14 +202,14 @@ def list_projects(request, user=False):
 
     args['filters'] = get_project_filters(request)
 
-    return render_to_response('project_list.html', RequestContext(request, args))    
+    return render_to_response('project_list.html', RequestContext(request, args))
 
 
 @login_required
 def create_project(request, parent=False, pid=False):
     """
-    Provides a new project form and adds 
-    a project to the database after verifying 
+    Provides a new project form and adds
+    a project to the database after verifying
     the data.
     """
 
@@ -327,7 +327,7 @@ def assign_child(request, parent_id, child_id=False):
                     false triggers displaying the selection page)
 
     Returns:
-            The rendered selection page or a redirect back to the 
+            The rendered selection page or a redirect back to the
             original page.
     """
     if (child_id):
@@ -491,7 +491,7 @@ def remove_member(request, proj_id, user_id):
 @login_required
 def line_stats(request):
     """
-    Displays a histogram of the lines in the user's 
+    Displays a histogram of the lines in the user's
     projects.
     """
 
@@ -513,19 +513,19 @@ def line_stats(request):
 @login_required
 def add_existing_task_to_project(request, task_id, project_id=False):
     """
-    Associates an existing task with an additional project as 
-    an open task on that project. Renders the project 
-    selection template and accepts the project and task as GET 
+    Associates an existing task with an additional project as
+    an open task on that project. Renders the project
+    selection template and accepts the project and task as GET
     variables.
 
     Arguments:
-            task_id - integer task id 
-            project_id - integer project id: false for rendering 
-                    the initial selection page and true when the page returns 
+            task_id - integer task id
+            project_id - integer project id: false for rendering
+                    the initial selection page and true when the page returns
                     a selection from the user.
 
     Returns:
-            the project selection page initially, then the project 
+            the project selection page initially, then the project
             view page after, if the user has permission to see it.
     """
 
@@ -561,12 +561,12 @@ def assign_task(request, proj_id, task_id=False):
     Assigns a task to a project
 
     Arguments:
-            task_id - integer task ID (initially false to 
+            task_id - integer task ID (initially false to
                     trigger selection page)
             proj_id - integer project ID
 
     Returns:
-            rendered task selection template or redirect to 
+            rendered task selection template or redirect to
             original page after selection.
     """
     if (task_id):
@@ -598,11 +598,11 @@ def assign_project_tag(request, proj_id, tag_id=False):
 
     Arguments:
             proj_id: integer project ID
-            tag_id: integer tag ID (initially false to trigger 
+            tag_id: integer tag ID (initially false to trigger
                     selection)
 
     Returns:
-            The rendered tag selection page or a redirect to the 
+            The rendered tag selection page or a redirect to the
             initial URL the user arrived from.
     """
     returnUrl = '/projects/view/' + str(proj_id)
@@ -662,8 +662,8 @@ def toggle_project_task_status(request, task_id):
             task_id - integer task id
 
     Returns:
-            http redirect back to referring page or 
-            the project view page if there isn't a referer 
+            http redirect back to referring page or
+            the project view page if there isn't a referer
     """
     task = ProjectTask.objects.get(id=task_id)
 
@@ -683,7 +683,7 @@ def toggle_project_task_status(request, task_id):
 @login_required
 def view_all_task(request, proj_id):
     """
-    Lists all of the tasks for a selected project 
+    Lists all of the tasks for a selected project
     """
     project = Project.objects.get(id=proj_id)
 
@@ -699,7 +699,7 @@ def view_all_task(request, proj_id):
 @login_required
 def view_all_work(request, proj_id):
     """
-    Lists all of the work logged on a selected 
+    Lists all of the work logged on a selected
     project
     """
     project = Project.objects.get(id=proj_id)
@@ -708,8 +708,7 @@ def view_all_work(request, proj_id):
         args = {}
         args['project'] = project
         args['logs'] = Worklog.objects.filter(project=project)
-        return HttpResponseRedirect('/projects/view/' + str(proj_id) + "/#worklogs")
-        # return render_to_response('worklog_list.html', args)
+        return render_to_response('worklog_list.html', args)
 
     else:
         return HttpResponseRedirect('/projects/')
@@ -718,7 +717,7 @@ def view_all_work(request, proj_id):
 @login_required
 def view_tree(request, project_id=False):
     """
-    Displays an outline view of all the user's 
+    Displays an outline view of all the user's
     projects and tasks.
     """
     tasks = ProjectTask.objects.filter(assigned=request.user)
@@ -750,7 +749,7 @@ def view_tree(request, project_id=False):
 
 def createTree(project, tasks, depth=0, maxdepth=15):
     """
-    Creates a project tree view recursively 
+    Creates a project tree view recursively
     """
 
     if (depth < maxdepth):
@@ -790,16 +789,16 @@ def createTreeRow(project, tasks, depth=0):
 @login_required
 def project_to_top(request, project_id):
     """
-    Converts a project to a top-level project 
-    in the tree by removing all of its parents 
-    and removing it as a subproject from any 
+    Converts a project to a top-level project
+    in the tree by removing all of its parents
+    and removing it as a subproject from any
     parent projects.
 
     Arguments:
-            project_id - integer a project id 
+            project_id - integer a project id
 
     Returns:
-            an HttpResponseRedirect to the project view 
+            an HttpResponseRedirect to the project view
 
     """
 
@@ -819,7 +818,7 @@ def project_to_top(request, project_id):
 @login_required
 def toggle_project(request, project_id):
     """
-    Toggles a project between being active 
+    Toggles a project between being active
     and inactive.
 
     Arguments:
@@ -844,7 +843,7 @@ def toggle_project(request, project_id):
 @login_required
 def convert_task_to_subproject(request, task_id):
     """
-    Converts a task into a project and removes the 
+    Converts a task into a project and removes the
     original task.
 
     Arguments:

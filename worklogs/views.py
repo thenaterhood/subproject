@@ -105,7 +105,7 @@ def import_worklog_csv(request):
 @login_required
 def add_worklog(request, proj_id):
     """
-    Provides a blank worklog form and accepts 
+    Provides a blank worklog form and accepts
     the data from it.
     """
     project = Project.objects.get(id=proj_id)
@@ -181,11 +181,20 @@ def view_worklog(request, log_id):
 
     return render_to_response('worklog_view.html', RequestContext(request, args))
 
+@login_required
+def list_worklogs(request):
+    """
+    Lists the user's worklogs
+    """
+    pageData = {}
+    pageData['logs'] = Worklog.objects.filter(owner=request.user).order_by("-datestamp")
+    return render_to_response('worklog_list.html', pageData)
+
 
 @login_required
 def edit_worklog(request, log_id):
     """
-    Displays a worklog's data and allows for it 
+    Displays a worklog's data and allows for it
     to be edited and saved.
     """
     worklog = Worklog.objects.get(id=log_id)
