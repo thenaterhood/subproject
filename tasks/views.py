@@ -247,7 +247,7 @@ def assign_task_tag(request, task_id, tag_id=False):
 
 
 @login_required
-def add_task(request, proj_id=False):
+def add_task(request, proj_id=False, task_id=False):
     """
     Provides a blank form for creating a new
     task and the facilities for saving it and
@@ -261,19 +261,33 @@ def add_task(request, proj_id=False):
         if ('public' not in request.POST):
             postData['public'] = 'off'
 
-        form = EditTaskForm(postData)
+        if ( task_id == False):
+          form = EditTaskForm(postData)
+        else:
+          instance = ProjectTask.objects.get(id=task_id)
+          form = EditTaskForm(postData, instance=instance)
+
         if form.is_valid():
 
-            projTask = ProjectTask()
+            if ( task_id == False ):
+              projTask = ProjectTask()
+            else:
+              projTask = ProjectTask.objects.get(id=task_id)
+
             projTask.summary = form.cleaned_data['summary']
             projTask.description = form.cleaned_data['description']
+            projTask.public = (postData['public'] != 'off')
             projTask.creator = request.user
 
-            projTask.save()
+            if ( task_id == False):
+              projTask.save()
 
-            projTask.assigned.add(request.user)
-            projTask.public = (postData['public'] != 'off')
-            projTask.save()
+              projTask.assigned.add(request.user)
+              projTask.save()
+
+            elif( task_id != False and instance.creator == request.user ):
+              projTask.save()
+
 
             if proj_id != False:
                 project = Project.objects.get(id=proj_id)
@@ -442,52 +456,6 @@ def remove_task_member(request, task_id, user_id):
         messages.info(request, "Unassigned " + user.username)
 
     return HttpResponseRedirect('/projects/task/view/' + str(task_id) + "/")
-
-
-@login_required
-def edit_task(request, task_id):
-    """
-    Provides a form populated with a task's data that
-    allows the task to be updated and saved.
-    """
-    task = ProjectTask.objects.get(id=task_id)
-
-    if (request.method == "POST"):
-
-        postData = deepcopy(request.POST)
-
-        if ('public' not in request.POST):
-            postData['public'] = 'off'
-
-        form = EditTaskForm(postData, instance=task)
-        if form.is_valid() and request.user == task.creator:
-            task.public = (postData['public'] != 'off')
-            task.save()
-
-            return HttpResponseRedirect('/projects/task/view/' + str(task.id) + "/")
-
-        elif request.user != task.creator:
-            messages.error(
-                request, "You do not have permission to edit this task.")
-            return HttpResponseRedirect('/projects/task/view/' + str(task.id) + "/")
-
-        else:
-
-            messages.error(request, "Please fill out both fields.")
-            pageData = {}
-            pageData['form'] = EditTaskForm(request.POST)
-            pageData['task'] = ProjectTask.objects.get(id=task_id)
-            return render_to_response('task_edit.html', RequestContext(request, pageData))
-
-    else:
-
-        form = EditTaskForm(instance=task)
-
-        args = {}
-        args['form'] = form
-        args['task'] = task
-
-        return render_to_response('task_edit.html', RequestContext(request, args))
 
 
 @login_required
