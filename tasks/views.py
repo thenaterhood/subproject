@@ -261,7 +261,7 @@ def add_task(request, proj_id=False):
         if ('public' not in request.POST):
             postData['public'] = 'off'
 
-        form = EditTaskForm(request.POST)
+        form = EditTaskForm(postData)
         if form.is_valid():
 
             projTask = ProjectTask()
@@ -287,7 +287,10 @@ def add_task(request, proj_id=False):
 
             messages.info(request, "Task Saved.")
 
-            return HttpResponseRedirect('/projects/addtotask/' + str(projTask.id))
+            if ( "saveandassign" in request.POST ):
+              return HttpResponseRedirect('/projects/addtotask/' + str(projTask.id))
+            else:
+              return HttpResponseRedirect('/projects/task/view/' + str(projTask.id))
 
         else:
             messages.error(request, "Please fill out both fields.")
@@ -357,11 +360,11 @@ def view_task(request, task_id):
     initialDict = {
         "summary": task.summary,
         "description": task.description,
+        "public":bool(task.public)
     }
 
     form = EditTaskForm()
     form.initial = initialDict
-
     args['form'] = form
     args['openOn'] = [task.project]
     args['task'] = task
@@ -456,9 +459,8 @@ def edit_task(request, task_id):
         if ('public' not in request.POST):
             postData['public'] = 'off'
 
-        form = EditTaskForm(request.POST, instance=task)
+        form = EditTaskForm(postData, instance=task)
         if form.is_valid() and request.user == task.creator:
-
             task.public = (postData['public'] != 'off')
             task.save()
 

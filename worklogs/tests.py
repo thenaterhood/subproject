@@ -62,3 +62,31 @@ class WorklogActions(TestCase):
 
         self.assertTrue('worklog' in response.context)
         self.assertEqual(log, response.context['worklog'])
+
+
+    def test_change_privacy(self):
+        worklog = {}
+        worklog['summary'] = "Joe's Work"
+        worklog['description'] = "Joe's"
+        worklog['minutes'] = 0
+        worklog['hours'] = 1
+
+        #load settings page. Creates settings object if
+        #not exists
+        response = self.client.post('/projects/addwork/1/', worklog)
+
+        response = self.client.get("/work/settings")
+
+        #make things public, check that the added worklog is shown
+        response = self.client.post("/work/settings/", {'public':'On'} )
+
+        anonUser = Client()
+        anonResponse = anonUser.get("/u/joe/work/")
+
+        self.assertTrue( len( anonResponse.context['logs'] ) > 0)
+
+        #make things private, check that nothing is shown
+        response = self.client.post("/work/settings/", {})
+        anonResponse = anonUser.get("/u/joe/work/")
+
+        self.assertTrue( len( anonResponse.context['logs']) == 0)

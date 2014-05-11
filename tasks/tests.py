@@ -78,16 +78,20 @@ class TaskActions(TestCase):
         tdata['description'] = "Just Mine"
 
         c = Client()
+
+        # Check that a not logged in user is not able to create tasks
         response = c.post('/projects/addtask/', tdata)
 
         self.assertEqual(
             ProjectTask.objects.filter(summary="Just Mine").count(), 0)
 
-        c.login(username='joe', password='pass')
+        # Log a user in and check that a task can be created
+        c = self.client
 
         t = ProjectTask.objects.get(id=1)
 
         response = c.post('/projects/addtask/', tdata)
+
         self.assertEqual(
             ProjectTask.objects.filter(summary="My Task").count(), 1)
 

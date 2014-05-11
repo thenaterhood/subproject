@@ -19,12 +19,14 @@
 {% endfor %}
 
 		<input class="btn btn-success" type="submit" value="Save" />
+		{% if task %}
 		<a class="btn btn-warning" href="/projects/task/view/{{task.id}}/">Cancel</a>
 
 		<span style="float:right;">
 		<a class="btn btn-warning" href="/projects/task/tosubproject/{{task.id}}">Convert to Project</a>
 		<a class="btn btn-danger" href="/projects/task/delete/{{task.id}}/">Delete Task</a>
 		</span>
+		{% endif %}
 
 	</form> <!--Close the form tag-->
 
