@@ -82,7 +82,7 @@
 			</div>
 			<div id="tags" class="tab-pane">
 				<h4><img src="/static/img/tag.png" />Your Tags 	<a href="/projects/task/{{task.id}}/addtag">(Add a Tag)</a></h4>
-				<p>{% for t in yourTags %} 
+				<p>{% for t in yourTags %}
 							{% if t.visible %}
 					<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
@@ -90,7 +90,7 @@
 					<br />
 					<hr />
 					<h4><img src="/static/img/tag.png" />All Tags Visible to You</h4>
-					<p>{% for t in tags %} 
+					<p>{% for t in tags %}
 							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}
 					</p>
 
@@ -99,7 +99,7 @@
 			<div id="assignees" class="tab-pane">
 				<h4><img src="/static/img/members.png" />Task Assignees</h4>
 				<p>Task assignees are users who are assigned to a task. The task will appear in their Todo page and they can mark the task as completed on any project the task belongs to, provided they are also a member of the project.</p>
-				
+
 				<table class="table table-striped">
 					<tr>
 						<th>Assignee</th>
@@ -110,11 +110,11 @@
 
 					<tr>
 						<td>{{u}}</td>
-						<td> {%if canEdit %} 
+						<td> {%if canEdit %}
 
 							{% if u != task.creator %}
 
-							<a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a> 
+							<a class="btn btn-danger" href="/projects/task/removemember/{{task.id}}/{{u.id}}/">Unassign</a>
 
 							{% else %}
 							<p>Task Owner</p>
@@ -149,23 +149,20 @@
 
 
 				</table>
-			
+
 			</div>
 				{% if canEdit %}
 				<div id="edit" class="tab-pane">
 					<h3><img src="/static/img/task.png" />Edit Task</h3>
 					<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
-						{% for field in form %}
-						<fieldset class="form-group">
-							<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-							<input type="text" class="form-control"
-							name="{{ field.name }}"
-							id="id_{{ field.name }}"
-							value="{{ field.value }}" > 
-							<p class="help-text">{{ field.help_text }} </p>
-						</fieldset>
-						{% endfor %}
+{% for field in form %}
+<fieldset class="form-group">
+<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+	{{field}}
+	<p>{{field.help_text}}</p>
+</fieldset>
+{% endfor %}
 
 						<input class="btn btn-success" type="submit" value="Save" />
 						<a class="btn btn-warning" href="/projects/task/view/{{task.id}}/">Cancel</a>

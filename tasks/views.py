@@ -8,6 +8,8 @@ from django.db.models import F
 from django.db.models import Q
 from django.contrib import messages
 
+from copy import deepcopy
+
 from tasks.models import ProjectTask
 from tasks.forms import EditTaskForm
 
@@ -22,7 +24,7 @@ from user.forms import AddMemberForm
 @login_required
 def tasks_by_status(request, assignee=False, status='inprogress'):
     """
-    Displays the user's tasks and todo filtered 
+    Displays the user's tasks and todo filtered
     by the status.
     """
     inprogress = False
@@ -70,7 +72,6 @@ def tasks_by_status(request, assignee=False, status='inprogress'):
     return render_to_response('task_list.html', RequestContext(request, args))
 
 
-@login_required
 def all_tasks(request, user=False):
 
     if ( not request.user.is_authenticated() and not user ):
@@ -95,16 +96,17 @@ def all_tasks(request, user=False):
         if ( request.user.is_authenticated() ):
             args['tags'] = Tag.objects.filter(Q(owner=request.user) | Q(
                 users=request.user) | Q(viewers=request.user) | Q(owner=manager,public=True)).order_by("name")
-            
+
             args['tasks'] = apply_task_filter(request, ProjectTask.objects.filter(
-                Q(creator=manager) ).filter( Q(assigned=request.user ) ).distinct() ).order_by('-startDate')
+                Q(creator=manager) ).filter( Q(assigned=request.user )|Q(public=True) ).distinct() ).order_by('-startDate')
 
             args['projects'] = Project.objects.filter(manager=manager).filter( Q(public=True)|Q(members=request.user) ).distinct().order_by("name")
 
         else:
             args['tags'] = Tag.objects.filter( Q(owner=manager,public=True)).order_by("name")
 
-            args['tasks'] = []
+            args['tasks'] = apply_task_filter(request, ProjectTask.objects.filter(
+                Q(creator=manager) ).filter( Q(public=True) ).distinct() ).order_by('-startDate')
 
             args['projects'] = Project.objects.filter(manager=manager).filter( Q(public=True) ).distinct().order_by("name")
 
@@ -129,7 +131,7 @@ def all_tasks(request, user=False):
 @login_required
 def user_all_tasks(request, assignee=False, userange=True):
     """
-    Displays all of the tasks created by the 
+    Displays all of the tasks created by the
     logged in user
     """
 
@@ -214,7 +216,7 @@ def assign_task_tag(request, task_id, tag_id=False):
                     selection page)
 
     Returns:
-            a rendered tag selection page or a redirect to the 
+            a rendered tag selection page or a redirect to the
             original page.
     """
     returnUrl = '/projects/task/view/' + str(task_id)
@@ -247,12 +249,17 @@ def assign_task_tag(request, task_id, tag_id=False):
 @login_required
 def add_task(request, proj_id=False):
     """
-    Provides a blank form for creating a new 
-    task and the facilities for saving it and 
+    Provides a blank form for creating a new
+    task and the facilities for saving it and
     redirecting to assign it to a project.
     """
 
     if request.method == "POST" and "useexisting" not in request.POST:
+
+        postData = deepcopy(request.POST)
+
+        if ('public' not in request.POST):
+            postData['public'] = 'off'
 
         form = EditTaskForm(request.POST)
         if form.is_valid():
@@ -265,6 +272,7 @@ def add_task(request, proj_id=False):
             projTask.save()
 
             projTask.assigned.add(request.user)
+            projTask.public = (postData['public'] != 'off')
             projTask.save()
 
             if proj_id != False:
@@ -383,7 +391,7 @@ def add_task_member(request, task_id):
             user_id - integer user ID
 
     Returns:
-            redirect back to the project view page 
+            redirect back to the project view page
     """
 
     task = ProjectTask.objects.get(id=task_id)
@@ -419,7 +427,7 @@ def remove_task_member(request, task_id, user_id):
             user_id - integer user ID
 
     Returns:
-            redirect back to the project view page 
+            redirect back to the project view page
     """
     task = ProjectTask.objects.get(id=task_id)
     user = User.objects.get(id=user_id)
@@ -436,15 +444,22 @@ def remove_task_member(request, task_id, user_id):
 @login_required
 def edit_task(request, task_id):
     """
-    Provides a form populated with a task's data that 
+    Provides a form populated with a task's data that
     allows the task to be updated and saved.
     """
     task = ProjectTask.objects.get(id=task_id)
 
     if (request.method == "POST"):
+
+        postData = deepcopy(request.POST)
+
+        if ('public' not in request.POST):
+            postData['public'] = 'off'
+
         form = EditTaskForm(request.POST, instance=task)
         if form.is_valid() and request.user == task.creator:
 
+            task.public = (postData['public'] != 'off')
             task.save()
 
             return HttpResponseRedirect('/projects/task/view/' + str(task.id) + "/")
@@ -476,7 +491,7 @@ def edit_task(request, task_id):
 @login_required
 def my_todo(request):
     """
-    Displays the My Todo page with the list of active 
+    Displays the My Todo page with the list of active
     tasks the user has assigned to them.
     """
 

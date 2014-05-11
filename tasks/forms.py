@@ -7,17 +7,19 @@ from tasks.models import ProjectTask
 class EditTaskForm(forms.ModelForm):
 
     """
-    Defines a form for creating and editing task 
+    Defines a form for creating and editing task
     objects.
     """
     summary = forms.CharField(widget=forms.TextInput(
         attrs={"required": True, "max_length": 140, "placeholder": "Task Summary", 'class': 'form-control'}), label=(""))
     description = forms.CharField(widget=forms.Textarea(
         attrs={"required": False, "max_length": 300, "placeholder": "Task Description", 'class': 'form-control'}), label=(""))
+    public = forms.BooleanField(widget=forms.CheckboxInput(
+        attrs={'class': 'form-control', 'title': 'Make this task publicly visible.'}))
 
     class Meta:
         model = ProjectTask
-        fields = ('summary', 'description')
+        fields = ('summary', 'description', 'public')
 
     def save(self, owner=False, commit=True):
         newTask = super(EditTaskForm, self).save(commit=False)

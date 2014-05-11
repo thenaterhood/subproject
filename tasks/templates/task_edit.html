@@ -10,14 +10,11 @@
 	<h3><img src="/static/img/task.png" />Edit Task</h3>
 	<form id="registerForm" action="/projects/task/edit/{{task.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
-		{% for field in form %}
+{% for field in form %}
 <fieldset class="form-group">
-  <label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
-      <input type="text" class="form-control"
-        name="{{ field.name }}"
-        id="id_{{ field.name }}"
-        value="{{ field.value }}" > 
-        <p class="help-text">{{ field.help_text }} </p>
+<label class="control-label" for="id_{{ field.name }}">{{ field.name }}</label>
+	{{field}}
+	<p>{{field.help_text}}</p>
 </fieldset>
 {% endfor %}
 

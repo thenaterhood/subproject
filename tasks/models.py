@@ -9,7 +9,7 @@ from tagging.models import Tag
 class ProjectTask(models.Model):
 
     """
-    Defines a task (which may or may not be associated 
+    Defines a task (which may or may not be associated
     with a project).
     """
     assigned = models.ManyToManyField(User, related_name="Assigned Members")
@@ -23,6 +23,7 @@ class ProjectTask(models.Model):
     completed = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="Task Tags")
     project = models.ForeignKey(Project, related_name="Project", null=True)
+    public = models.BooleanField(default=False)
 
     def __str__(self):
         return "Task " + str(self.summary)
