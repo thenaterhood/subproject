@@ -20,6 +20,9 @@
 	<h1><img src="/static/img/work.png" />{{owner.username}}'s Worklogs</h1>
 {% endif %}
 
+{% if num_logs < 1 %}
+<h4>No work has been logged yet.</h4>
+{% else %}
 
 	<table class="table table-striped">
 		<tr>
@@ -44,5 +47,6 @@
 	{% endfor %}
 
 	</table>
+	{% endif %}
 
 {% endblock %}

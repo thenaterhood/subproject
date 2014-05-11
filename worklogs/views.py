@@ -252,6 +252,8 @@ def list_worklogs(request, user=False):
           pageData['owner'] = creator
           pageData['logs'] = []
 
+    pageData['num_logs'] = len(pageData['logs'])
+
     return render_to_response('worklog_list.html', pageData)
 
 
