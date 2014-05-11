@@ -15,6 +15,7 @@ import dateutil.parser
 
 from worklogs.forms import EditWorklogForm
 from worklogs.models import Worklog
+from worklogs.models import WorklogPrefs
 
 from project.models import Project
 from project.models import TimelineEvent
@@ -181,18 +182,47 @@ def view_worklog(request, log_id):
 
     return render_to_response('worklog_view.html', RequestContext(request, args))
 
-@login_required
-def list_worklogs(request):
+def _get_worklog_prefs(user):
+    wpref = False
+    try:
+      wpref = WorklogPrefs.objects.get(owner=user)
+    except:
+      wpref = WorklogPrefs()
+      wpref.owner = user
+      wpref.save()
+
+    return wpref
+
+def list_worklogs(request, user=False):
     """
     Lists the user's worklogs
     """
     pageData = {}
-    pageData['logs'] = Worklog.objects.filter(owner=request.user).order_by("-datestamp")
+
+    if ( user == False and request.user.is_authenticated() ):
+      pageData['logs'] = Worklog.objects.filter(owner=request.user).order_by("-datestamp")
+      pageData['owner'] = request.user
+
+    else:
+      creator = User.objects.get(username__iexact=user)
+
+      if ( creator == request.user ):
+        pageData['logs'] = Worklog.objects.filter(owner=creator).order_by("-datestamp")
+        pageData['owner'] = creator
+      else:
+        pref = _get_worklog_prefs( creator )
+        if ( pref.public ):
+          pageData['logs'] = Worklog.objects.filter(owner=creator).order_by("-datestamp")
+          pageData['owner'] = creator
+        else:
+          pageData['owner'] = creator
+          pageData['logs'] = []
+
     return render_to_response('worklog_list.html', pageData)
 
 
 @login_required
-def edit_worklog(request, log_id):
+def edit_worklog(request, log_id=False, proj_id=False):
     """
     Displays a worklog's data and allows for it
     to be edited and saved.

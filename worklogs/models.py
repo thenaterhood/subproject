@@ -8,7 +8,7 @@ from project.models import Project
 class Worklog(models.Model):
 
     """
-    Defines a model that contains data for work logged 
+    Defines a model that contains data for work logged
     on a Project.
     """
     project = models.ForeignKey(Project)
@@ -21,3 +21,7 @@ class Worklog(models.Model):
 
     def __str__(self):
         return self.project.__str__() + " log (" + str(self.datestamp) + " )"
+
+class WorklogPrefs(models.Model):
+    owner = models.ForeignKey(User)
+    public = models.BooleanField(default=False)

@@ -122,7 +122,8 @@ urlpatterns = patterns('',
     url(r'^projects/work/viewall/(?P<proj_id>\d+)/$',
                                     'project.views.view_all_work'),
     url(r'^work/$', 'worklogs.views.list_worklogs'),
-
+    url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/work/$',
+                                    'worklogs.views.list_worklogs'),
     # Workload/Project views
     url(r'^projects/usertasks/$',   'tasks.views.user_all_tasks'),
     url(r'^projects/tree/$',        'project.views.view_tree'),
