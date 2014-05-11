@@ -11,9 +11,13 @@ from django.db.models import Count
 from django.contrib import messages
 from django.db.models import Sum
 
+from copy import deepcopy
+
 import dateutil.parser
 
 from worklogs.forms import EditWorklogForm
+from worklogs.forms import EditSettingsForm
+
 from worklogs.models import Worklog
 from worklogs.models import WorklogPrefs
 
@@ -181,6 +185,36 @@ def view_worklog(request, log_id):
     args['project'] = worklog.project
 
     return render_to_response('worklog_view.html', RequestContext(request, args))
+
+@login_required
+def edit_settings(request):
+  settings = _get_worklog_prefs(request.user)
+
+  if ( request.method == 'POST' ):
+    postData = deepcopy(request.POST)
+
+    if ('public' not in request.POST):
+        postData['public'] = 'off'
+
+    form = EditSettingsForm( postData, instance=settings )
+    if ( form.is_valid() ):
+      wprefs = form.save()
+      wprefs.public = (postData['public'] != 'off')
+      wprefs.save()
+
+      form = EditSettingsForm(instance=wprefs)
+
+
+      messages.info(request, "Your worklog settings have been updated." )
+    else:
+      messages.error(request, "There was an error saving your worklog settings.")
+  else:
+    form = EditSettingsForm(instance=settings)
+
+  pageData = {}
+  pageData['form'] = form
+  return render_to_response('worklog_settings.html', RequestContext(request, pageData) )
+
 
 def _get_worklog_prefs(user):
     wpref = False

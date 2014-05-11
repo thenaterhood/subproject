@@ -1,6 +1,7 @@
 from django import forms
 
 from worklogs.models import Worklog
+from worklogs.models import WorklogPrefs
 
 
 class EditWorklogForm(forms.ModelForm):
@@ -42,3 +43,11 @@ class EditWorklogForm(forms.ModelForm):
             newLog.save()
 
         return newLog
+
+class EditSettingsForm(forms.ModelForm):
+    public = forms.BooleanField(help_text="Make your worklogs visible to the public.",widget=forms.CheckboxInput(
+      attrs={'class': 'form-control', 'title': 'Make your worklogs visible to the public.'}))
+
+    class Meta:
+      model = WorklogPrefs
+      fields = ('public',)
