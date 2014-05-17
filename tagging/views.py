@@ -79,7 +79,7 @@ def add_tag(request, tag_id=False, project_id=False, task_id=False):
             if ('returnUrl' in request.session):
                 return HttpResponseRedirect(request.session['returnUrl'])
             else:
-                return HttpResponseRedirect('/projects/tags/' + str(newTag.id))
+                return HttpResponseRedirect('/tags/' + str(newTag.id))
 
         else:
 
@@ -129,7 +129,7 @@ def view_tag(request, tag_id):
         return render_to_response('tag_view.html', RequestContext(request, pageData))
 
     else:
-        return HttpResponseRedirect('/projects/mytags')
+        return HttpResponseRedirect('/tags/')
 
 
 @login_required
@@ -183,7 +183,7 @@ def toggle_tag_user(request, tag_id, user_id=False):
 
     messages.info(request, "Updated " + str(user) + "'s tag user status.")
 
-    return HttpResponseRedirect('/projects/tags/' + str(tag_id))
+    return HttpResponseRedirect('/tags/' + str(tag_id))
 
 
 @login_required
@@ -218,4 +218,4 @@ def toggle_tag_viewer(request, tag_id, user_id=False):
         tag.save()
 
     messages.info(request, "Updated " + str(user) + "'s tag viewer status.")
-    return HttpResponseRedirect('/projects/tags/' + str(tag_id))
+    return HttpResponseRedirect('/tags/' + str(tag_id))

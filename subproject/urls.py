@@ -19,7 +19,7 @@ urlpatterns = patterns('',
 
     # URLs for the user application
     url(r'^$',                      'project.views.project_welcome'),
-    
+
     url(r'^user/',                include('user.urls')),
 
     url(r'^accounts/login/$',     'user.views.login_user'),
@@ -144,22 +144,7 @@ urlpatterns = patterns('',
 
 
     # Tag management
-    url(r'^projects/newtag/$',      'tagging.views.add_tag'),
-    url(r'^projects/tags/(?P<tag_id>\d+)/$',
-                                    'tagging.views.view_tag'),
-    url(r'^projects/tag/edit/(?P<tag_id>\d+)/$',
-                                    'tagging.views.add_tag' ),
-    url(r'^projects/tag/delete/(?P<tag_id>\d+)/$',
-                                    'tagging.views.delete_tag' ),
-    url(r'^projects/tag/adduser/(?P<tag_id>\d+)/$',
-                                    'tagging.views.toggle_tag_user' ),
-    url(r'^projects/tag/addviewer/(?P<tag_id>\d+)/$',
-                                    'tagging.views.toggle_tag_viewer' ),
-    url(r'^projects/tag/(?P<tag_id>\d+)/revokeuser/(?P<user_id>\d+)/$',
-                                    'tagging.views.toggle_tag_user' ),
-    url(r'^projects/tag/(?P<tag_id>\d+)/revokeviewer/(?P<user_id>\d+)/$',
-                                    'tagging.views.toggle_tag_viewer' ),
-    url(r'^projects/tags/',         'tagging.views.list_tags'),
+    url(r'^tags/',               include('tagging.urls')),
 
     # Tag association
     url(r'^projects/(?P<proj_id>\d+)/addtag/$',

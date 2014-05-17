@@ -11,7 +11,7 @@
 		<p class="error">You are not a member of any projects.</p>
 	{% endif %}
 
-	<p><a class="btn btn-success" href="/projects/newtag/">Create a Tag</a></p>
+	<p><a class="btn btn-success" href="new">Create a Tag</a></p>
 
 	<table class="table table-striped">
 		<tr>
@@ -27,12 +27,12 @@
 			<!--<h5><em>You manage this project. </em><a href="/projects/edit/{{project.id}}/">Edit Details</a></h5>-->
 			{% endif %}
 			<tr>
-				<td><a href="/projects/tags/{{t.id}}/">{{ t.name }}</a></td>
+				<td><a href="{{t.id}}/">{{ t.name }}</a></td>
 				<td>{{t.owner}}</td>
 				<td>{% if t.owner == user %}Owner{% elif user in t.users.all %}User{% else %}Viewer{% endif %}</td>
 				<td><a href="/projects/addtagfilter/{{t.id}}/">Filter with this tag</a></td>
 				<!--<li>Description: {{project.description}}</li>-->
-				<td>{% if t.owner == user or user in t.users.all %}<a href="/projects/tags/{{t.id}}/#edit">Edit</a>{% else %}You can only view this tag.{% endif %}</td>
+				<td>{% if t.owner == user or user in t.users.all %}<a href="{{t.id}}/#edit">Edit</a>{% else %}You can only view this tag.{% endif %}</td>
 			</tr>
 		</div>
 	{% endfor %}

@@ -62,7 +62,7 @@ class TagActions(TestCase):
         tagData['name'] = 'joetag'
         tagData['description'] = "Joe's Tag"
 
-        response = self.client.post('/projects/newtag/', tagData)
+        response = self.client.post('/tags/new/', tagData)
 
         tag = Tag.objects.filter(name='joetag')
 
@@ -76,7 +76,7 @@ class TagActions(TestCase):
         tagData['description'] = "Joe's Tag"
         tagData['public'] = True
 
-        response = self.client.post('/projects/newtag/', tagData)
+        response = self.client.post('/tags/new/', tagData)
 
         tag = Tag.objects.filter(name='joetag')
 
@@ -85,7 +85,7 @@ class TagActions(TestCase):
 
     def test_delete_tag(self):
 
-        response = self.client.get('/projects/tag/delete/1/')
+        response = self.client.get('/tags/delete/1/')
 
         tags = Tag.objects.filter(name="Joe's Tag")
 
@@ -96,15 +96,15 @@ class TagActions(TestCase):
         bob = User.objects.get(username='bob')
 
         response = Client().post(
-            '/projects/tag/addviewer/1/', {'username': 'bob'})
+            '/tags/addviewer/1/', {'username': 'bob'})
 
         self.assertFalse(bob in Tag.objects.get(id=1).viewers.all())
 
         response = self.client.post(
-            '/projects/tag/addviewer/1/', {'username': 'bob'})
+            '/tags/addviewer/1/', {'username': 'bob'})
         self.assertTrue(bob in Tag.objects.get(id=1).viewers.all())
 
-        response = self.client.get('/projects/tag/1/revokeviewer/2/')
+        response = self.client.get('/tags/1/revokeviewer/2/')
         self.assertFalse(bob in Tag.objects.get(id=1).viewers.all())
 
     def test_add_remove_user(self):
@@ -112,20 +112,20 @@ class TagActions(TestCase):
         bob = User.objects.get(username='bob')
 
         response = Client().post(
-            '/projects/tag/adduser/1/', {'username': 'bob'})
+            '/tags/adduser/1/', {'username': 'bob'})
 
         self.assertFalse(bob in Tag.objects.get(id=1).users.all())
 
         response = self.client.post(
-            '/projects/tag/adduser/1/', {'username': 'bob'})
+            '/tags/adduser/1/', {'username': 'bob'})
         self.assertTrue(bob in Tag.objects.get(id=1).users.all())
 
-        response = self.client.get('/projects/tag/1/revokeuser/2/')
+        response = self.client.get('/tags/1/revokeuser/2/')
         self.assertFalse(bob in Tag.objects.get(id=1).users.all())
 
     def test_view_tag(self):
 
-        response = self.client.get('/projects/tags/1/')
+        response = self.client.get('/tags/1/')
 
         self.assertTrue('tag' in response.context)
         tag = Tag.objects.get(id=1)
@@ -134,7 +134,7 @@ class TagActions(TestCase):
 
     def test_list_tags(self):
 
-        response = self.client.get('/projects/tags/')
+        response = self.client.get('/tags/')
 
         self.assertTrue('tags' in response.context)
         self.assertTrue(len(response.context['tags']) > 0)

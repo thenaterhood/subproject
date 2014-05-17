@@ -84,14 +84,14 @@
 				<h4><img src="/static/img/tag.png" />Your Tags 	<a href="/projects/task/{{task.id}}/addtag">(Add a Tag)</a></h4>
 				<p>{% for t in yourTags %}
 							{% if t.visible %}
-					<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/projects/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
+					<a href="/projects/task/{{task.id}}/untag/{{t.id}}" title="Remove this Tag"><img src="/static/img/delete.png" width="24px" /></a>&nbsp;<a href="/tags/{{t.id}}">{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}</p>
 
 
 					<br />
 					<hr />
 					<h4><img src="/static/img/tag.png" />All Tags Visible to You</h4>
 					<p>{% for t in tags %}
-							{% if t.visible %}<a href="/projects/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}
+							{% if t.visible %}<a href="/tags/{{t.id}}"><img src="/static/img/tag.png" width="24px" />&nbsp;{{t.name}}</a>,&nbsp;&nbsp;&nbsp;&nbsp; {% endif %}{% endfor %}
 					</p>
 
 			</div>

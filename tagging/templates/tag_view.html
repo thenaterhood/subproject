@@ -35,7 +35,7 @@
 				</div>
 
 
-						
+
 						{% if canEdit %}
 						<div id="assignees" class="tab-pane">
 
@@ -53,7 +53,7 @@
 								{% for u in viewers %}
 								<tr>
 									<td>{{u}}</td>
-									<td><a class="btn btn-danger" href="/projects/tag/{{tag.id}}/revokeviewer/{{u.id}}">Revoke</a></td>
+									<td><a class="btn btn-danger" href="/tags/{{tag.id}}/revokeviewer/{{u.id}}">Revoke</a></td>
 								</tr>
 								{% endfor %}
 
@@ -61,7 +61,7 @@
 
 								<td>
 
-									<form id="addTagViewer" action="/projects/tag/addviewer/{{tag.id}}/" method="POST">{% csrf_token %}
+									<form id="addTagViewer" action="/tags/addviewer/{{tag.id}}/" method="POST">{% csrf_token %}
 
 										{% for field in add_user_form %}
 
@@ -79,7 +79,7 @@
 							</table>
 
 							<h3><img src="/static/img/members.png" /> Tag Users</h3>
-							<p>Tag users can view and search this tag, and can add it to additional tasks or projects. 
+							<p>Tag users can view and search this tag, and can add it to additional tasks or projects.
 								The tag owner is not shown in this list, as they can't have their access revoked. Tag users are also able to add and revoke other tag users and viewers.</p>
 
 							<table class="table table-striped">
@@ -91,7 +91,7 @@
 								{% for u in users %}
 								<tr>
 									<td>{{u}}</td>
-									<td><a class="btn btn-danger" href="/projects/tag/{{tag.id}}/revokeuser/{{u.id}}">Revoke</a></td>
+									<td><a class="btn btn-danger" href="/tags/{{tag.id}}/revokeuser/{{u.id}}">Revoke</a></td>
 								</tr>
 								{% endfor %}
 
@@ -99,7 +99,7 @@
 
 								<td>
 
-									<form id="addTagUser" action="/projects/tag/adduser/{{tag.id}}/" method="POST">{% csrf_token %}
+									<form id="addTagUser" action="/tags/adduser/{{tag.id}}/" method="POST">{% csrf_token %}
 
 										{% for field in add_user_form %}
 
@@ -120,7 +120,7 @@
 
 						<div id="edit" class="tab-pane">
 							<h3><img src="/static/img/edit.png" />Edit Tag</h3>
-							<form id="registerForm" action="/projects/tag/edit/{{tag.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+							<form id="registerForm" action="/tags/edit/{{tag.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 								{% for field in form %}
 								<fieldset class="form-group">
@@ -131,10 +131,10 @@
 								{% endfor %}
 
 								<input class="btn btn-success" type="submit" value="Save" />
-								<a class="btn btn-warning" href="/projects/tags/{{tag.id}}/">Cancel</a>
+								<a class="btn btn-warning" href="/tags/{{tag.id}}/">Cancel</a>
 
 								<span style="float:right;">
-									<a class="btn btn-danger" href="/projects/tag/delete/{{tag.id}}/">Delete Tag</a>
+									<a class="btn btn-danger" href="/tags/delete/{{tag.id}}/">Delete Tag</a>
 								</span>
 
 							</form>
