@@ -141,7 +141,7 @@ def add_worklog(request, proj_id):
 
             messages.info(request, "Worklog saved successfully.")
 
-            return HttpResponseRedirect('/projects/work/view/' + str(workLog.id) + "/")
+            return HttpResponseRedirect('/work/' + str(workLog.id) + "/")
 
         else:
 
@@ -279,7 +279,7 @@ def edit_worklog(request, log_id=False, proj_id=False):
 
             messages.info(request, "Worklog updated.")
 
-            return HttpResponseRedirect('/projects/work/view/' + str(worklog.id) + "/")
+            return HttpResponseRedirect('/work/' + str(worklog.id) + "/")
 
         else:
             messages.error(request, "Invalid form information.")
@@ -297,3 +297,20 @@ def edit_worklog(request, log_id=False, proj_id=False):
         args['worklog'] = worklog
 
         return render_to_response('worklog_edit.html', RequestContext(request, args))
+
+@login_required
+def view_all_work(request, proj_id):
+    """
+    Lists all of the work logged on a selected
+    project
+    """
+    project = Project.objects.get(id=proj_id)
+
+    if request.user in project.members.all():
+        args = {}
+        args['project'] = project
+        args['logs'] = Worklog.objects.filter(project=project)
+        return render_to_response('worklog_list.html', args)
+
+    else:
+        return HttpResponseRedirect('/projects/')

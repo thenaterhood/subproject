@@ -98,7 +98,7 @@
 					{% endif %}
 				</div>
 				<div id="worklogs" class="tab-pane">
-					<h4><img src="/static/img/work.png" />Logged Work {%if isMember and project.active %}<a href="/projects/addwork/{{project.id}}/">(Add)</a>{%endif%}</h4>
+					<h4><img src="/static/img/work.png" />Logged Work {%if isMember and project.active %}<a href="/work/new/{{project.id}}/">(Add)</a>{%endif%}</h4>
 					{% if num_worklogs < 1 %}
 					<p>No work has been logged on this project.</p>
 					{% else %}
@@ -112,10 +112,10 @@
 
 						{% for w in worklogs %}
 						<tr>
-							<td><a href="/projects/work/view/{{w.id}}/">{{w.summary}}</a></td>
+							<td><a href="/work/{{w.id}}/">{{w.summary}}</a></td>
 							<td>{{w.owner}}</td>
 							<td>{{w.datestamp}}</td>
-							<td><a class="btn btn-info" href="/projects/work/view/{{w.id}}/">View</a></td>
+							<td><a class="btn btn-info" href="/work/{{w.id}}/">View</a></td>
 						</tr>
 
 						{% endfor %}

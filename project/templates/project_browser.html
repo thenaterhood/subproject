@@ -13,7 +13,7 @@
       {% else %}
         <div class="alert alert-info">
       {% endif %}
-              
+
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         {% if 'safe' in message.tags %}
         {{message|safe}}
@@ -32,12 +32,12 @@
 <div style="float:left; display:block;">Browsing "<a href="/u/{{selected.manager}}/projects/{{selected.name}}">{{selected.name}}</a>"</div>
 {% endif %}
 
-<div style="float:right; display:block;"> 
+<div style="float:right; display:block;">
 
 	{% if selected and selected.active %}
 	Add:
 	<a href="/projects/addtask/{{selected.id}}">+Task</a>&nbsp;
-	<a href="/projects/addwork/{{selected.id}}">+Worklog</a>&nbsp;
+	<a href="/work/new/{{selected.id}}">+Worklog</a>&nbsp;
 	<a href="/projects/newsub/{{selected.id}}">+Project</a>
 	{% elif selected and not selected.active %}
 	<em>This project is closed. {% if user == selected.manager %}<a href="/projects/toggle/{{selected.id}}">Re-open</a>{% endif %}</em>
@@ -66,13 +66,13 @@
 		{% if not projects and not tasks and not work %}
 
 			{% if selected %}
-			<p><em>This project does not contain subprojects, tasks, or work.</em> Add: 
+			<p><em>This project does not contain subprojects, tasks, or work.</em> Add:
 			<a href="/projects/addtask/{{selected.id}}">+Task</a>&nbsp;
-		<a href="/projects/addwork/{{selected.id}}">+Worklog</a>&nbsp;
+		<a href="/work/new/{{selected.id}}">+Worklog</a>&nbsp;
 		<a href="/projects/newsub/{{selected.id}}">+Project</a></p>
 			{% else %}
 
-					<p><em>You are not a member of any projects and haven't created tasks or work. 
+					<p><em>You are not a member of any projects and haven't created tasks or work.
 						Get started by <a href="/projects/addtask/">creating a task</a> or <a href="/projects/create">starting a project.</a></em></p>
 
 			{% endif %}
@@ -84,10 +84,10 @@
 
 		<div class="col-md-3">
 
-			<a id="link" context="projectMenu" pid="{{p.id}}" 
+			<a id="link" context="projectMenu" pid="{{p.id}}"
 			{% if p.manager == user %}
 			manager="Y"
-			{% endif %} 
+			{% endif %}
 			href="/projects/browser/{{p.id}}"
 			title="{{p.name}}"><img src="/static/img/project.png" />{{p.name|truncatechars:17}}</a>
 
@@ -101,12 +101,12 @@
 
 		<div class="col-md-3">
 
-			<a id="link" context="taskMenu" tid="{{t.id}}"  
-			{% if t.inProgress %} 
-			notInProgress="not" 
-			{% else %} 
-			notInProgress="as" 
-			{% endif %} 
+			<a id="link" context="taskMenu" tid="{{t.id}}"
+			{% if t.inProgress %}
+			notInProgress="not"
+			{% else %}
+			notInProgress="as"
+			{% endif %}
 
 			{% if t.creator == user %}
 			manager="Y"
@@ -122,7 +122,7 @@
 
 		<div class="col-md-3">
 
-			<a id="link" context="workMenu" wid="{{w.id}}" {% if w.owner == user %} manager="Y" {% endif %} href="/projects/work/view/{{w.id}}" title="{{w.summary}}"><img src="/static/img/work.png" />{{w.summary|truncatechars:17}}</a>
+			<a id="link" context="workMenu" wid="{{w.id}}" {% if w.owner == user %} manager="Y" {% endif %} href="/work/{{w.id}}" title="{{w.summary}}"><img src="/static/img/work.png" />{{w.summary|truncatechars:17}}</a>
 
 		</div>
 
@@ -132,14 +132,14 @@
 
 
 
-	</div>  
+	</div>
 </div>
 <hr />
 <script src="/static/js/contextMenu.js"></script>
 
 <script type="text/javascript" >
 
-projectMenu = { 
+projectMenu = {
 
 	attributes: "pid,manager" ,
 	items: [
@@ -147,24 +147,24 @@ projectMenu = {
 				type:RightContext.TYPE_MENU,
 				text:"Edit Project",
 				requires: ["manager", "Y"],
-				url:"/projects/edit/[pid]" 
+				url:"/projects/edit/[pid]"
 			},
 
 			{
 				type:RightContext.TYPE_MENU,
 				text:"View Project Dashboard",
-				url:"/projects/view/[pid]" 
-			}, 
+				url:"/projects/view/[pid]"
+			},
 
 			{
 				type:RightContext.TYPE_MENU,
 				text:"View Project Tree",
-				url:"/projects/tree/[pid]" 
+				url:"/projects/tree/[pid]"
 			}
 		]
 };
 
-taskMenu = { 
+taskMenu = {
 
 	attributes: "tid,notInProgress,manager" ,
 
@@ -173,26 +173,26 @@ taskMenu = {
 			type:RightContext.TYPE_MENU,
 			text:"Edit Task",
 			requires: ["manager", "Y"],
-			url:"/projects/task/edit/[tid]" 
+			url:"/projects/task/edit/[tid]"
 		},
 
 		{
 			type:RightContext.TYPE_MENU,
 			text:"View Task Dashboard",
-			url:"/projects/task/view/[tid]" 
-		}, 
+			url:"/projects/task/view/[tid]"
+		},
 
 		{
 			type:RightContext.TYPE_MENU,
 			text:"Mark [notInProgress] in Progress",
-			url:"/projects/task/inprogress/[tid]" 
+			url:"/projects/task/inprogress/[tid]"
 		}
 
 
 	]
 };
 
-workMenu = { 
+workMenu = {
 
 	attributes: "wid,notInProgress,manager" ,
 
@@ -201,17 +201,17 @@ workMenu = {
 			type:RightContext.TYPE_MENU,
 			text:"Edit Work",
 			requires: ["manager", "Y"],
-			url:"/projects/work/edit/[wid]" 
+			url:"/work/edit/[wid]"
 		},
 
 		{
 			type:RightContext.TYPE_MENU,
 			text:"View Worklog",
-			url:"/projects/work/view/[wid]" 
-		}, 
+			url:"/work/[wid]"
+		},
 
 		]
-					
+
 };
 
 RightContext.addMenu("projectMenu", projectMenu);

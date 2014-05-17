@@ -697,24 +697,6 @@ def view_all_task(request, proj_id):
 
 
 @login_required
-def view_all_work(request, proj_id):
-    """
-    Lists all of the work logged on a selected
-    project
-    """
-    project = Project.objects.get(id=proj_id)
-
-    if request.user in project.members.all():
-        args = {}
-        args['project'] = project
-        args['logs'] = Worklog.objects.filter(project=project)
-        return render_to_response('worklog_list.html', args)
-
-    else:
-        return HttpResponseRedirect('/projects/')
-
-
-@login_required
 def view_tree(request, project_id=False):
     """
     Displays an outline view of all the user's

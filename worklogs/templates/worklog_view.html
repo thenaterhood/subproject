@@ -44,7 +44,7 @@
     </div>
     {% if canEdit %}
     <div id="edit" class="tab-pane">
-    	<form id="registerForm" action="/projects/work/edit/{{worklog.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+    	<form id="registerForm" action="/work/edit/{{worklog.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}
 <fieldset class="form-group">
@@ -54,7 +54,7 @@
 {% endfor %}
 
 		<input id="registerButton" class="btn btn-success btn-large" type="submit" value="Save" style="border-radius: 1px;" />
-		<a class="btn btn-danger btn-large" href="/projects/work/view/{{worklog.id}}/">Cancel</a>
+		<a class="btn btn-danger btn-large" href="/work/{{worklog.id}}/">Cancel</a>
 
 	</form> <!--Close the form tag-->
   </div><!-- /.tab-content -->

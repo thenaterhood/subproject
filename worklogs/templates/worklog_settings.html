@@ -9,7 +9,7 @@
 	<div>
 
 	<h3>Edit your worklog settings</h3>
-	<form id="registerForm" action="/work/settings/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+	<form id="registerForm" action="settings/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 {% for field in form %}
 <fieldset class="form-group">

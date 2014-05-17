@@ -21,6 +21,8 @@ urlpatterns = patterns('',
     url(r'^$',                      'project.views.project_welcome'),
 
     url(r'^user/',                include('user.urls')),
+    # Tag management
+    url(r'^tags/',               include('tagging.urls')),
 
     url(r'^accounts/login/$',     'user.views.login_user'),
     url(r'^profile/(?P<username>[a-zA-Z0-9_.-]+)/$',
@@ -68,8 +70,6 @@ urlpatterns = patterns('',
                                     'project.views.add_member'),
     url(r'^projects/removemember/(?P<proj_id>\d+)/(?P<user_id>\d+)/$',
                                     'project.views.remove_member'),
-    url(r'^projects/addwork/(?P<proj_id>\d+)/$',
-                                    'worklogs.views.add_worklog'),
 
     # Task creation and management
     url(r'^projects/addtask/(?P<proj_id>\d+)/$',
@@ -114,16 +114,10 @@ urlpatterns = patterns('',
 
 
     # Work creation and management
-    url(r'^projects/work/view/(?P<log_id>\d+)/$',
-                                    'worklogs.views.view_worklog'),
-    url(r'^projects/work/edit/(?P<log_id>\d+)/$',
-                                    'worklogs.views.edit_worklog'),
-    url(r'^projects/work/viewall/(?P<proj_id>\d+)/$',
-                                    'project.views.view_all_work'),
-    url(r'^work/$', 'worklogs.views.list_worklogs'),
+    url(r'^work/',           include('worklogs.urls')),
+
     url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/work/$',
                                     'worklogs.views.list_worklogs'),
-    url(r'^work/settings/$', 'worklogs.views.edit_settings'),
 
     # Workload/Project views
     url(r'^projects/usertasks/$',   'tasks.views.user_all_tasks'),
@@ -140,11 +134,6 @@ urlpatterns = patterns('',
     url(r'^projects/usertasks/(?P<status>[a-zA-Z]+)/$',
                                     'tasks.views.tasks_by_status'),
     url(r'^projects/tasks/all/$',   'tasks.views.all_tasks'),
-
-
-
-    # Tag management
-    url(r'^tags/',               include('tagging.urls')),
 
     # Tag association
     url(r'^projects/(?P<proj_id>\d+)/addtag/$',

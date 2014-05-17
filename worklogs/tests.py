@@ -30,7 +30,7 @@ class WorklogActions(TestCase):
         worklog['minutes'] = 0
         worklog['hours'] = 1
 
-        response = self.client.post('/projects/addwork/1/', worklog)
+        response = self.client.post('/work/new/1/', worklog)
 
         logs = Worklog.objects.filter(summary="Joe's Work")
         self.assertTrue(logs.count() > 0)
@@ -43,7 +43,7 @@ class WorklogActions(TestCase):
 
         worklog['summary'] = "Just Joe"
 
-        response = self.client.post('/projects/work/edit/1/', worklog)
+        response = self.client.post('/work/edit/1/', worklog)
         logs = Worklog.objects.filter(summary="Just Joe")
         self.assertTrue(logs.count() > 0)
 
@@ -55,8 +55,8 @@ class WorklogActions(TestCase):
         worklog['minutes'] = 0
         worklog['hours'] = 1
 
-        response = self.client.post('/projects/addwork/1/', worklog)
-        response = self.client.get('/projects/work/view/1/')
+        response = self.client.post('/work/new/1/', worklog)
+        response = self.client.get('/work/1/')
 
         log = Worklog.objects.get(summary="Joe's Work")
 
@@ -73,7 +73,7 @@ class WorklogActions(TestCase):
 
         #load settings page. Creates settings object if
         #not exists
-        response = self.client.post('/projects/addwork/1/', worklog)
+        response = self.client.post('/work/new/1/', worklog)
 
         response = self.client.get("/work/settings")
 
