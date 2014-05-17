@@ -361,14 +361,13 @@ def untag_task(request, task_id, tag_id):
 
     return HttpResponseRedirect('/projects/task/view/' + str(task_id))
 
-
-@login_required
 def view_task(request, task_id):
     """
     Displays a chosen task
     """
 
     task = ProjectTask.objects.get(id=task_id)
+    showTask = task.public
 
     args = {}
     initialDict = {
@@ -383,20 +382,34 @@ def view_task(request, task_id):
     args['openOn'] = [task.project]
     args['task'] = task
     args['members'] = task.assigned.all()
-    args['user'] = request.user
-    args['canEdit'] = (task.creator == request.user)
-    args['isMember'] = (request.user in task.assigned.all())
-    args['tags'] = task.tags.filter(Q(owner=request.user) | Q(
-        users=request.user) | Q(viewers=request.user) | Q(public=True))
-    args['yourTags'] = args['tags'].filter(
-        Q(owner=request.user) | Q(users=request.user) | Q(viewers=request.user))
+
+    if( not request.user.is_authenticated() ):
+      args['canEdit'] = False
+      args['isMember'] = False
+      args['tags'] = task.tags.filter(Q(public=True))
+      args['yourTags'] = []
+
+    elif( request.user.is_authenticated() ):
+
+      args['user'] = request.user
+      args['canEdit'] = (task.creator == request.user)
+      args['isMember'] = (request.user in task.assigned.all())
+      args['tags'] = task.tags.filter(Q(owner=request.user) | Q(
+          users=request.user) | Q(viewers=request.user) | Q(public=True))
+      args['yourTags'] = args['tags'].filter(
+          Q(owner=request.user) | Q(users=request.user) | Q(viewers=request.user))
+
+      showTask = args['canEdit'] or task.public or args['isMember']
 
     args.update(csrf(request))
 
     args['add_member_form'] = AddMemberForm()
 
-    return render_to_response('task_view.html', RequestContext(request, args))
-
+    if ( showTask ):
+      return render_to_response('task_view.html', RequestContext(request, args))
+    else:
+      messages.warning(request, "The task you tried to view does not exist, or you don't have permission to see it.")
+      return HttpResponseRedirect('/projects/')
 
 @login_required
 def add_task_member(request, task_id):
