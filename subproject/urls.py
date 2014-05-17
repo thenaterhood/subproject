@@ -21,9 +21,6 @@ urlpatterns = patterns('',
     url(r'^$',                      'project.views.project_welcome'),
 
     url(r'^user/',                include('user.urls')),
-    # Tag management
-    url(r'^tags/',               include('tagging.urls')),
-
     url(r'^accounts/login/$',     'user.views.login_user'),
     url(r'^profile/(?P<username>[a-zA-Z0-9_.-]+)/$',
                                           'user.views.view_profile'),
@@ -31,7 +28,14 @@ urlpatterns = patterns('',
                                           'user.views.view_profile'),
     url(r'^u/(?P<username>[a-zA-Z0-9_.-]+)/$',
                                           'user.views.view_profile'),
+    # Tag management
+    url(r'^tags/',               include('tagging.urls')),
 
+    # Work creation and management
+    url(r'^work/',              include('worklogs.urls')),
+
+    url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/work/$',
+                                    'worklogs.views.list_worklogs'),
 
     # URLs for the project application
     url(r'^projects/welcome/$',     'project.views.project_welcome'),
@@ -111,13 +115,6 @@ urlpatterns = patterns('',
                                     'project.views.assign_task'),
     url(r'^projects/(?P<proj_id>\d+)/assigntask/(?P<task_id>\d+)/$',
                                     'project.views.assign_task'),
-
-
-    # Work creation and management
-    url(r'^work/',           include('worklogs.urls')),
-
-    url(r'^u/(?P<user>[a-zA-Z0-9_.-]+)/work/$',
-                                    'worklogs.views.list_worklogs'),
 
     # Workload/Project views
     url(r'^projects/usertasks/$',   'tasks.views.user_all_tasks'),
