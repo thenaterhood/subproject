@@ -239,8 +239,12 @@ def create_project(request, parent=False, pid=False):
             name = form.cleaned_data['name']
             allowedChars = string.ascii_lowercase + string.ascii_uppercase + string.digits + '. -_'
 
-            existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
-            if ( existing == 0 and set(name) <= set(allowedChars) ):
+            if ( pid != False ):
+              existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count() -1
+            else:
+              existing = Project.objects.filter(manager=request.user).filter(name__iexact=name).count()
+
+            if ( existing <= 0 and set(name) <= set(allowedChars) ):
 
 
                 newProj = form.save(owner=request.user)

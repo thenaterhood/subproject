@@ -92,12 +92,12 @@ class ProjectView_Update(TestCase):
 
     def test_project_update(self):
 
-        response = self.client.post('/projects/edit/1/', {'name': 'A Project', 'phase': "phased", 'status': 'statused',
+        response = self.client.post('/projects/edit/1/', {'name': 'Another Project', 'phase': "phased", 'status': 'statused',
                                                           'description': 'changed'})
 
         response = self.client.get('/projects/view/1/')
 
-        self.assertEqual(response.context['project'].name, "A Project")
+        self.assertEqual(response.context['project'].name, "Another Project")
         self.assertEqual(response.context['project'].phase, 'phased')
         self.assertEqual(response.context['project'].status, 'statused')
         self.assertEqual(response.context['project'].description, 'changed')
@@ -263,6 +263,99 @@ class ProjectView_Update(TestCase):
 
         self.assertTrue('owned' in response.context)
         self.assertEqual(len(response.context['owned']), 1)
+
+    def test_private_project(self):
+        pdata = {}
+        pdata['name'] = "My New Project"
+        pdata['status'] = "My Status"
+        pdata['phase'] = "My Phase"
+        pdata['description'] = "My description"
+
+        project = Project()
+        project.name = pdata['name']
+        project.status = pdata['status']
+        project.phase = pdata['phase']
+        project.description = pdata['description']
+        project.manager = User.objects.get(username='joe')
+
+        c = Client()
+
+        c.login(username='joe', password='pass')
+        response = c.post('/projects/create/', pdata)
+
+        # Test that the owner is able to see it
+        response = c.get('/u/joe/projects/My New Project/')
+        self.assertEqual( response.context['project'].name, "My New Project" )
+
+        # Test that the public cannot see it
+        c = Client()
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertTrue( 'project' not in response.context )
+        response = c.get('/u/joe/projects/')
+        self.assertFalse( project in response.context['projects'] )
+
+        # Test that a non-member cannot see it
+        c = Client()
+        c.login(username='bob', password='pass')
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertTrue( 'project' not in response.context )
+        response = c.get('/u/joe/projects/')
+        self.assertFalse( project in response.context['projects'] )
+
+        # Test that a member can see it
+        c2 = Client()
+        c2.login(username='joe', password='pass')
+        response = c2.post('/projects/addmember/3/', {'username': 'bob'})
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertEqual( response.context['project'].name, "My New Project" )
+        response = c.get('/u/joe/projects/')
+
+    def test_public_project(self):
+        pdata = {}
+        pdata['name'] = "My New Project"
+        pdata['status'] = "My Status"
+        pdata['phase'] = "My Phase"
+        pdata['description'] = "My description"
+        pdata['public'] = "On"
+
+        project = Project()
+        project.name = pdata['name']
+        project.status = pdata['status']
+        project.phase = pdata['phase']
+        project.description = pdata['description']
+        project.manager = User.objects.get(username='joe')
+
+        c = Client()
+
+        c.login(username='joe', password='pass')
+        response = c.post('/projects/create/', pdata)
+
+        # Test that the owner is able to see it
+        response = c.get('/u/joe/projects/My New Project/')
+        self.assertEqual( response.context['project'].name, "My New Project" )
+        response = c.get('/u/joe/projects/')
+
+        # Test that the public can see it
+        c = Client()
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertTrue( 'project' in response.context )
+        response = c.get('/u/joe/projects/')
+
+        # Test that a non-member can see it
+        c = Client()
+        c.login(username='bob', password='pass')
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertTrue( 'project' in response.context )
+        response = c.get('/u/joe/projects/')
+
+        # Test that a member can see it
+        c2 = Client()
+        c2.login(username='joe', password='pass')
+        response = c2.post('/projects/addmember/3/', {'username': 'bob'})
+        response = c.get('/u/joe/projects/My New Project/', follow=True)
+        self.assertEqual( response.context['project'].name, "My New Project" )
+        response = c.get('/u/joe/projects/')
+
 
 
 class DataImport(TestCase):
