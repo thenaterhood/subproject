@@ -11,7 +11,7 @@
 		<p class="error">No work logged.</p>
 	{% endif %}
 	{% if project.active %}
-	<p><a href="new/{{project.id}}">Add a log</a></p>
+	<p><a href="/work/new/{{project.id}}">Add a log</a></p>
 	{% else %}
 	<p><em>This project is closed. Work cannot be added to closed projects.</em></p>
 	{% endif %}
@@ -40,7 +40,7 @@
 		<td>{{l.owner}}</td>
 		<td>{{l.datestamp}}</td>
 		<td><a href="/work/{{l.id}}/">{{l.summary}}</a></td>
-		<td><a class="btn btn-info" href="/projects/work/edit/{{l.id}}/">Edit</a></td>
+		<td><a class="btn btn-info" href="/work/edit/{{l.id}}/">Edit</a></td>
 
 	</tr>
 
