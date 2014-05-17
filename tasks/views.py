@@ -247,7 +247,7 @@ def assign_task_tag(request, task_id, tag_id=False):
 
 
 @login_required
-def add_task(request, proj_id=False, task_id=False):
+def edit_task(request, proj_id=False, task_id=False):
     """
     Provides a blank form for creating a new
     task and the facilities for saving it and
