@@ -32,6 +32,7 @@ def list_tags(request):
     pageData = {}
     pageData['tags'] = tags
     pageData['user'] = request.user
+    pageData['num_tags'] = tags.count()
 
     return render_to_response('tag_list.html', RequestContext(request, pageData))
 

@@ -7,9 +7,9 @@
 	{% include 'template_messages.html' %}
 
 	<h1><img src="/static/img/tag.png" />My Tags</h1>
-	{% if num_projects == 0 %}
-		<p class="error">You are not a member of any projects.</p>
-	{% endif %}
+	{% if num_tags == 0 %}
+		<h4>No tags found. Get started by <a href="new">creating a tag</a>.</h4>
+	{% else %}
 
 	<p><a class="btn btn-success" href="new">Create a Tag</a></p>
 
@@ -38,5 +38,7 @@
 	{% endfor %}
 
 	</table>
+	
+	{% endif %}
 
 {% endblock %}
