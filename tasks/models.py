@@ -12,8 +12,8 @@ class ProjectTask(models.Model):
     Defines a task (which may or may not be associated
     with a project).
     """
-    assigned = models.ManyToManyField(User, related_name="Assigned Members")
-    creator = models.ForeignKey(User, related_name="Creator")
+    assigned = models.ManyToManyField(User, related_name="Assigned Members+")
+    creator = models.ForeignKey(User, related_name="Creator+")
     summary = models.CharField(max_length=100)
     description = models.CharField(max_length=400)
     completed = models.BooleanField(default=False)
@@ -21,8 +21,8 @@ class ProjectTask(models.Model):
     dueDate = models.DateTimeField(auto_now=False, auto_now_add=True)
     inProgress = models.BooleanField(default=False)
     completed = models.BooleanField(default=False)
-    tags = models.ManyToManyField(Tag, related_name="Task Tags")
-    project = models.ForeignKey(Project, related_name="Project", null=True)
+    tags = models.ManyToManyField(Tag, related_name="Task Tags+")
+    project = models.ForeignKey(Project, related_name="Project+", null=True)
     public = models.BooleanField(default=False)
 
     def __str__(self):

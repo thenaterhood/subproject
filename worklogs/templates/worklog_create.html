@@ -7,7 +7,7 @@
 {% include 'template_messages.html' %}
 
 	<h3><img src="/static/img/work.png" />Add a worklog to {{project.name}}</h3>
-	<form id="registerForm" action="new/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
+	<form id="registerForm" action="/work/new/{{project.id}}/" method="post">{% csrf_token %} <!--Pass information back to the register url through the POST method-->
 
 		{% for field in form %}
 <fieldset class="form-group">
